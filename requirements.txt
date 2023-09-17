@@ -1,0 +1,4 @@
+joblib
+librosa
+numpy
+soundfile
