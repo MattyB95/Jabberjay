@@ -5,6 +5,7 @@ import yaml
 from torch import Tensor
 
 from .model import RawNet
+from ..HuggingFace import download_pretrained_model
 
 GENUINE_WAV = "../../../../DetectionData/Genuine/50-Genuine.wav"
 SYNTHETIC_WAV = "../../../../DetectionData/Synthetic/50-Synthetic.wav"
@@ -13,6 +14,7 @@ abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
 
+
 def predict(y):
     with open('./model_config_RawNet.yaml', 'r') as f_yaml:
         parser = yaml.safe_load(f_yaml)
@@ -20,7 +22,9 @@ def predict(y):
     print('Device: {}'.format(device))
     model = RawNet(parser['model'], device)
     model.to(device)
-    model.load_state_dict(torch.load("pre_trained_DF_RawNet2.pth"))
+    model_file = download_pretrained_model(repo_id="MattyB95/pre_trained_DF_RawNet2",
+                                           filename="pre_trained_DF_RawNet2.pth")
+    model.load_state_dict(torch.load(model_file))
     model.eval()
     y = Tensor(y).unsqueeze(0).to(device)
     with torch.no_grad():

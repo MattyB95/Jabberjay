@@ -29,7 +29,9 @@ class Jabberjay:
                 import Models.RawNet2AntiSpoofing.Run as RawNet2
 
                 predict = RawNet2.predict(y)
+                predict = predict.item()
                 print(predict)
+                print("Genuine ✔️" if predict else "Synthetic ❌")
 
 
 y, sr = librosa.load(args.filename)
