@@ -1,6 +1,6 @@
 from joblib import load
 
-from Jabberjay.Feature_Extraction import get_features
+from src.Jabberjay.Models.ClassicalMachineLearning.Feature_Extraction import get_features
 
 
 def add_one(number):
