@@ -1,11 +1,5 @@
 from joblib import load
 
-from src.Jabberjay.Models.ClassicalMachineLearning.Feature_Extraction import get_features
-
-
-def add_one(number):
-    return number + 1
-
 
 def detect(filename):
     clf = load('KNeighborsClassifier.joblib')

@@ -2,10 +2,13 @@
 *.pyc
 
 # Project
-Data
+data
 
-# Models
+# models
 *.pth
 
 # JetBrains
 .idea
+
+# macOS
+.DS_Store

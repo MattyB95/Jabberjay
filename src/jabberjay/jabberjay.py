@@ -3,7 +3,7 @@ import argparse
 import librosa
 
 parser = argparse.ArgumentParser(
-    prog='Jabberjay',
+    prog='jabberjay',
     description='🦜 Synthetic Voice Detection',
     epilog='May The Odds Be Ever In Your Favor.')
 
@@ -26,7 +26,7 @@ class Jabberjay:
             case 'Classical':
                 pass
             case 'RawNet2':
-                import Models.RawNet2AntiSpoofing.Run as RawNet2
+                import models.RawNet2AntiSpoofing.run as RawNet2
 
                 predict = RawNet2.predict(y)
                 predict = predict.item()

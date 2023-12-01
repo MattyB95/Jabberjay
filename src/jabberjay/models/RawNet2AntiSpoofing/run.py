@@ -5,7 +5,7 @@ import yaml
 from torch import Tensor
 
 from .model import RawNet
-from ..HuggingFace import download_pretrained_model
+from ..hugging_face import download_pretrained_model
 
 GENUINE_WAV = "../../../../DetectionData/Genuine/50-Genuine.wav"
 SYNTHETIC_WAV = "../../../../DetectionData/Synthetic/50-Synthetic.wav"
