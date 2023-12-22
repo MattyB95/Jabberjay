@@ -1,4 +1,9 @@
 joblib
 librosa
+matplotlib
 numpy
+Pillow
+PyYAML
 soundfile
+torch
+transformers

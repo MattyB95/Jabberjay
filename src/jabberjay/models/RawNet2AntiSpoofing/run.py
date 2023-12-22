@@ -7,9 +7,6 @@ from torch import Tensor
 from .model import RawNet
 from ..hugging_face import download_pretrained_model
 
-GENUINE_WAV = "../../../../DetectionData/Genuine/50-Genuine.wav"
-SYNTHETIC_WAV = "../../../../DetectionData/Synthetic/50-Synthetic.wav"
-
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
