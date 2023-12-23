@@ -1,12 +1,7 @@
-import soundfile
-from transformers import AudioClassificationPipeline, AutoModelForAudioClassification, AutoFeatureExtractor
+import numpy as np
+from transformers import pipeline
 
-MODEL_NAME = "checkpoint-68526"
-feature_extractor = AutoFeatureExtractor.from_pretrained(MODEL_NAME)
-model = AutoModelForAudioClassification.from_pretrained(MODEL_NAME)
 
-pipe = AudioClassificationPipeline(model=model, feature_extractor=feature_extractor)
-audio = soundfile.read("6-Synthetic.wav")[0]
-
-prediction = pipe(audio, return_all_scores=True)
-print(prediction)
+def predict(y: np.ndarray, sr: float) -> list[dict[str, float]]:
+    pipe = pipeline("audio-classification", model="MattyB95/AST-Synthetic-Voice-Detection")
+    return pipe(y)

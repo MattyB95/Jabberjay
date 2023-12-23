@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument("filename")
 parser.add_argument("-m", "--model",
-                    choices=["Classical", "RawNet2", "VITConstantQ", "VITMelSpectrogram", "VITMFCC"],
+                    choices=["AST", "Classical", "RawNet2", "VITConstantQ", "VITMelSpectrogram", "VITMFCC"],
                     default="RawNet2")
 parser.add_argument("-v", "--verbose", action="store_true")
 
@@ -25,6 +25,10 @@ class Jabberjay:
 
     def detect(self, model="RawNet2"):
         match model:
+            case "AST":
+                import models.tranformers.AST.run as AST
+                predict = AST.predict(y=y, sr=sr)
+                print(predict)
             case "Classical":
                 pass
             case "RawNet2":
