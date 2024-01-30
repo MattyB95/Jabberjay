@@ -1,6 +1,9 @@
 # Python
 *.pyc
 
+# PyPI
+dist
+
 # Project
 data
 

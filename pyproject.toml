@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "Jabberjay"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
     { name = "Matthew Boakes", email = "mboakes@turing.ac.uk" },
 ]
 description = "🦜 Synthetic Voice Detection"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.10,<3.12"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -20,3 +20,6 @@ classifiers = [
 [project.urls]
 "Homepage" = "https://github.com/MattyB95/Jabberjay"
 "Bug Tracker" = "https://github.com/MattyB95/Jabberjay/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/Jabberjay"]
