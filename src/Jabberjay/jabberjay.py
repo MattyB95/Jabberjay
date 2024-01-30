@@ -113,7 +113,7 @@ class Jabberjay:
                 )
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(
         prog="Jabberjay",
         description="🦜 Synthetic Voice Detection",
@@ -160,3 +160,7 @@ if __name__ == "__main__":
         visualisation=args.visualisation,
         dataset=args.dataset,
     )
+
+
+if __name__ == "__main__":
+    main()
