@@ -4,7 +4,7 @@
 # Project
 data
 
-# models
+# Models
 *.pth
 
 # JetBrains
