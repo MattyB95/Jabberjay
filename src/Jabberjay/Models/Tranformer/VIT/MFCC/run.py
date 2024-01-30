@@ -8,7 +8,9 @@ from Jabberjay.Models.Tranformer.VIT.utility import get_image
 from Jabberjay.Utilities.enum_handler import Dataset
 
 
-def predict(audio: tuple[np.ndarray, float], dataset: Dataset) -> list[dict[str, float]]:
+def predict(
+    audio: tuple[np.ndarray, float], dataset: Dataset
+) -> list[dict[str, float]]:
     y, sr = audio
     model = f"MattyB95/VIT-{dataset.value}-MFCC-Synthetic-Voice-Detection"
     logging.info(f"Using Model: {model}")

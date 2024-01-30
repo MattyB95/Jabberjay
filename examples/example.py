@@ -17,16 +17,44 @@ jabberjay.detect(audio=bonafide, model=Model.Classical)
 
 jabberjay.detect(audio=bonafide, model=Model.RawNet2)
 
-jabberjay.detect(audio=bonafide, model=Model.VIT, visualisation=Visualisation.ConstantQ, dataset=Dataset.ASVspoof2019)
-jabberjay.detect(audio=bonafide, model=Model.VIT, visualisation=Visualisation.ConstantQ, dataset=Dataset.VoxCelebSpoof)
+jabberjay.detect(
+    audio=bonafide,
+    model=Model.VIT,
+    visualisation=Visualisation.ConstantQ,
+    dataset=Dataset.ASVspoof2019,
+)
+jabberjay.detect(
+    audio=bonafide,
+    model=Model.VIT,
+    visualisation=Visualisation.ConstantQ,
+    dataset=Dataset.VoxCelebSpoof,
+)
 
-jabberjay.detect(audio=bonafide, model=Model.VIT, visualisation=Visualisation.MelSpectrogram,
-                 dataset=Dataset.ASVspoof2019)
-jabberjay.detect(audio=bonafide, model=Model.VIT, visualisation=Visualisation.MelSpectrogram,
-                 dataset=Dataset.VoxCelebSpoof)
+jabberjay.detect(
+    audio=bonafide,
+    model=Model.VIT,
+    visualisation=Visualisation.MelSpectrogram,
+    dataset=Dataset.ASVspoof2019,
+)
+jabberjay.detect(
+    audio=bonafide,
+    model=Model.VIT,
+    visualisation=Visualisation.MelSpectrogram,
+    dataset=Dataset.VoxCelebSpoof,
+)
 
-jabberjay.detect(audio=bonafide, model=Model.VIT, visualisation=Visualisation.MFCC, dataset=Dataset.ASVspoof2019)
-jabberjay.detect(audio=bonafide, model=Model.VIT, visualisation=Visualisation.MFCC, dataset=Dataset.VoxCelebSpoof)
+jabberjay.detect(
+    audio=bonafide,
+    model=Model.VIT,
+    visualisation=Visualisation.MFCC,
+    dataset=Dataset.ASVspoof2019,
+)
+jabberjay.detect(
+    audio=bonafide,
+    model=Model.VIT,
+    visualisation=Visualisation.MFCC,
+    dataset=Dataset.VoxCelebSpoof,
+)
 
 jabberjay.detect(audio=bonafide, model=Model.AST, dataset=Dataset.ASVspoof2019)
 jabberjay.detect(audio=bonafide, model=Model.AST, dataset=Dataset.VoxCelebSpoof)
@@ -38,15 +66,44 @@ jabberjay.detect(audio=spoof, model=Model.Classical)
 
 jabberjay.detect(audio=spoof, model=Model.RawNet2)
 
-jabberjay.detect(audio=spoof, model=Model.VIT, visualisation=Visualisation.ConstantQ, dataset=Dataset.ASVspoof2019)
-jabberjay.detect(audio=spoof, model=Model.VIT, visualisation=Visualisation.ConstantQ, dataset=Dataset.VoxCelebSpoof)
+jabberjay.detect(
+    audio=spoof,
+    model=Model.VIT,
+    visualisation=Visualisation.ConstantQ,
+    dataset=Dataset.ASVspoof2019,
+)
+jabberjay.detect(
+    audio=spoof,
+    model=Model.VIT,
+    visualisation=Visualisation.ConstantQ,
+    dataset=Dataset.VoxCelebSpoof,
+)
 
-jabberjay.detect(audio=spoof, model=Model.VIT, visualisation=Visualisation.MelSpectrogram, dataset=Dataset.ASVspoof2019)
-jabberjay.detect(audio=spoof, model=Model.VIT, visualisation=Visualisation.MelSpectrogram,
-                 dataset=Dataset.VoxCelebSpoof)
+jabberjay.detect(
+    audio=spoof,
+    model=Model.VIT,
+    visualisation=Visualisation.MelSpectrogram,
+    dataset=Dataset.ASVspoof2019,
+)
+jabberjay.detect(
+    audio=spoof,
+    model=Model.VIT,
+    visualisation=Visualisation.MelSpectrogram,
+    dataset=Dataset.VoxCelebSpoof,
+)
 
-jabberjay.detect(audio=spoof, model=Model.VIT, visualisation=Visualisation.MFCC, dataset=Dataset.ASVspoof2019)
-jabberjay.detect(audio=spoof, model=Model.VIT, visualisation=Visualisation.MFCC, dataset=Dataset.VoxCelebSpoof)
+jabberjay.detect(
+    audio=spoof,
+    model=Model.VIT,
+    visualisation=Visualisation.MFCC,
+    dataset=Dataset.ASVspoof2019,
+)
+jabberjay.detect(
+    audio=spoof,
+    model=Model.VIT,
+    visualisation=Visualisation.MFCC,
+    dataset=Dataset.VoxCelebSpoof,
+)
 
 jabberjay.detect(audio=spoof, model=Model.AST, dataset=Dataset.ASVspoof2019)
 jabberjay.detect(audio=spoof, model=Model.AST, dataset=Dataset.VoxCelebSpoof)
