@@ -1,3 +1,4 @@
+huggingface-hub
 joblib
 librosa
 matplotlib
@@ -5,6 +6,5 @@ numpy
 Pillow
 PyYAML
 scikit-learn
-soundfile
 torch
 transformers

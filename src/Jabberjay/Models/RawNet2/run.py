@@ -26,7 +26,7 @@ def predict(y: np.ndarray):
     model_file = download_pretrained_model(
         repo_id=repo_id, filename="pre_trained_DF_RawNet2.pth"
     )
-    model.load_state_dict(torch.load(model_file, map_location=torch.device(device)))
+    model.load_state_dict(torch.load(model_file, map_location=torch.device(device), weights_only=True))
     model.eval()
     y = Tensor(y).unsqueeze(0).to(device)
     with torch.no_grad():

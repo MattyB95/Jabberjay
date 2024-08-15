@@ -11,6 +11,7 @@ class Model(Enum):
 
 class Dataset(Enum):
     ASVspoof2019 = "ASVspoof2019"
+    ASVspoof5 = "ASVspoof5"
     VoxCelebSpoof = "VoxCelebSpoof"
 
 
