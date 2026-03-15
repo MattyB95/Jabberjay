@@ -1,43 +1,107 @@
 import argparse
 import importlib
 import sys
+from dataclasses import dataclass, field
+from pathlib import Path
 
 import librosa
 import numpy as np
 from loguru import logger
 
 from Jabberjay.Utilities.enum_handler import Dataset, EnumAction, Model, Visualisation
+from Jabberjay.Utilities.types import PredictionScore
 
 # Silence loguru by default — callers and the CLI configure output
 logger.disable("Jabberjay")
 
+Audio = tuple[np.ndarray, float]
+
+
+@dataclass
+class DetectionResult:
+    """Structured result returned by every call to Jabberjay.detect()."""
+
+    label: str
+    """'Bonafide' or 'Spoof'."""
+
+    is_bonafide: bool
+    """True if the audio was classified as genuine."""
+
+    confidence: float
+    """Confidence score for the top prediction (0.0–1.0)."""
+
+    model: Model
+    """The model used to produce this result."""
+
+    scores: list[PredictionScore] | None = field(default=None)
+    """Full label/score breakdown from transformer models; None for Classical and RawNet2."""
+
+    def __str__(self) -> str:
+        verdict = "Bonafide ✔️" if self.is_bonafide else "Spoof ❌"
+        return f"{verdict} ({self.confidence:.1%} confidence, model={self.model.value})"
+
 
 class Jabberjay:
     @staticmethod
-    def list_models():
-        print("Models: ", *Model)
+    def list_models() -> list[Model]:
+        """Print and return all available models."""
+        models = list(Model)
+        print("Models:", ", ".join(m.value for m in models))
+        return models
 
     @staticmethod
-    def list_datasets():
-        print("Datasets: ", *Dataset)
+    def list_datasets() -> list[Dataset]:
+        """Print and return all available datasets."""
+        datasets = list(Dataset)
+        print("Datasets:", ", ".join(d.value for d in datasets))
+        return datasets
 
     @staticmethod
-    def list_visualisations():
-        print("Visualisations: ", *Visualisation)
+    def list_visualisations() -> list[Visualisation]:
+        """Print and return all available visualisations."""
+        visualisations = list(Visualisation)
+        print("Visualisations:", ", ".join(v.value for v in visualisations))
+        return visualisations
 
-    def load(self, filename: str) -> tuple[np.ndarray, float]:
-        logger.debug(f"Loading audio file: {filename}")
-        y, sr = librosa.load(filename)
+    def load(self, path: str | Path) -> Audio:
+        """Load an audio file and return (samples, sample_rate)."""
+        path = str(path)
+        logger.debug(f"Loading audio file: {path}")
+        y, sr = librosa.load(path)
         logger.info(f"Loaded {len(y) / sr:.2f}s of audio at {int(sr)}Hz")
         return y, sr
 
     def detect(
         self,
-        audio: tuple[np.ndarray, float],
-        model: Model,
-        visualisation: Visualisation | None = None,
-        dataset: Dataset | None = None,
-    ):
+        audio: str | Path | Audio,
+        model: Model | str = Model.VIT,
+        visualisation: Visualisation | str | None = None,
+        dataset: Dataset | str | None = None,
+    ) -> DetectionResult:
+        """
+        Detect whether audio is bonafide or spoofed.
+
+        Args:
+            audio: Path to an audio file, or a pre-loaded (samples, sample_rate) tuple.
+            model: Model to use. Accepts a Model enum value or its string name (e.g. "VIT").
+            visualisation: Visualisation for VIT models. Accepts Visualisation enum or string.
+            dataset: Dataset the model was trained on. Accepts Dataset enum or string.
+
+        Returns:
+            DetectionResult with label, confidence, and full scores where available.
+        """
+        # Coerce strings to enums
+        if isinstance(model, str):
+            model = Model[model]
+        if isinstance(visualisation, str):
+            visualisation = Visualisation[visualisation]
+        if isinstance(dataset, str):
+            dataset = Dataset[dataset]
+
+        # Accept a file path directly
+        if isinstance(audio, (str, Path)):
+            audio = self.load(audio)
+
         logger.info(
             f"Running detection — model={model.value}, "
             f"dataset={dataset.value if dataset else None}, "
@@ -47,62 +111,86 @@ class Jabberjay:
         match model:
             case Model.AST:
                 if dataset is None:
-                    raise ValueError("Dataset Is Required For AST Model!")
-                return self.ast_handler(y=y, sr=sr, dataset=dataset)
+                    raise ValueError("Dataset is required for the AST model.")
+                return self._ast_handler(y=y, sr=sr, dataset=dataset)
             case Model.Classical:
-                return self.classical_handler(audio=audio)
+                return self._classical_handler(audio=audio)
             case Model.RawNet2:
-                return self.rawnet2_handler(y=y)
+                return self._rawnet2_handler(y=y)
             case Model.VIT:
                 if visualisation is None:
-                    raise ValueError("Visualisation Is Required For VIT Model!")
+                    raise ValueError("Visualisation is required for the VIT model.")
                 if dataset is None:
-                    raise ValueError("Dataset Is Required For VIT Model!")
-                return self.vit_handler(
+                    raise ValueError("Dataset is required for the VIT model.")
+                return self._vit_handler(
                     audio=audio, visualisation=visualisation, dataset=dataset
                 )
+            case _:
+                raise ValueError(f"Unknown model: {model}")
 
-    def ast_handler(
+    def _ast_handler(
         self, y: np.ndarray, sr: float, dataset: Dataset
-    ) -> list[dict[str, float]]:
+    ) -> DetectionResult:
         import Jabberjay.Models.Transformer.AST.run as AST
 
-        predict = AST.predict(y=y, sr=sr, dataset=dataset)
-        logger.debug(f"AST predictions: {predict}")
-        print("Bonafide ✔️" if predict[0].get("label") == "Bonafide" else "Spoof ❌")
-        return predict
+        scores = AST.predict(y=y, sr=sr, dataset=dataset)
+        logger.debug(f"AST predictions: {scores}")
+        top = scores[0]
+        return DetectionResult(
+            label=top["label"],
+            is_bonafide=top["label"] == "Bonafide",
+            confidence=top["score"],
+            model=Model.AST,
+            scores=scores,
+        )
 
-    def classical_handler(self, audio: tuple[np.ndarray, float]) -> bool:
+    def _classical_handler(self, audio: Audio) -> DetectionResult:
         import Jabberjay.Models.Classical.run as Classical
 
-        predict = Classical.predict(audio=audio)
-        result = bool(predict[0])
-        logger.debug(f"Classical prediction: {result}")
-        print("Bonafide ✔️" if result else "Spoof ❌")
-        return result
+        prediction, confidence = Classical.predict(audio=audio)
+        is_bonafide = bool(prediction)
+        logger.debug(
+            f"Classical prediction: {is_bonafide} (confidence={confidence:.3f})"
+        )
+        return DetectionResult(
+            label="Bonafide" if is_bonafide else "Spoof",
+            is_bonafide=is_bonafide,
+            confidence=confidence,
+            model=Model.Classical,
+        )
 
-    def rawnet2_handler(self, y: np.ndarray) -> bool:
+    def _rawnet2_handler(self, y: np.ndarray) -> DetectionResult:
         import Jabberjay.Models.RawNet2.run as RawNet2
 
-        predict = RawNet2.predict(y=y)
-        result = bool(predict.item())
-        logger.debug(f"RawNet2 prediction: {result}")
-        print("Bonafide ✔️" if result else "Spoof ❌")
-        return result
+        prediction, confidence = RawNet2.predict(y=y)
+        is_bonafide = bool(prediction.item())
+        logger.debug(f"RawNet2 prediction: {is_bonafide} (confidence={confidence:.3f})")
+        return DetectionResult(
+            label="Bonafide" if is_bonafide else "Spoof",
+            is_bonafide=is_bonafide,
+            confidence=confidence,
+            model=Model.RawNet2,
+        )
 
-    def vit_handler(
+    def _vit_handler(
         self,
-        audio: tuple[np.ndarray, float],
+        audio: Audio,
         visualisation: Visualisation,
         dataset: Dataset,
-    ) -> list[dict[str, float]]:
+    ) -> DetectionResult:
         vit_module = importlib.import_module(
             f"Jabberjay.Models.Transformer.VIT.{visualisation.value}.run"
         )
-        predict = vit_module.predict(audio=audio, dataset=dataset)
-        logger.debug(f"VIT predictions: {predict}")
-        print("Bonafide ✔️" if predict[0].get("label") == "Bonafide" else "Spoof ❌")
-        return predict
+        scores = vit_module.predict(audio=audio, dataset=dataset)
+        logger.debug(f"VIT predictions: {scores}")
+        top = scores[0]
+        return DetectionResult(
+            label=top["label"],
+            is_bonafide=top["label"] == "Bonafide",
+            confidence=top["score"],
+            model=Model.VIT,
+            scores=scores,
+        )
 
 
 def main():
@@ -149,12 +237,13 @@ def main():
     logger.debug(f"visualisation={args.visualisation}")
 
     jabberjay = Jabberjay()
-    jabberjay.detect(
-        audio=jabberjay.load(args.audio),
+    result = jabberjay.detect(
+        audio=args.audio,
         model=args.model,
         visualisation=args.visualisation,
         dataset=args.dataset,
     )
+    print(result)
 
 
 if __name__ == "__main__":

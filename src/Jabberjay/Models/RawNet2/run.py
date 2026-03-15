@@ -14,7 +14,7 @@ dname = os.path.dirname(abspath)
 os.chdir(dname)
 
 
-def predict(y: np.ndarray):
+def predict(y: np.ndarray) -> tuple[Tensor, float]:
     with open("./model_config_RawNet.yaml", "r") as f_yaml:
         parser = yaml.safe_load(f_yaml)
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -34,5 +34,7 @@ def predict(y: np.ndarray):
     audio_tensor = Tensor(y).unsqueeze(0).to(device)
     with torch.no_grad():
         out = model(audio_tensor)
+        probs = out.exp()  # log_softmax → probabilities
         _, predicted = out.max(dim=1)
-    return predicted
+    confidence = float(probs[0][predicted.item()])
+    return predicted, confidence

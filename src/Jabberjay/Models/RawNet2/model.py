@@ -367,8 +367,9 @@ class RawNet(nn.Module):
         if isinstance(input_size, tuple):
             input_size = [input_size]
         x = [
-            torch.rand(2, *in_size).type(dtype) for in_size in input_size
-        ]  # ty: ignore[no-matching-overload]
+            torch.rand(2, *in_size).type(dtype)  # ty: ignore[no-matching-overload]
+            for in_size in input_size
+        ]
         summary = OrderedDict()
         hooks = []
         model.apply(register_hook)

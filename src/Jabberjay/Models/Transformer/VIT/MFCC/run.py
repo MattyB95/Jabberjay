@@ -1,3 +1,5 @@
+from typing import cast
+
 import librosa
 import numpy as np
 from loguru import logger
@@ -5,11 +7,10 @@ from transformers import pipeline
 
 from Jabberjay.Models.Transformer.VIT.utility import get_image
 from Jabberjay.Utilities.enum_handler import Dataset
+from Jabberjay.Utilities.types import PredictionScore
 
 
-def predict(
-    audio: tuple[np.ndarray, float], dataset: Dataset
-) -> list[dict[str, float]]:
+def predict(audio: tuple[np.ndarray, float], dataset: Dataset) -> list[PredictionScore]:
     y, sr = audio
     model = f"MattyB95/VIT-{dataset.value}-MFCC-Synthetic-Voice-Detection"
     logger.info(f"Loading VIT model: {model}")
@@ -17,4 +18,4 @@ def predict(
     logger.debug("Computing MFCC")
     M = librosa.feature.mfcc(y=y, sr=sr)
     image = get_image(data=M, sr=sr)
-    return pipe(image)
+    return cast(list[PredictionScore], pipe(image))
