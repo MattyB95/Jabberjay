@@ -1,4 +1,5 @@
 import argparse
+import importlib
 import logging
 
 import librosa
@@ -21,7 +22,6 @@ class Jabberjay:
         print("Visualisations: ", *Visualisation)
 
     def load(self, filename: str) -> tuple[np.ndarray, float]:
-        filename = filename
         y, sr = librosa.load(filename)
         return y, sr
 
@@ -31,86 +31,65 @@ class Jabberjay:
         model: Model,
         visualisation: Visualisation | None = None,
         dataset: Dataset | None = None,
-    ) -> None:
+    ):
         y, sr = audio
         match model:
             case Model.AST:
-                self.ast_handler(y=y, dataset=dataset)
+                return self.ast_handler(y=y, sr=sr, dataset=dataset)
             case Model.Classical:
-                self.classical_handler(audio=audio)
+                return self.classical_handler(audio=audio)
             case Model.RawNet2:
-                self.rawnet2_handler(y=y)
+                return self.rawnet2_handler(y=y)
             case Model.VIT:
-                self.vit_handler(
+                return self.vit_handler(
                     audio=audio, visualisation=visualisation, dataset=dataset
                 )
 
-    def ast_handler(self, y, dataset: Dataset) -> None:
+    def ast_handler(self, y: np.ndarray, sr: float, dataset: Dataset) -> list[dict[str, float]]:
         if dataset is None:
             raise ValueError("Dataset Is Required For AST Model!")
-        import Jabberjay.Models.Tranformer.AST.run as AST
+        import Jabberjay.Models.Transformer.AST.run as AST
 
-        predict = AST.predict(y=y, dataset=dataset)
+        predict = AST.predict(y=y, sr=sr, dataset=dataset)
         logging.info(predict)
         print("Bonafide ✔️" if predict[0].get("label") == "Bonafide" else "Spoof ❌")
+        return predict
 
-    def classical_handler(self, audio: tuple[np.ndarray, float]) -> None:
+    def classical_handler(self, audio: tuple[np.ndarray, float]) -> bool:
         import Jabberjay.Models.Classical.run as Classical
 
         predict = Classical.predict(audio=audio)
         logging.info(predict)
-        print("Bonafide ✔️" if predict else "Spoof ❌")
-        pass
+        result = bool(predict[0])
+        print("Bonafide ✔️" if result else "Spoof ❌")
+        return result
 
-    def rawnet2_handler(self, y) -> None:
+    def rawnet2_handler(self, y: np.ndarray) -> bool:
         import Jabberjay.Models.RawNet2.run as RawNet2
 
         predict = RawNet2.predict(y=y)
-        predict = predict.item()
-        logging.info(predict)
-        print("Bonafide ✔️" if predict else "Spoof ❌")
+        result = bool(predict.item())
+        logging.info(result)
+        print("Bonafide ✔️" if result else "Spoof ❌")
+        return result
 
     def vit_handler(
         self,
         audio: tuple[np.ndarray, float],
         visualisation: Visualisation,
         dataset: Dataset,
-    ) -> None:
+    ) -> list[dict[str, float]]:
         if visualisation is None:
             raise ValueError("Visualisation Is Required For VIT Model!")
         if dataset is None:
             raise ValueError("Dataset Is Required For VIT Model!")
-        match visualisation:
-            case Visualisation.ConstantQ:
-                import Jabberjay.Models.Tranformer.VIT.ConstantQ.run as VITConstantQ
-
-                predict = VITConstantQ.predict(audio=audio, dataset=dataset)
-                logging.info(predict)
-                print(
-                    "Bonafide ✔️"
-                    if predict[0].get("label") == "Bonafide"
-                    else "Spoof ❌"
-                )
-            case Visualisation.MelSpectrogram:
-                import Jabberjay.Models.Tranformer.VIT.MelSpectrogram.run as VITMelSpectrogram
-
-                predict = VITMelSpectrogram.predict(audio=audio, dataset=dataset)
-                logging.info(predict)
-                print(
-                    "Bonafide ✔️"
-                    if predict[0].get("label") == "Bonafide"
-                    else "Spoof ❌"
-                )
-            case Visualisation.MFCC:
-                import Jabberjay.Models.Tranformer.VIT.MFCC.run as VITMFCC
-
-                predict = VITMFCC.predict(audio=audio, dataset=dataset)
-                logging.info(predict)
-                print(
-                    "Bonafide ✔️"
-                    if predict[0].get("label") == "Bonafide"
-                    else "Spoof ❌"
-                )
+        vit_module = importlib.import_module(
+            f"Jabberjay.Models.Transformer.VIT.{visualisation.value}.run"
+        )
+        predict = vit_module.predict(audio=audio, dataset=dataset)
+        logging.info(predict)
+        print("Bonafide ✔️" if predict[0].get("label") == "Bonafide" else "Spoof ❌")
+        return predict
 
 
 def main():
@@ -147,7 +126,7 @@ def main():
     else:
         logging.basicConfig(format="%(levelname)s: %(message)s")
 
-    logging.info(f"Filename: {args.filename}")
+    logging.info(f"Filename: {args.audio}")
     logging.info(f"Model: {args.model}")
     logging.info(f"Dataset: {args.dataset}")
     logging.info(f"Visualisation: {args.visualisation}")
@@ -155,7 +134,7 @@ def main():
 
     jabberjay = Jabberjay()
     jabberjay.detect(
-        audio=jabberjay.load(args.filename),
+        audio=jabberjay.load(args.audio),
         model=args.model,
         visualisation=args.visualisation,
         dataset=args.dataset,

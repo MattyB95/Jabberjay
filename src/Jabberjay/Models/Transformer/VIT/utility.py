@@ -16,4 +16,5 @@ def get_image(data: ndarray, sr: float) -> Image.Image:
     buf.seek(0)
     if logging.getLogger().level == logging.DEBUG:
         plt.show()
+    plt.close(fig)
     return Image.open(buf)

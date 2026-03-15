@@ -4,7 +4,7 @@ import librosa
 import numpy as np
 from transformers import pipeline
 
-from Jabberjay.Models.Tranformer.VIT.utility import get_image
+from Jabberjay.Models.Transformer.VIT.utility import get_image
 from Jabberjay.Utilities.enum_handler import Dataset
 
 

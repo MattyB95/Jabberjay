@@ -727,6 +727,7 @@ name = "jabberjay"
 version = "0.0.4"
 source = { editable = "." }
 dependencies = [
+    { name = "huggingface-hub" },
     { name = "joblib" },
     { name = "librosa" },
     { name = "matplotlib" },
@@ -750,6 +751,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "huggingface-hub" },
     { name = "joblib" },
     { name = "librosa" },
     { name = "matplotlib" },
