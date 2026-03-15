@@ -2,9 +2,9 @@ import io
 import logging
 
 import librosa
-from PIL import Image
 from matplotlib import pyplot as plt
 from numpy import ndarray
+from PIL import Image
 
 
 def get_image(data: ndarray, sr: float) -> Image.Image:

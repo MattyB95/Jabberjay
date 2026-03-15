@@ -1,7 +1,7 @@
 import numpy as np
 
-from Jabberjay.Utilities.enum_handler import Visualisation, Model, Dataset
 from Jabberjay.jabberjay import Jabberjay
+from Jabberjay.Utilities.enum_handler import Dataset, Model, Visualisation
 
 jabberjay = Jabberjay()
 

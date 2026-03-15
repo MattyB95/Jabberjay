@@ -5,7 +5,7 @@ import logging
 import librosa
 import numpy as np
 
-from Jabberjay.Utilities.enum_handler import EnumAction, Visualisation, Model, Dataset
+from Jabberjay.Utilities.enum_handler import Dataset, EnumAction, Model, Visualisation
 
 
 class Jabberjay:
@@ -45,7 +45,9 @@ class Jabberjay:
                     audio=audio, visualisation=visualisation, dataset=dataset
                 )
 
-    def ast_handler(self, y: np.ndarray, sr: float, dataset: Dataset) -> list[dict[str, float]]:
+    def ast_handler(
+        self, y: np.ndarray, sr: float, dataset: Dataset
+    ) -> list[dict[str, float]]:
         if dataset is None:
             raise ValueError("Dataset Is Required For AST Model!")
         import Jabberjay.Models.Transformer.AST.run as AST

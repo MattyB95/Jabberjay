@@ -1,10 +1,12 @@
-name: Ruff
+name: Lint
 on: [ push, pull_request ]
 jobs:
-  ruff:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - run: uv run ruff check
-      - run: uv run ruff format --check
+      - name: Lint with ruff
+        run: uv run ruff check .
+      - name: Check formatting with black
+        run: uv run black --check .
