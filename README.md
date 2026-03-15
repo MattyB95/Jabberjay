@@ -1,6 +1,33 @@
-# Jabberjay
+# Jabberjay 🦜
 
-🦜 Synthetic Voice Detection
+> One API. Every state-of-the-art synthetic voice detector.
+
+[![PyPI](https://img.shields.io/pypi/v/jabberjay)](https://pypi.org/project/Jabberjay/)
+[![CI](https://github.com/MattyB95/Jabberjay/actions/workflows/ci.yml/badge.svg)](https://github.com/MattyB95/Jabberjay/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/pypi/pyversions/jabberjay)](https://pypi.org/project/Jabberjay/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Downloads](https://img.shields.io/pypi/dm/jabberjay)](https://pypi.org/project/Jabberjay/)
+
+---
+
+## Why Jabberjay?
+
+Synthetic voice detection is a fragmented landscape — state-of-the-art models are scattered across research repositories, each with its own dependencies, input formats, and output conventions. Jabberjay brings them all under one consistent Python API and CLI so you can detect AI-generated speech without wrestling with model internals.
+
+- **Seven model families** — ViT, AST, Wav2Vec2, HuBERT, WavLM, RawNet2, and a classical baseline
+- **Unified output** — every model returns the same `DetectionResult` with `label`, `confidence`, and `scores`
+- **Zero boilerplate** — pass a file path, get a verdict; models are downloaded and cached automatically
+- **Flexible** — use strings for quick experiments, enums for IDE autocomplete, or pre-load audio to run multiple models on the same clip
+
+```
+$ jabberjay interview.wav
+Bonafide ✔️  (94.1% confidence, model=VIT)
+
+$ jabberjay suspicious.wav -m HuBERT
+Spoof ❌  (97.8% confidence, model=HuBERT)
+```
+
+---
 
 ## Installation
 
@@ -8,99 +35,11 @@
 pip install jabberjay
 ```
 
-## Models
+Requires Python ≥ 3.10. Models are downloaded from Hugging Face Hub on first use and cached locally.
 
-### Vision Transformer
+---
 
-| **Name**                                                             | **Model** | **Dataset**   | **Visualisation** | **Model**                                                                                                   |
-|----------------------------------------------------------------------|-----------|---------------|-------------------|-------------------------------------------------------------------------------------------------------------|
-| MattyB95/VIT-ASVspoof2019-ConstantQ-Synthetic-Voice-Detection        | ViT       | ASVspoof2019  | ConstantQ         | [Hugging Face](https://huggingface.co/MattyB95/VIT-ASVspoof2019-ConstantQ-Synthetic-Voice-Detection)        |
-| MattyB95/VIT-ASVspoof2019-Mel_Spectrogram-Synthetic-Voice-Detection  | ViT       | ASVspoof2019  | MelSpectrogram    | [Hugging Face](https://huggingface.co/MattyB95/VIT-ASVspoof2019-Mel_Spectrogram-Synthetic-Voice-Detection)  |
-| MattyB95/VIT-ASVspoof2019-MFCC-Synthetic-Voice-Detection             | ViT       | ASVspoof2019  | MFCC              | [Hugging Face](https://huggingface.co/MattyB95/VIT-ASVspoof2019-MFCC-Synthetic-Voice-Detection)             |
-| MattyB95/VIT-ASVspoof5-ConstantQ-Synthetic-Voice-Detection           | ViT       | ASVspoof5     | ConstantQ         | [Hugging Face](https://huggingface.co/MattyB95/VIT-ASVspoof5-ConstantQ-Synthetic-Voice-Detection)           |
-| MattyB95/VIT-ASVspoof5-Mel_Spectrogram-Synthetic-Voice-Detection     | ViT       | ASVspoof5     | MelSpectrogram    | [Hugging Face](https://huggingface.co/MattyB95/VIT-ASVspoof5-Mel_Spectrogram-Synthetic-Voice-Detection)     |
-| MattyB95/VIT-ASVspoof5-MFCC-Synthetic-Voice-Detection                | ViT       | ASVspoof5     | MFCC              | [Hugging Face](https://huggingface.co/MattyB95/VIT-ASVspoof5-MFCC-Synthetic-Voice-Detection)                |
-| MattyB95/VIT-VoxCelebSpoof-ConstantQ-Synthetic-Voice-Detection       | ViT       | VoxCelebSpoof | ConstantQ         | [Hugging Face](https://huggingface.co/MattyB95/VIT-VoxCelebSpoof-ConstantQ-Synthetic-Voice-Detection)       |
-| MattyB95/VIT-VoxCelebSpoof-Mel_Spectrogram-Synthetic-Voice-Detection | ViT       | VoxCelebSpoof | MelSpectrogram    | [Hugging Face](https://huggingface.co/MattyB95/VIT-VoxCelebSpoof-Mel_Spectrogram-Synthetic-Voice-Detection) |
-| MattyB95/VIT-VoxCelebSpoof-MFCC-Synthetic-Voice-Detection            | ViT       | VoxCelebSpoof | MFCC              | [Hugging Face](https://huggingface.co/MattyB95/VIT-VoxCelebSpoof-MFCC-Synthetic-Voice-Detection)            |
-
-### Audio Spectrogram Transformer
-
-| **Name**                                             | **Model** | **Dataset**   | **Model**                                                                                   |
-|------------------------------------------------------|-----------|---------------|---------------------------------------------------------------------------------------------|
-| MattyB95/AST-ASVspoof2019-Synthetic-Voice-Detection  | AST       | ASVspoof2019  | [Hugging Face](https://huggingface.co/MattyB95/AST-ASVspoof2019-Synthetic-Voice-Detection)  |
-| MattyB95/AST-ASVspoof5-Synthetic-Voice-Detection     | AST       | ASVspoof5     | [Hugging Face](https://huggingface.co/MattyB95/AST-ASVspoof5-Synthetic-Voice-Detection)     |
-| MattyB95/AST-VoxCelebSpoof-Synthetic-Voice-Detection | AST       | VoxCelebSpoof | [Hugging Face](https://huggingface.co/MattyB95/AST-VoxCelebSpoof-Synthetic-Voice-Detection) |
-
-### Wav2Vec2
-
-| **Name**                                                              | **Model**              | **Dataset**    | **Model**                                                                                                    |
-|-----------------------------------------------------------------------|------------------------|----------------|--------------------------------------------------------------------------------------------------------------|
-| Gustking/wav2vec2-large-xlsr-deepfake-audio-classification            | Wav2Vec2-XLSR-300M     | ASVspoof2019   | [Hugging Face](https://huggingface.co/Gustking/wav2vec2-large-xlsr-deepfake-audio-classification)            |
-
-### HuBERT
-
-| **Name**                                                              | **Model**              | **Dataset**    | **Model**                                                                                                    |
-|-----------------------------------------------------------------------|------------------------|----------------|--------------------------------------------------------------------------------------------------------------|
-| abhishtagatya/hubert-base-960h-itw-deepfake                           | HuBERT-base            | In-The-Wild    | [Hugging Face](https://huggingface.co/abhishtagatya/hubert-base-960h-itw-deepfake)                           |
-
-### WavLM
-
-| **Name**                                                              | **Model**              | **Dataset**    | **Model**                                                                                                    |
-|-----------------------------------------------------------------------|------------------------|----------------|--------------------------------------------------------------------------------------------------------------|
-| DavidCombei/wavLM-base-Deepfake_V2                                    | WavLM-base             | Mixed          | [Hugging Face](https://huggingface.co/DavidCombei/wavLM-base-Deepfake_V2)                                   |
-
-### Other
-
-| Name      | Paper                                                                                     | Codebase                                                                    | Model                                                                                          |
-|-----------|-------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|
-| Classical | Placeholder                                                                               | Placeholder                                                                 | Placeholder                                                                                    |
-| RawNet2   | [End-to-End anti-spoofing with RawNet2](https://doi.org/10.1109/ICASSP39728.2021.9414234) | [rawnet2-antispoofing](https://github.com/eurecom-asp/rawnet2-antispoofing) | [pre_trained_DF_RawNet2.zip](https://www.asvspoof.org/asvspoof2021/pre_trained_DF_RawNet2.zip) |
-
-## Usage
-
-### Command Line Interface
-
-```
-usage: Jabberjay [-h] [-m {AST,Classical,HuBERT,RawNet2,VIT,Wav2Vec2,WavLM}]
-                 [-d {ASVspoof2019,ASVspoof5,VoxCelebSpoof}]
-                 [-vis {ConstantQ,MelSpectrogram,MFCC}] [-v]
-                 audio
-```
-
-**Examples**
-
-```bash
-# Quickstart — VIT with ConstantQ on VoxCelebSpoof (defaults)
-jabberjay audio.wav
-
-# Specify model and dataset
-jabberjay audio.wav -m RawNet2
-jabberjay audio.wav -m AST -d ASVspoof2019
-
-# VIT with full options
-jabberjay audio.wav -m VIT -d ASVspoof5 -vis MelSpectrogram
-
-# Self-contained audio classifiers (no dataset or visualisation required)
-jabberjay audio.wav -m Wav2Vec2
-jabberjay audio.wav -m HuBERT
-jabberjay audio.wav -m WavLM
-
-# Verbose output
-jabberjay audio.wav -v
-```
-
-### Python API
-
-All public names are importable directly from the top-level package:
-
-```python
-from Jabberjay import Jabberjay, DetectionResult, Model, Dataset, Visualisation
-```
-
-#### Quickstart
-
-Pass a file path straight to `detect()` — no separate load step required:
+## Quickstart
 
 ```python
 from Jabberjay import Jabberjay
@@ -108,10 +47,102 @@ from Jabberjay import Jabberjay
 jj = Jabberjay()
 result = jj.detect("audio.wav")
 
-print(result)           # Bonafide ✔️ (92.3% confidence, model=VIT)
-print(result.label)     # "Bonafide"
+print(result)              # Bonafide ✔️ (94.1% confidence, model=VIT)
+print(result.label)        # "Bonafide"
 print(result.is_bonafide)  # True
-print(result.confidence)   # 0.923
+print(result.confidence)   # 0.941
+```
+
+---
+
+## Models
+
+### Vision Transformer (ViT)
+
+| **Model**                                                                                                   | **Dataset**   | **Visualisation** |
+|-------------------------------------------------------------------------------------------------------------|---------------|-------------------|
+| [MattyB95/VIT-ASVspoof2019-ConstantQ-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof2019-ConstantQ-Synthetic-Voice-Detection)        | ASVspoof2019  | ConstantQ         |
+| [MattyB95/VIT-ASVspoof2019-Mel_Spectrogram-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof2019-Mel_Spectrogram-Synthetic-Voice-Detection)  | ASVspoof2019  | MelSpectrogram    |
+| [MattyB95/VIT-ASVspoof2019-MFCC-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof2019-MFCC-Synthetic-Voice-Detection)             | ASVspoof2019  | MFCC              |
+| [MattyB95/VIT-ASVspoof5-ConstantQ-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof5-ConstantQ-Synthetic-Voice-Detection)           | ASVspoof5     | ConstantQ         |
+| [MattyB95/VIT-ASVspoof5-Mel_Spectrogram-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof5-Mel_Spectrogram-Synthetic-Voice-Detection)     | ASVspoof5     | MelSpectrogram    |
+| [MattyB95/VIT-ASVspoof5-MFCC-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof5-MFCC-Synthetic-Voice-Detection)                | ASVspoof5     | MFCC              |
+| [MattyB95/VIT-VoxCelebSpoof-ConstantQ-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-VoxCelebSpoof-ConstantQ-Synthetic-Voice-Detection)       | VoxCelebSpoof | ConstantQ         |
+| [MattyB95/VIT-VoxCelebSpoof-Mel_Spectrogram-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-VoxCelebSpoof-Mel_Spectrogram-Synthetic-Voice-Detection) | VoxCelebSpoof | MelSpectrogram    |
+| [MattyB95/VIT-VoxCelebSpoof-MFCC-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-VoxCelebSpoof-MFCC-Synthetic-Voice-Detection)            | VoxCelebSpoof | MFCC              |
+
+### Audio Spectrogram Transformer (AST)
+
+| **Model**                                                                                   | **Dataset**   |
+|---------------------------------------------------------------------------------------------|---------------|
+| [MattyB95/AST-ASVspoof2019-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/AST-ASVspoof2019-Synthetic-Voice-Detection)  | ASVspoof2019  |
+| [MattyB95/AST-ASVspoof5-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/AST-ASVspoof5-Synthetic-Voice-Detection)     | ASVspoof5     |
+| [MattyB95/AST-VoxCelebSpoof-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/AST-VoxCelebSpoof-Synthetic-Voice-Detection) | VoxCelebSpoof |
+
+### Wav2Vec2
+
+| **Model**                                                                                                    | **Dataset**  |
+|--------------------------------------------------------------------------------------------------------------|--------------|
+| [Gustking/wav2vec2-large-xlsr-deepfake-audio-classification](https://huggingface.co/Gustking/wav2vec2-large-xlsr-deepfake-audio-classification) | ASVspoof2019 |
+
+### HuBERT
+
+| **Model**                                                                                                    | **Dataset**  |
+|--------------------------------------------------------------------------------------------------------------|--------------|
+| [abhishtagatya/hubert-base-960h-itw-deepfake](https://huggingface.co/abhishtagatya/hubert-base-960h-itw-deepfake) | In-The-Wild  |
+
+### WavLM
+
+| **Model**                                                                                                    | **Dataset**  |
+|--------------------------------------------------------------------------------------------------------------|--------------|
+| [DavidCombei/wavLM-base-Deepfake_V2](https://huggingface.co/DavidCombei/wavLM-base-Deepfake_V2) | Mixed        |
+
+### Other
+
+| **Model** | **Paper** | **Codebase** |
+|-----------|-----------|--------------|
+| Classical | — | Built-in KNN baseline |
+| RawNet2   | [Tak et al., ICASSP 2021](https://doi.org/10.1109/ICASSP39728.2021.9414234) | [rawnet2-antispoofing](https://github.com/eurecom-asp/rawnet2-antispoofing) |
+
+---
+
+## Usage
+
+### Command Line Interface
+
+```
+usage: jabberjay [-h] [-m {AST,Classical,HuBERT,RawNet2,VIT,Wav2Vec2,WavLM}]
+                 [-d {ASVspoof2019,ASVspoof5,VoxCelebSpoof}]
+                 [-vis {ConstantQ,MelSpectrogram,MFCC}] [-v]
+                 audio
+```
+
+```bash
+# Quickstart — VIT with ConstantQ on VoxCelebSpoof (defaults)
+jabberjay audio.wav
+
+# Self-contained models (no dataset or visualisation required)
+jabberjay audio.wav -m Wav2Vec2
+jabberjay audio.wav -m HuBERT
+jabberjay audio.wav -m WavLM
+jabberjay audio.wav -m RawNet2
+
+# AST with a specific dataset
+jabberjay audio.wav -m AST -d ASVspoof2019
+
+# VIT with full options
+jabberjay audio.wav -m VIT -d ASVspoof5 -vis MelSpectrogram
+
+# Verbose output
+jabberjay audio.wav -v
+```
+
+### Python API
+
+All public names are importable from the top-level package:
+
+```python
+from Jabberjay import Jabberjay, DetectionResult, Model, Dataset, Visualisation
 ```
 
 #### Choosing a model
@@ -119,19 +150,28 @@ print(result.confidence)   # 0.923
 String names and enum values are both accepted:
 
 ```python
-# Using strings
-result = jj.detect("audio.wav", model="Classical")
-result = jj.detect("audio.wav", model="RawNet2")
+jj = Jabberjay()
+
+# Self-contained models — no extra arguments needed
 result = jj.detect("audio.wav", model="Wav2Vec2")
 result = jj.detect("audio.wav", model="HuBERT")
 result = jj.detect("audio.wav", model="WavLM")
+result = jj.detect("audio.wav", model="RawNet2")
+result = jj.detect("audio.wav", model="Classical")
+
+# AST — requires a dataset
 result = jj.detect("audio.wav", model="AST", dataset="VoxCelebSpoof")
+
+# VIT — requires a dataset and a visualisation
 result = jj.detect("audio.wav", model="VIT", dataset="ASVspoof5", visualisation="MFCC")
 
-# Using enums (identical behaviour)
-from Jabberjay import Model, Dataset, Visualisation
-
-result = jj.detect("audio.wav", model=Model.VIT, dataset=Dataset.ASVspoof5, visualisation=Visualisation.MFCC)
+# Enums give IDE autocomplete and catch typos at import time
+result = jj.detect(
+    "audio.wav",
+    model=Model.VIT,
+    dataset=Dataset.ASVspoof5,
+    visualisation=Visualisation.MFCC,
+)
 ```
 
 #### DetectionResult
@@ -144,17 +184,15 @@ Every call to `detect()` returns a `DetectionResult` regardless of the model use
 | `is_bonafide` | `bool` | `True` if the audio is classified as genuine |
 | `confidence` | `float` | Confidence score for the top prediction (0.0–1.0) |
 | `model` | `Model` | The model that produced this result |
-| `scores` | `list[dict] \| None` | Full label/score breakdown for VIT and AST models; `None` for Classical and RawNet2 |
+| `scores` | `list[dict] \| None` | Full label/score breakdown for VIT, AST, Wav2Vec2, HuBERT, WavLM; `None` for Classical and RawNet2 |
 
 ```python
-result = jj.detect("audio.wav", model="VIT", dataset="VoxCelebSpoof", visualisation="ConstantQ")
-
 if result.is_bonafide:
     print(f"Genuine voice detected with {result.confidence:.1%} confidence")
 else:
     print(f"Synthetic voice detected with {result.confidence:.1%} confidence")
 
-# Full scores available for VIT and AST
+# Full per-label scores
 if result.scores:
     for entry in result.scores:
         print(f"  {entry['label']}: {entry['score']:.3f}")
@@ -167,53 +205,72 @@ Use `load()` when running multiple models on the same clip to avoid re-reading t
 ```python
 audio = jj.load("audio.wav")  # returns (samples, sample_rate)
 
-result_classical = jj.detect(audio, model="Classical")
-result_rawnet2   = jj.detect(audio, model="RawNet2")
-result_vit       = jj.detect(audio, model="VIT", dataset="VoxCelebSpoof", visualisation="ConstantQ")
+results = [
+    jj.detect(audio, model="Wav2Vec2"),
+    jj.detect(audio, model="HuBERT"),
+    jj.detect(audio, model="VIT", dataset="VoxCelebSpoof", visualisation="ConstantQ"),
+]
 ```
 
 #### Discovering available options
 
 ```python
-models       = jj.list_models()        # prints and returns list[Model]
-datasets     = jj.list_datasets()      # prints and returns list[Dataset]
-visualisations = jj.list_visualisations()  # prints and returns list[Visualisation]
+jj.list_models()         # prints and returns list[Model]
+jj.list_datasets()       # prints and returns list[Dataset]
+jj.list_visualisations() # prints and returns list[Visualisation]
 ```
+
+---
+
+## Examples
+
+The `examples/` directory contains focused, runnable scripts:
+
+| Script | What it shows |
+|---|---|
+| [`quickstart.py`](examples/quickstart.py) | Minimum viable usage |
+| [`choosing_a_model.py`](examples/choosing_a_model.py) | Every model family, string and enum APIs |
+| [`preloading_audio.py`](examples/preloading_audio.py) | Efficient multi-model runs with `jj.load()` |
+| [`exploring_results.py`](examples/exploring_results.py) | All `DetectionResult` fields and score breakdown |
+| [`run_all.py`](examples/run_all.py) | Exhaustive sweep across every model combination |
+
+```bash
+just example                           # run quickstart
+just run-example preloading_audio      # run a specific example
+just run-all                           # full sweep (slow — downloads all models)
+```
+
+---
 
 ## Developer Setup
 
+Requires [uv](https://docs.astral.sh/uv/) and [just](https://just.systems/).
+
 ```bash
-# Install dependencies (requires uv)
-just install
-
-# Run tests
-just test
-
-# Lint, format check, and type check
-just check
-
-# Auto-fix lint issues and format
-just fix
+git clone https://github.com/MattyB95/Jabberjay.git
+cd Jabberjay
+just install   # install all dependencies including dev tools
 ```
+
+| Command | Description |
+|---|---|
+| `just test` | Run the test suite |
+| `just check` | Lint, format check, and type check |
+| `just fix` | Auto-fix lint issues and reformat |
+| `just detect audio.wav` | Run the CLI against a file |
+| `just build` | Build the package |
 
 See `just --list` for all available commands.
 
-## Contributing to Jabberjay
+---
 
-🌟 We value your contributions!
+## Contributing
 
-Whether you're fixing a bug, improving the documentation,
-or proposing a new feature, we're delighted to have you as part of the Jabberjay community.
-Your efforts help us make Synthetic Voice Detection even better for everyone.
+Contributions are welcome — especially new models! See [CONTRIBUTING.md](CONTRIBUTING.md) for a full guide.
 
-We especially welcome and encourage additional models for speech deepfake (bonafide vs. spoof) detection,
-with the aim of making Jabberjay the one-stop shop for state-of-the-art models in the field.
+The quickest way to make an impact is to open a [model request issue](https://github.com/MattyB95/Jabberjay/issues/new?template=model_request.yml) with a HuggingFace link and licence details.
 
-We are truly grateful for your interest in improving Jabberjay.
-Your contributions, no matter how big or small, make our open-source community a vibrant place to learn, inspire,
-and create.
-
-Let's make Jabberjay the best tool for Synthetic Voice Detection together! 🚀
+---
 
 ## Acknowledgement
 

@@ -1,0 +1,88 @@
+name: Model Request
+description: Suggest a new synthetic voice detection model for Jabberjay to support
+labels: ["model-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        New models are the highest-impact contribution to Jabberjay. Please provide as much detail as possible — the more complete this form, the faster we can evaluate and integrate the model.
+
+  - type: input
+    id: model_name
+    attributes:
+      label: Model name / HuggingFace ID
+      description: The HuggingFace model ID, e.g. `author/model-name`, or a descriptive name if not on HuggingFace.
+      placeholder: "author/model-name-on-huggingface"
+    validations:
+      required: true
+
+  - type: input
+    id: hf_link
+    attributes:
+      label: HuggingFace / repository link
+      placeholder: "https://huggingface.co/author/model-name"
+    validations:
+      required: true
+
+  - type: input
+    id: paper
+    attributes:
+      label: Paper (if available)
+      placeholder: "https://arxiv.org/abs/..."
+
+  - type: input
+    id: licence
+    attributes:
+      label: Licence
+      description: Jabberjay can only include Apache 2.0 or MIT licensed models.
+      placeholder: "Apache 2.0 / MIT / other"
+    validations:
+      required: true
+
+  - type: input
+    id: dataset
+    attributes:
+      label: Training dataset
+      placeholder: "ASVspoof2019 / ASVspoof5 / VoxCelebSpoof / In-The-Wild / other"
+    validations:
+      required: true
+
+  - type: input
+    id: architecture
+    attributes:
+      label: Model architecture
+      placeholder: "Wav2Vec2 / HuBERT / WavLM / ECAPA-TDNN / other"
+
+  - type: input
+    id: performance
+    attributes:
+      label: Reported performance
+      description: EER, accuracy, or other metrics from the paper or model card.
+      placeholder: "EER 2.3% on ASVspoof2019 LA eval set"
+
+  - type: dropdown
+    id: pipeline_compatible
+    attributes:
+      label: Is it compatible with transformers pipeline("audio-classification")?
+      description: This is the easiest integration path. Check the model card — if it has a pipeline_tag of audio-classification it likely is.
+      options:
+        - "Yes"
+        - "No"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Why should this model be included?
+      description: What makes it a valuable addition — unique dataset, strong performance, novel architecture?
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: willing_to_pr
+    attributes:
+      label: Willing to submit a PR?
+      options:
+        - label: "Yes, I'd like to implement this myself following the contributor guide"

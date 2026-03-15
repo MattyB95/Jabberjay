@@ -13,14 +13,38 @@ authors = [
     { name = "Matthew Boakes", email = "mboakes@turing.ac.uk" },
 ]
 keywords = [
-    "Synthetic",
-    "Voice",
-    "Detection",
+    "synthetic voice detection",
+    "deepfake detection",
+    "anti-spoofing",
+    "audio classification",
+    "speech",
+    "ASVspoof",
+    "bonafide",
+    "spoof",
+    "transformers",
+    "ViT",
+    "HuBERT",
+    "Wav2Vec2",
+    "WavLM",
+    "RawNet2",
+    "machine learning",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Multimedia :: Sound/Audio :: Analysis",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+    "Topic :: Security",
 ]
 dependencies = [
     "huggingface-hub",
@@ -40,6 +64,8 @@ dependencies = [
 [project.urls]
 "Homepage" = "https://github.com/MattyB95/Jabberjay"
 "Bug Tracker" = "https://github.com/MattyB95/Jabberjay/issues"
+"Changelog" = "https://github.com/MattyB95/Jabberjay/blob/main/CHANGELOG.md"
+"Source" = "https://github.com/MattyB95/Jabberjay"
 
 [project.scripts]
 jabberjay = "Jabberjay.jabberjay:main"
@@ -55,7 +81,7 @@ dev = [
 
 [tool.black]
 line-length = 88
-target-version = ["py310"]
+target-version = ["py310", "py311", "py312", "py313", "py314"]
 
 [tool.ruff]
 line-length = 88
@@ -65,7 +91,7 @@ line-length = 88
 select = ["E4", "E7", "E9", "F", "I"]
 
 [tool.ty.environment]
-python-version = "3.10"
+python-version = "3.14"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/Jabberjay"]
