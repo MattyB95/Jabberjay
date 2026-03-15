@@ -139,6 +139,20 @@ class TestDetectValidation:
             self.jj.detect(empty, model=Model.Classical)
 
 
+class TestDetectPathInput:
+    def setup_method(self):
+        self.jj = Jabberjay()
+        self.audio_path = RES_DIR / "bonafide" / "bonafide.flac"
+
+    def test_detect_accepts_str_path(self):
+        result = self.jj.detect(str(self.audio_path), model=Model.Classical)
+        assert isinstance(result, DetectionResult)
+
+    def test_detect_accepts_path_object(self):
+        result = self.jj.detect(self.audio_path, model=Model.Classical)
+        assert isinstance(result, DetectionResult)
+
+
 class TestStringCoercion:
     def setup_method(self):
         self.jj = Jabberjay()

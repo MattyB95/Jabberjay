@@ -98,6 +98,11 @@ class Jabberjay:
         Raises:
             ValueError: If required arguments are missing, or audio is empty.
             KeyError: If an unrecognised string is passed for model, dataset, or visualisation.
+
+        Note:
+            VIT requires both ``visualisation`` and ``dataset``.
+            AST requires ``dataset``.
+            All other models (Classical, RawNet2, HuBERT, Wav2Vec2, WavLM) need neither.
         """
         # Coerce strings to enums
         if isinstance(model, str):

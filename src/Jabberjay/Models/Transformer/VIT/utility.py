@@ -1,6 +1,7 @@
 import io
 
 import librosa
+import librosa.display
 from loguru import logger
 from matplotlib import pyplot as plt
 from numpy import ndarray
