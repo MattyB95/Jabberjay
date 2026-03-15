@@ -6,7 +6,7 @@ from Jabberjay.Models.Classical.feature_extraction import get_features
 from Jabberjay.Utilities.hugging_face import download_pretrained_model
 
 
-def predict(audio: tuple[np.ndarray, float]) -> tuple[object, float]:
+def predict(audio: tuple[np.ndarray, float]) -> tuple[int, float]:
     repo_id = "MattyB95/Jabberjay_Classical_Machine_Learning_Models"
     filename = "KNeighborsClassifier.joblib"
     logger.info(f"Downloading model: {filename} from {repo_id}")

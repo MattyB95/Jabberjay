@@ -67,7 +67,12 @@ class Jabberjay:
         """Load an audio file and return (samples, sample_rate)."""
         path = str(path)
         logger.debug(f"Loading audio file: {path}")
-        y, sr = librosa.load(path)
+        try:
+            y, sr = librosa.load(path)
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Audio file not found: {path}")
+        except Exception as exc:
+            raise ValueError(f"Failed to load audio from '{path}': {exc}") from exc
         logger.info(f"Loaded {len(y) / sr:.2f}s of audio at {int(sr)}Hz")
         return y, sr
 
@@ -89,6 +94,10 @@ class Jabberjay:
 
         Returns:
             DetectionResult with label, confidence, and full scores where available.
+
+        Raises:
+            ValueError: If required arguments are missing, or audio is empty.
+            KeyError: If an unrecognised string is passed for model, dataset, or visualisation.
         """
         # Coerce strings to enums
         if isinstance(model, str):
@@ -102,12 +111,15 @@ class Jabberjay:
         if isinstance(audio, (str, Path)):
             audio = self.load(audio)
 
+        y, sr = audio
+        if len(y) == 0:
+            raise ValueError("Audio array is empty — nothing to classify.")
+
         logger.info(
             f"Running detection — model={model.value}, "
             f"dataset={dataset.value if dataset else None}, "
             f"visualisation={visualisation.value if visualisation else None}"
         )
-        y, sr = audio
         match model:
             case Model.AST:
                 if dataset is None:
@@ -134,6 +146,20 @@ class Jabberjay:
             case _:
                 raise ValueError(f"Unknown model: {model}")
 
+    @staticmethod
+    def _result_from_scores(
+        scores: list[PredictionScore], model: Model
+    ) -> DetectionResult:
+        """Build a DetectionResult from a sorted list of PredictionScores."""
+        top = scores[0]
+        return DetectionResult(
+            label=top["label"],
+            is_bonafide=top["label"] == "Bonafide",
+            confidence=top["score"],
+            model=model,
+            scores=scores,
+        )
+
     def _ast_handler(
         self, y: np.ndarray, sr: float, dataset: Dataset
     ) -> DetectionResult:
@@ -141,14 +167,7 @@ class Jabberjay:
 
         scores = AST.predict(y=y, sr=sr, dataset=dataset)
         logger.debug(f"AST predictions: {scores}")
-        top = scores[0]
-        return DetectionResult(
-            label=top["label"],
-            is_bonafide=top["label"] == "Bonafide",
-            confidence=top["score"],
-            model=Model.AST,
-            scores=scores,
-        )
+        return self._result_from_scores(scores, Model.AST)
 
     def _classical_handler(self, audio: Audio) -> DetectionResult:
         import Jabberjay.Models.Classical.run as Classical
@@ -184,61 +203,39 @@ class Jabberjay:
         visualisation: Visualisation,
         dataset: Dataset,
     ) -> DetectionResult:
-        vit_module = importlib.import_module(
-            f"Jabberjay.Models.Transformer.VIT.{visualisation.value}.run"
-        )
+        try:
+            vit_module = importlib.import_module(
+                f"Jabberjay.Models.Transformer.VIT.{visualisation.value}.run"
+            )
+        except ModuleNotFoundError as exc:
+            raise ValueError(
+                f"No VIT module found for visualisation '{visualisation.value}'. "
+                f"Expected: Jabberjay.Models.Transformer.VIT.{visualisation.value}.run"
+            ) from exc
         scores = vit_module.predict(audio=audio, dataset=dataset)
         logger.debug(f"VIT predictions: {scores}")
-        top = scores[0]
-        return DetectionResult(
-            label=top["label"],
-            is_bonafide=top["label"] == "Bonafide",
-            confidence=top["score"],
-            model=Model.VIT,
-            scores=scores,
-        )
+        return self._result_from_scores(scores, Model.VIT)
 
     def _wav2vec2_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
         import Jabberjay.Models.Wav2Vec2.run as Wav2Vec2
 
         scores = Wav2Vec2.predict(y=y, sr=sr)
         logger.debug(f"Wav2Vec2 predictions: {scores}")
-        top = scores[0]
-        return DetectionResult(
-            label=top["label"],
-            is_bonafide=top["label"] == "Bonafide",
-            confidence=top["score"],
-            model=Model.Wav2Vec2,
-            scores=scores,
-        )
+        return self._result_from_scores(scores, Model.Wav2Vec2)
 
     def _hubert_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
         import Jabberjay.Models.HuBERT.run as HuBERT
 
         scores = HuBERT.predict(y=y, sr=sr)
         logger.debug(f"HuBERT predictions: {scores}")
-        top = scores[0]
-        return DetectionResult(
-            label=top["label"],
-            is_bonafide=top["label"] == "Bonafide",
-            confidence=top["score"],
-            model=Model.HuBERT,
-            scores=scores,
-        )
+        return self._result_from_scores(scores, Model.HuBERT)
 
     def _wavlm_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
         import Jabberjay.Models.WavLM.run as WavLM
 
         scores = WavLM.predict(y=y, sr=sr)
         logger.debug(f"WavLM predictions: {scores}")
-        top = scores[0]
-        return DetectionResult(
-            label=top["label"],
-            is_bonafide=top["label"] == "Bonafide",
-            confidence=top["score"],
-            model=Model.WavLM,
-            scores=scores,
-        )
+        return self._result_from_scores(scores, Model.WavLM)
 
 
 def main():

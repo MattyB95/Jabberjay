@@ -9,13 +9,12 @@ from torch import Tensor
 from Jabberjay.Models.RawNet2.model import RawNet
 from Jabberjay.Utilities.hugging_face import download_pretrained_model
 
-abspath = os.path.abspath(__file__)
-dname = os.path.dirname(abspath)
-os.chdir(dname)
+_DIR = os.path.dirname(os.path.abspath(__file__))
+_CONFIG_PATH = os.path.join(_DIR, "model_config_RawNet.yaml")
 
 
 def predict(y: np.ndarray) -> tuple[Tensor, float]:
-    with open("./model_config_RawNet.yaml", "r") as f_yaml:
+    with open(_CONFIG_PATH) as f_yaml:
         parser = yaml.safe_load(f_yaml)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     logger.info(f"Using device: {device}")

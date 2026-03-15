@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from Jabberjay import Dataset, DetectionResult, Jabberjay, Model, Visualisation
+from Jabberjay.Utilities.label_normalizer import normalize_label
 
 RES_DIR = Path(__file__).parent.parent / "res"
 
@@ -21,6 +22,11 @@ class TestLoad:
         y, sr = jj.load(str(RES_DIR / "spoof" / "spoof.flac"))
         assert isinstance(y, np.ndarray)
         assert len(y) > 0
+
+    def test_load_missing_file_raises(self):
+        jj = Jabberjay()
+        with pytest.raises(FileNotFoundError, match="not found"):
+            jj.load("nonexistent_file.wav")
 
 
 class TestEnums:
@@ -127,6 +133,11 @@ class TestDetectValidation:
         with pytest.raises(ValueError, match="Dataset"):
             self.jj.detect(self.audio, model=Model.AST, dataset=None)
 
+    def test_empty_audio_raises(self):
+        empty = (np.array([], dtype=np.float32), 16000.0)
+        with pytest.raises(ValueError, match="empty"):
+            self.jj.detect(empty, model=Model.Classical)
+
 
 class TestStringCoercion:
     def setup_method(self):
@@ -153,3 +164,46 @@ class TestStringCoercion:
                 visualisation="NotAVis",
                 dataset=Dataset.VoxCelebSpoof,
             )
+
+
+class TestLabelNormalizer:
+    @pytest.mark.parametrize(
+        "raw, expected",
+        [
+            ("real", "Bonafide"),
+            ("REAL", "Bonafide"),
+            ("bonafide", "Bonafide"),
+            ("Bonafide", "Bonafide"),
+            ("genuine", "Bonafide"),
+            ("human", "Bonafide"),
+            ("bona-fide", "Bonafide"),
+            ("label_0", "Bonafide"),
+            ("LABEL_0", "Bonafide"),
+            ("0", "Bonafide"),
+            ("fake", "Spoof"),
+            ("FAKE", "Spoof"),
+            ("spoof", "Spoof"),
+            ("Spoof", "Spoof"),
+            ("synthetic", "Spoof"),
+            ("deepfake", "Spoof"),
+            ("label_1", "Spoof"),
+            ("LABEL_1", "Spoof"),
+            ("1", "Spoof"),
+        ],
+    )
+    def test_known_labels(self, raw, expected):
+        assert normalize_label(raw) == expected
+
+    def test_unknown_label_raises(self):
+        with pytest.raises(ValueError, match="Cannot normalise"):
+            normalize_label("unknown_label_xyz")
+
+    def test_digit_one_no_false_positive(self):
+        # "1" should only match exactly — not any string containing "1"
+        with pytest.raises(ValueError):
+            normalize_label("Speech_Quality_1_Normal")
+
+    def test_digit_zero_no_false_positive(self):
+        # "0" should only match exactly — not strings like "label_0_variant"
+        with pytest.raises(ValueError):
+            normalize_label("label_0_variant")

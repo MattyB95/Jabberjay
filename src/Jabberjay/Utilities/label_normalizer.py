@@ -1,21 +1,45 @@
 """Normalise external model labels to the canonical 'Bonafide' / 'Spoof' labels."""
 
-_BONAFIDE_KEYWORDS = {"bonafide", "real", "genuine", "human", "bona", "label_0", "0"}
-_SPOOF_KEYWORDS = {"spoof", "fake", "synthetic", "deepfake", "label_1", "1"}
+from Jabberjay.Utilities.types import PredictionScore
+
+# Exact-match only — short strings that would cause false positives in substring search
+_BONAFIDE_EXACT = {"0", "label_0"}
+_SPOOF_EXACT = {"1", "label_1"}
+
+# Safe for substring search — long enough to avoid accidental collisions
+_BONAFIDE_SUBSTR = {"bonafide", "real", "genuine", "human", "bona"}
+_SPOOF_SUBSTR = {"spoof", "fake", "synthetic", "deepfake"}
 
 
 def normalize_label(raw_label: str) -> str:
     """Return 'Bonafide' or 'Spoof' for any external model label string."""
     lower = raw_label.lower().replace("-", "_").replace(" ", "_")
-    if lower in _BONAFIDE_KEYWORDS:
+
+    # Exact match first (handles numeric and label_N conventions)
+    if lower in _BONAFIDE_EXACT:
         return "Bonafide"
-    if lower in _SPOOF_KEYWORDS:
+    if lower in _SPOOF_EXACT:
         return "Spoof"
-    # Fallback: substring search for common terms
-    for kw in _BONAFIDE_KEYWORDS:
+
+    # Substring search only for long, unambiguous keywords
+    for kw in _BONAFIDE_SUBSTR:
         if kw in lower:
             return "Bonafide"
-    for kw in _SPOOF_KEYWORDS:
+    for kw in _SPOOF_SUBSTR:
         if kw in lower:
             return "Spoof"
+
     raise ValueError(f"Cannot normalise label: {raw_label!r}")
+
+
+def normalize_pipeline_scores(
+    raw_scores: list[dict[str, object]],
+) -> list[PredictionScore]:
+    """Convert raw transformers pipeline output to normalised PredictionScores."""
+    return [
+        PredictionScore(
+            label=normalize_label(str(s["label"])),
+            score=float(str(s["score"])),
+        )
+        for s in raw_scores
+    ]
