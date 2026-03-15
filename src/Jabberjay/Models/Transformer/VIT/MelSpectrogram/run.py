@@ -1,7 +1,6 @@
-import logging
-
 import librosa
 import numpy as np
+from loguru import logger
 from transformers import pipeline
 
 from Jabberjay.Models.Transformer.VIT.utility import get_image
@@ -13,8 +12,9 @@ def predict(
 ) -> list[dict[str, float]]:
     y, sr = audio
     model = f"MattyB95/VIT-{dataset.value}-Mel_Spectrogram-Synthetic-Voice-Detection"
-    logging.info(f"Using Model: {model}")
+    logger.info(f"Loading VIT model: {model}")
     pipe = pipeline(task="image-classification", model=model)
+    logger.debug("Computing Mel spectrogram")
     S = librosa.feature.melspectrogram(y=y, sr=sr)
     S_db = librosa.power_to_db(S=S, ref=np.max)
     image = get_image(data=S_db, sr=sr)

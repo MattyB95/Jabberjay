@@ -1,11 +1,15 @@
 import argparse
 import importlib
-import logging
+import sys
 
 import librosa
 import numpy as np
+from loguru import logger
 
 from Jabberjay.Utilities.enum_handler import Dataset, EnumAction, Model, Visualisation
+
+# Silence loguru by default — callers and the CLI configure output
+logger.disable("Jabberjay")
 
 
 class Jabberjay:
@@ -22,7 +26,9 @@ class Jabberjay:
         print("Visualisations: ", *Visualisation)
 
     def load(self, filename: str) -> tuple[np.ndarray, float]:
+        logger.debug(f"Loading audio file: {filename}")
         y, sr = librosa.load(filename)
+        logger.info(f"Loaded {len(y) / sr:.2f}s of audio at {int(sr)}Hz")
         return y, sr
 
     def detect(
@@ -32,6 +38,11 @@ class Jabberjay:
         visualisation: Visualisation | None = None,
         dataset: Dataset | None = None,
     ):
+        logger.info(
+            f"Running detection — model={model.value}, "
+            f"dataset={dataset.value if dataset else None}, "
+            f"visualisation={visualisation.value if visualisation else None}"
+        )
         y, sr = audio
         match model:
             case Model.AST:
@@ -53,7 +64,7 @@ class Jabberjay:
         import Jabberjay.Models.Transformer.AST.run as AST
 
         predict = AST.predict(y=y, sr=sr, dataset=dataset)
-        logging.info(predict)
+        logger.debug(f"AST predictions: {predict}")
         print("Bonafide ✔️" if predict[0].get("label") == "Bonafide" else "Spoof ❌")
         return predict
 
@@ -61,8 +72,8 @@ class Jabberjay:
         import Jabberjay.Models.Classical.run as Classical
 
         predict = Classical.predict(audio=audio)
-        logging.info(predict)
         result = bool(predict[0])
+        logger.debug(f"Classical prediction: {result}")
         print("Bonafide ✔️" if result else "Spoof ❌")
         return result
 
@@ -71,7 +82,7 @@ class Jabberjay:
 
         predict = RawNet2.predict(y=y)
         result = bool(predict.item())
-        logging.info(result)
+        logger.debug(f"RawNet2 prediction: {result}")
         print("Bonafide ✔️" if result else "Spoof ❌")
         return result
 
@@ -89,7 +100,7 @@ class Jabberjay:
             f"Jabberjay.Models.Transformer.VIT.{visualisation.value}.run"
         )
         predict = vit_module.predict(audio=audio, dataset=dataset)
-        logging.info(predict)
+        logger.debug(f"VIT predictions: {predict}")
         print("Bonafide ✔️" if predict[0].get("label") == "Bonafide" else "Spoof ❌")
         return predict
 
@@ -122,17 +133,20 @@ def main():
     parser.add_argument("-v", "--verbose", action="store_true")
 
     args = parser.parse_args()
-    if args.verbose:
-        logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
-        logging.info("Verbosity Turned On!")
-    else:
-        logging.basicConfig(format="%(levelname)s: %(message)s")
 
-    logging.info(f"Filename: {args.audio}")
-    logging.info(f"Model: {args.model}")
-    logging.info(f"Dataset: {args.dataset}")
-    logging.info(f"Visualisation: {args.visualisation}")
-    logging.info(f"Verbose: {args.verbose}")
+    # Configure loguru for CLI use
+    logger.enable("Jabberjay")
+    logger.remove()
+    if args.verbose:
+        logger.add(sys.stderr, format="{level}: {message}", level="DEBUG")
+        logger.info("Verbose logging enabled")
+    else:
+        logger.add(sys.stderr, format="{level}: {message}", level="WARNING")
+
+    logger.debug(f"audio={args.audio}")
+    logger.debug(f"model={args.model}")
+    logger.debug(f"dataset={args.dataset}")
+    logger.debug(f"visualisation={args.visualisation}")
 
     jabberjay = Jabberjay()
     jabberjay.detect(

@@ -25,6 +25,7 @@ classifiers = [
 dependencies = [
     "huggingface-hub",
     "joblib",
+    "loguru",
     "librosa",
     "matplotlib",
     "numpy",

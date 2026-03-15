@@ -1,7 +1,6 @@
-import logging
-
 import librosa
 import numpy as np
+from loguru import logger
 from transformers import pipeline
 
 from Jabberjay.Models.Transformer.VIT.utility import get_image
@@ -13,8 +12,9 @@ def predict(
 ) -> list[dict[str, float]]:
     y, sr = audio
     model = f"MattyB95/VIT-{dataset.value}-MFCC-Synthetic-Voice-Detection"
-    logging.info(f"Using Model: {model}")
+    logger.info(f"Loading VIT model: {model}")
     pipe = pipeline("image-classification", model=model)
+    logger.debug("Computing MFCC")
     M = librosa.feature.mfcc(y=y, sr=sr)
     image = get_image(data=M, sr=sr)
     return pipe(image)
