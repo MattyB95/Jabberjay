@@ -115,6 +115,8 @@ class Jabberjay:
                 return self._ast_handler(y=y, sr=sr, dataset=dataset)
             case Model.Classical:
                 return self._classical_handler(audio=audio)
+            case Model.HuBERT:
+                return self._hubert_handler(y=y, sr=sr)
             case Model.RawNet2:
                 return self._rawnet2_handler(y=y)
             case Model.VIT:
@@ -125,6 +127,10 @@ class Jabberjay:
                 return self._vit_handler(
                     audio=audio, visualisation=visualisation, dataset=dataset
                 )
+            case Model.Wav2Vec2:
+                return self._wav2vec2_handler(y=y, sr=sr)
+            case Model.WavLM:
+                return self._wavlm_handler(y=y, sr=sr)
             case _:
                 raise ValueError(f"Unknown model: {model}")
 
@@ -189,6 +195,48 @@ class Jabberjay:
             is_bonafide=top["label"] == "Bonafide",
             confidence=top["score"],
             model=Model.VIT,
+            scores=scores,
+        )
+
+    def _wav2vec2_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
+        import Jabberjay.Models.Wav2Vec2.run as Wav2Vec2
+
+        scores = Wav2Vec2.predict(y=y, sr=sr)
+        logger.debug(f"Wav2Vec2 predictions: {scores}")
+        top = scores[0]
+        return DetectionResult(
+            label=top["label"],
+            is_bonafide=top["label"] == "Bonafide",
+            confidence=top["score"],
+            model=Model.Wav2Vec2,
+            scores=scores,
+        )
+
+    def _hubert_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
+        import Jabberjay.Models.HuBERT.run as HuBERT
+
+        scores = HuBERT.predict(y=y, sr=sr)
+        logger.debug(f"HuBERT predictions: {scores}")
+        top = scores[0]
+        return DetectionResult(
+            label=top["label"],
+            is_bonafide=top["label"] == "Bonafide",
+            confidence=top["score"],
+            model=Model.HuBERT,
+            scores=scores,
+        )
+
+    def _wavlm_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
+        import Jabberjay.Models.WavLM.run as WavLM
+
+        scores = WavLM.predict(y=y, sr=sr)
+        logger.debug(f"WavLM predictions: {scores}")
+        top = scores[0]
+        return DetectionResult(
+            label=top["label"],
+            is_bonafide=top["label"] == "Bonafide",
+            confidence=top["score"],
+            model=Model.WavLM,
             scores=scores,
         )
 

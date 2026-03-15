@@ -25,7 +25,15 @@ class TestLoad:
 
 class TestEnums:
     def test_model_members(self):
-        assert {m.value for m in Model} == {"AST", "Classical", "RawNet2", "VIT"}
+        assert {m.value for m in Model} == {
+            "AST",
+            "Classical",
+            "HuBERT",
+            "RawNet2",
+            "VIT",
+            "Wav2Vec2",
+            "WavLM",
+        }
 
     def test_dataset_members(self):
         assert {d.value for d in Dataset} == {

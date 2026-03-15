@@ -5,8 +5,11 @@ from enum import Enum
 class Model(Enum):
     AST = "AST"
     Classical = "Classical"
+    HuBERT = "HuBERT"
     RawNet2 = "RawNet2"
     VIT = "VIT"
+    Wav2Vec2 = "Wav2Vec2"
+    WavLM = "WavLM"
 
 
 class Dataset(Enum):

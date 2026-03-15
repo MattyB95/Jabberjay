@@ -32,6 +32,24 @@ pip install jabberjay
 | MattyB95/AST-ASVspoof5-Synthetic-Voice-Detection     | AST       | ASVspoof5     | [Hugging Face](https://huggingface.co/MattyB95/AST-ASVspoof5-Synthetic-Voice-Detection)     |
 | MattyB95/AST-VoxCelebSpoof-Synthetic-Voice-Detection | AST       | VoxCelebSpoof | [Hugging Face](https://huggingface.co/MattyB95/AST-VoxCelebSpoof-Synthetic-Voice-Detection) |
 
+### Wav2Vec2
+
+| **Name**                                                              | **Model**              | **Dataset**    | **Model**                                                                                                    |
+|-----------------------------------------------------------------------|------------------------|----------------|--------------------------------------------------------------------------------------------------------------|
+| Gustking/wav2vec2-large-xlsr-deepfake-audio-classification            | Wav2Vec2-XLSR-300M     | ASVspoof2019   | [Hugging Face](https://huggingface.co/Gustking/wav2vec2-large-xlsr-deepfake-audio-classification)            |
+
+### HuBERT
+
+| **Name**                                                              | **Model**              | **Dataset**    | **Model**                                                                                                    |
+|-----------------------------------------------------------------------|------------------------|----------------|--------------------------------------------------------------------------------------------------------------|
+| abhishtagatya/hubert-base-960h-itw-deepfake                           | HuBERT-base            | In-The-Wild    | [Hugging Face](https://huggingface.co/abhishtagatya/hubert-base-960h-itw-deepfake)                           |
+
+### WavLM
+
+| **Name**                                                              | **Model**              | **Dataset**    | **Model**                                                                                                    |
+|-----------------------------------------------------------------------|------------------------|----------------|--------------------------------------------------------------------------------------------------------------|
+| DavidCombei/wavLM-base-Deepfake_V2                                    | WavLM-base             | Mixed          | [Hugging Face](https://huggingface.co/DavidCombei/wavLM-base-Deepfake_V2)                                   |
+
 ### Other
 
 | Name      | Paper                                                                                     | Codebase                                                                    | Model                                                                                          |
@@ -44,7 +62,7 @@ pip install jabberjay
 ### Command Line Interface
 
 ```
-usage: Jabberjay [-h] [-m {AST,Classical,RawNet2,VIT}]
+usage: Jabberjay [-h] [-m {AST,Classical,HuBERT,RawNet2,VIT,Wav2Vec2,WavLM}]
                  [-d {ASVspoof2019,ASVspoof5,VoxCelebSpoof}]
                  [-vis {ConstantQ,MelSpectrogram,MFCC}] [-v]
                  audio
@@ -62,6 +80,11 @@ jabberjay audio.wav -m AST -d ASVspoof2019
 
 # VIT with full options
 jabberjay audio.wav -m VIT -d ASVspoof5 -vis MelSpectrogram
+
+# Self-contained audio classifiers (no dataset or visualisation required)
+jabberjay audio.wav -m Wav2Vec2
+jabberjay audio.wav -m HuBERT
+jabberjay audio.wav -m WavLM
 
 # Verbose output
 jabberjay audio.wav -v
@@ -99,6 +122,9 @@ String names and enum values are both accepted:
 # Using strings
 result = jj.detect("audio.wav", model="Classical")
 result = jj.detect("audio.wav", model="RawNet2")
+result = jj.detect("audio.wav", model="Wav2Vec2")
+result = jj.detect("audio.wav", model="HuBERT")
+result = jj.detect("audio.wav", model="WavLM")
 result = jj.detect("audio.wav", model="AST", dataset="VoxCelebSpoof")
 result = jj.detect("audio.wav", model="VIT", dataset="ASVspoof5", visualisation="MFCC")
 
