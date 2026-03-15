@@ -63,6 +63,14 @@ clean:
 detect audio model="VIT" dataset="VoxCelebSpoof" vis="ConstantQ":
     uv run jabberjay {{ audio }} -m {{ model }} -d {{ dataset }} -vis {{ vis }}
 
-# Run the example script
+# Run the quickstart example (recommended first step)
 example:
-    uv run python examples/example.py
+    uv run python examples/quickstart.py
+
+# Run a specific example (usage: just run-example preloading_audio)
+run-example name:
+    uv run python examples/{{ name }}.py
+
+# Run the exhaustive model sweep (slow — downloads all models)
+run-all:
+    uv run python examples/run_all.py
