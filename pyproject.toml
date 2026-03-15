@@ -7,7 +7,7 @@ name = "Jabberjay"
 version = "0.0.4"
 description = "🦜 Synthetic Voice Detection"
 readme = "README.md"
-requires-python = ">=3.10,<3.12"
+requires-python = ">=3.10"
 license = "MIT"
 authors = [
     { name = "Matthew Boakes", email = "mboakes@turing.ac.uk" },
@@ -39,15 +39,15 @@ dependencies = [
 "Homepage" = "https://github.com/MattyB95/Jabberjay"
 "Bug Tracker" = "https://github.com/MattyB95/Jabberjay/issues"
 
-[project.optional-dependencies]
-dev = [
-    "build",
-    "pre-commit",
-    "twine",
-]
-
 [project.scripts]
 jabberjay = "Jabberjay.jabberjay:main"
+
+[dependency-groups]
+dev = [
+    "pre-commit",
+    "pytest",
+    "ruff",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/Jabberjay"]
