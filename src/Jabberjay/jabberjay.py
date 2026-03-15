@@ -150,7 +150,8 @@ class Jabberjay:
     def _result_from_scores(
         scores: list[PredictionScore], model: Model
     ) -> DetectionResult:
-        """Build a DetectionResult from a sorted list of PredictionScores."""
+        """Build a DetectionResult from a list of PredictionScores (sorted by score desc)."""
+        scores = sorted(scores, key=lambda s: s["score"], reverse=True)
         top = scores[0]
         return DetectionResult(
             label=top["label"],

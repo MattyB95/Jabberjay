@@ -35,6 +35,9 @@ cd Jabberjay
 # 2. Install all dependencies including dev tools
 just install
 
+# 3. Install pre-commit hooks (runs lint + format automatically on every commit)
+uv run pre-commit install
+
 # 3. Verify everything works
 just check   # lint + format check + type check
 just test    # run the test suite

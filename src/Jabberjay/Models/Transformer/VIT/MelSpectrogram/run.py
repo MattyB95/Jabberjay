@@ -7,6 +7,7 @@ from transformers import pipeline
 
 from Jabberjay.Models.Transformer.VIT.utility import get_image
 from Jabberjay.Utilities.enum_handler import Dataset
+from Jabberjay.Utilities.label_normalizer import normalize_pipeline_scores
 from Jabberjay.Utilities.types import PredictionScore
 
 
@@ -19,4 +20,5 @@ def predict(audio: tuple[np.ndarray, float], dataset: Dataset) -> list[Predictio
     S = librosa.feature.melspectrogram(y=y, sr=sr)
     S_db = librosa.power_to_db(S=S, ref=np.max)
     image = get_image(data=S_db, sr=sr)
-    return cast(list[PredictionScore], pipe(image))
+    raw = cast(list[dict[str, object]], pipe(image))
+    return normalize_pipeline_scores(raw)

@@ -38,5 +38,9 @@ class EnumAction(argparse.Action):
         self._enum = enum_type
 
     def __call__(self, parser, namespace, values, option_string=None):
-        value = self._enum[values]
+        try:
+            value = self._enum[values]
+        except KeyError:
+            choices = ", ".join(e.name for e in self._enum)
+            parser.error(f"invalid choice '{values}' — choose from: {choices}")
         setattr(namespace, self.dest, value)

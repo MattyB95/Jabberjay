@@ -7,7 +7,7 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## [Unreleased] — 0.0.5
+## [0.0.5] — Unreleased
 
 ### Added
 - **Wav2Vec2 model** — `Gustking/wav2vec2-large-xlsr-deepfake-audio-classification`
@@ -30,7 +30,29 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (`{version}.dev{run_number}`) to TestPyPI after CI passes
 - **Push to `main`** now automatically publishes the release version to PyPI
   after CI passes (previously required a manual GitHub release)
-- Test matrix extended to Python 3.10, 3.11, and 3.12
+- Test matrix extended to Python 3.10–3.14
+- Label normalisation now applied consistently across all transformer models
+  (AST, VIT, Wav2Vec2, HuBERT, WavLM) via shared `normalize_pipeline_scores()`
+- `_result_from_scores()` now sorts scores by confidence descending,
+  guaranteeing the top prediction is always the highest-confidence label
+- All package sub-directories now include `__init__.py` for reliable imports
+
+### Fixed
+- `RawNet2/run.py`: removed `os.chdir()` at module level — was mutating the
+  working directory for the entire process
+- `label_normalizer`: fixed unsafe substring matching for short digit strings
+  (`"0"`, `"1"`) that could produce false-positive label mappings
+- `VIT/utility.py`: call `img.load()` after `Image.open()` to force pixel
+  data into memory before the buffer is released; `plt.close()` now runs
+  in a `try/finally` block
+- `jabberjay.load()`: raises `FileNotFoundError` with a clear message for
+  missing files; wraps other librosa errors in a descriptive `ValueError`
+- `jabberjay.detect()`: raises `ValueError` immediately for empty audio arrays
+- `EnumAction`: invalid CLI values now produce a clear error listing valid
+  choices instead of a raw `KeyError`
+- `hugging_face.download_pretrained_model`: added missing `-> str` return type
+- `Classical/run.py`: corrected return type from `tuple[object, float]` to
+  `tuple[int, float]`
 
 ---
 
@@ -77,7 +99,7 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
-[Unreleased]: https://github.com/MattyB95/Jabberjay/compare/v0.0.4...HEAD
+[0.0.5]: https://github.com/MattyB95/Jabberjay/compare/v0.0.4...HEAD
 [0.0.4]: https://github.com/MattyB95/Jabberjay/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/MattyB95/Jabberjay/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/MattyB95/Jabberjay/compare/v0.0.1...v0.0.2

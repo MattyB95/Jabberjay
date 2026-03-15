@@ -33,7 +33,7 @@ else:
     print(f"Synthetic voice detected ({result.confidence:.1%} confidence)")
 print()
 
-# ── Full score breakdown (VIT and AST only) ────────────────────────────────
+# ── Full score breakdown (VIT, AST, Wav2Vec2, HuBERT, WavLM) ─────────────
 # `scores` is a list[{"label": str, "score": float}] sorted highest-first.
 # It is None for Classical and RawNet2.
 
