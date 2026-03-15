@@ -42,8 +42,16 @@ build:
     uv build
 
 # Publish the package to PyPI
-publish:
+publish: build
     uv publish
+
+# Publish a dev build to TestPyPI (mirrors what CI does on the develop branch)
+publish-test: build
+    uv publish --publish-url https://test.pypi.org/legacy/
+
+# Show the current package version
+version:
+    @grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'
 
 # Remove build artifacts
 clean:
