@@ -25,8 +25,12 @@ format:
 format-check:
     uv run black --check .
 
-# Run lint and format checks (used in CI)
-check: lint format-check
+# Type check with ty
+type-check:
+    uv run ty check src/
+
+# Run lint, format, and type checks (used in CI)
+check: lint format-check type-check
 
 # Auto-fix lint issues then format with black
 fix:

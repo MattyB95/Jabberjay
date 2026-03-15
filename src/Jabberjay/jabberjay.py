@@ -46,12 +46,18 @@ class Jabberjay:
         y, sr = audio
         match model:
             case Model.AST:
+                if dataset is None:
+                    raise ValueError("Dataset Is Required For AST Model!")
                 return self.ast_handler(y=y, sr=sr, dataset=dataset)
             case Model.Classical:
                 return self.classical_handler(audio=audio)
             case Model.RawNet2:
                 return self.rawnet2_handler(y=y)
             case Model.VIT:
+                if visualisation is None:
+                    raise ValueError("Visualisation Is Required For VIT Model!")
+                if dataset is None:
+                    raise ValueError("Dataset Is Required For VIT Model!")
                 return self.vit_handler(
                     audio=audio, visualisation=visualisation, dataset=dataset
                 )
@@ -59,8 +65,6 @@ class Jabberjay:
     def ast_handler(
         self, y: np.ndarray, sr: float, dataset: Dataset
     ) -> list[dict[str, float]]:
-        if dataset is None:
-            raise ValueError("Dataset Is Required For AST Model!")
         import Jabberjay.Models.Transformer.AST.run as AST
 
         predict = AST.predict(y=y, sr=sr, dataset=dataset)
@@ -92,10 +96,6 @@ class Jabberjay:
         visualisation: Visualisation,
         dataset: Dataset,
     ) -> list[dict[str, float]]:
-        if visualisation is None:
-            raise ValueError("Visualisation Is Required For VIT Model!")
-        if dataset is None:
-            raise ValueError("Dataset Is Required For VIT Model!")
         vit_module = importlib.import_module(
             f"Jabberjay.Models.Transformer.VIT.{visualisation.value}.run"
         )

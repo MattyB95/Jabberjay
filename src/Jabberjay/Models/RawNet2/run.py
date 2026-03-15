@@ -31,8 +31,8 @@ def predict(y: np.ndarray):
     )
     model.eval()
     logger.debug(f"Running RawNet2 inference on {len(y)} samples")
-    y = Tensor(y).unsqueeze(0).to(device)
+    audio_tensor = Tensor(y).unsqueeze(0).to(device)
     with torch.no_grad():
-        out = model(y)
+        out = model(audio_tensor)
         _, predicted = out.max(dim=1)
     return predicted
