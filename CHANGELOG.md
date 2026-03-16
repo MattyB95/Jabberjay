@@ -7,6 +7,10 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [Unreleased]
+
+---
+
 ## [0.0.7] — 2026-03-16
 
 ### Added
@@ -158,7 +162,8 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
-[0.0.7]: https://github.com/MattyB95/Jabberjay/compare/v0.0.6...HEAD
+[Unreleased]: https://github.com/MattyB95/Jabberjay/compare/v0.0.7...HEAD
+[0.0.7]: https://github.com/MattyB95/Jabberjay/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/MattyB95/Jabberjay/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/MattyB95/Jabberjay/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/MattyB95/Jabberjay/compare/v0.0.3...v0.0.4
