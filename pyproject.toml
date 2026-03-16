@@ -75,8 +75,25 @@ dev = [
     "black",
     "pre-commit",
     "pytest",
+    "pytest-cov",
     "ruff",
     "ty",
+]
+
+[tool.pytest.ini_options]
+addopts = "--cov=src/Jabberjay --cov-report=term-missing --cov-report=xml"
+
+[tool.coverage.run]
+source = ["src/Jabberjay"]
+omit = [
+    "*/__pycache__/*",
+    "*/Models/RawNet2/model.py",  # third-party neural network architecture
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
 ]
 
 [tool.black]

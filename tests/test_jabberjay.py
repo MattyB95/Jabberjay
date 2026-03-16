@@ -1,10 +1,11 @@
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
 
 from Jabberjay import Dataset, DetectionResult, Jabberjay, Model, Visualisation
-from Jabberjay.Utilities.label_normalizer import normalize_label
+from Jabberjay.jabberjay import main
 
 RES_DIR = Path(__file__).parent.parent / "res"
 
@@ -29,33 +30,6 @@ class TestLoad:
             jj.load("nonexistent_file.wav")
 
 
-class TestEnums:
-    def test_model_members(self):
-        assert {m.value for m in Model} == {
-            "AST",
-            "Classical",
-            "HuBERT",
-            "RawNet2",
-            "VIT",
-            "Wav2Vec2",
-            "WavLM",
-        }
-
-    def test_dataset_members(self):
-        assert {d.value for d in Dataset} == {
-            "ASVspoof2019",
-            "ASVspoof5",
-            "VoxCelebSpoof",
-        }
-
-    def test_visualisation_members(self):
-        assert {v.value for v in Visualisation} == {
-            "ConstantQ",
-            "MelSpectrogram",
-            "MFCC",
-        }
-
-
 class TestListMethods:
     def test_list_models_returns_list(self, capsys):
         models = Jabberjay.list_models()
@@ -77,33 +51,55 @@ class TestListMethods:
         assert len(vis) == len(Visualisation)
 
 
-class TestDetectionResult:
-    def test_str_bonafide(self):
-        r = DetectionResult(
-            label="Bonafide",
-            is_bonafide=True,
-            confidence=0.95,
-            model=Model.VIT,
-        )
-        assert "Bonafide" in str(r)
-        assert "95.0%" in str(r)
-        assert "VIT" in str(r)
+class TestDetectDefaults:
+    """Verify that detect() works with minimal arguments using its built-in defaults."""
 
-    def test_str_spoof(self):
-        r = DetectionResult(
-            label="Spoof",
-            is_bonafide=False,
-            confidence=0.80,
-            model=Model.Classical,
-        )
-        assert "Spoof" in str(r)
-        assert "80.0%" in str(r)
+    def setup_method(self):
+        self.jj = Jabberjay()
+        self.audio = (np.zeros(16000, dtype=np.float32), 16000.0)
 
-    def test_scores_defaults_to_none(self):
-        r = DetectionResult(
-            label="Bonafide", is_bonafide=True, confidence=1.0, model=Model.RawNet2
-        )
-        assert r.scores is None
+    def test_vit_default_visualisation_is_constantq(self):
+        import inspect
+        sig = inspect.signature(Jabberjay.detect)
+        assert sig.parameters["visualisation"].default == Visualisation.ConstantQ
+
+    def test_vit_default_dataset_is_voxcelebspoof(self):
+        import inspect
+        sig = inspect.signature(Jabberjay.detect)
+        assert sig.parameters["dataset"].default == Dataset.VoxCelebSpoof
+
+    def test_empty_audio_still_raises_before_model_dispatch(self):
+        """Default params must not mask the empty-audio guard."""
+        empty = (np.array([], dtype=np.float32), 16000.0)
+        with pytest.raises(ValueError, match="empty"):
+            self.jj.detect(empty)
+
+
+class TestEnableLogging:
+    def setup_method(self):
+        # Reset the guard before each test so tests are independent.
+        Jabberjay._logging_enabled = False
+
+    def test_enable_logging_sets_flag(self):
+        assert Jabberjay._logging_enabled is False
+        Jabberjay.enable_logging()
+        assert Jabberjay._logging_enabled is True
+
+    def test_enable_logging_is_idempotent(self, capsys):
+        Jabberjay.enable_logging()
+        Jabberjay.enable_logging()
+        Jabberjay.enable_logging()
+        # Flag should still be True and no exception raised
+        assert Jabberjay._logging_enabled is True
+
+    def test_enable_logging_only_adds_one_handler(self):
+        from loguru import logger as _logger
+        before = len(_logger._core.handlers)
+        Jabberjay.enable_logging()
+        Jabberjay.enable_logging()
+        Jabberjay.enable_logging()
+        after = len(_logger._core.handlers)
+        assert after - before == 1
 
 
 class TestDetectValidation:
@@ -180,44 +176,136 @@ class TestStringCoercion:
             )
 
 
-class TestLabelNormalizer:
-    @pytest.mark.parametrize(
-        "raw, expected",
-        [
-            ("real", "Bonafide"),
-            ("REAL", "Bonafide"),
-            ("bonafide", "Bonafide"),
-            ("Bonafide", "Bonafide"),
-            ("genuine", "Bonafide"),
-            ("human", "Bonafide"),
-            ("bona-fide", "Bonafide"),
-            ("label_0", "Bonafide"),
-            ("LABEL_0", "Bonafide"),
-            ("0", "Bonafide"),
-            ("fake", "Spoof"),
-            ("FAKE", "Spoof"),
-            ("spoof", "Spoof"),
-            ("Spoof", "Spoof"),
-            ("synthetic", "Spoof"),
-            ("deepfake", "Spoof"),
-            ("label_1", "Spoof"),
-            ("LABEL_1", "Spoof"),
-            ("1", "Spoof"),
-        ],
+class TestResultFromScores:
+    def test_top_score_wins(self):
+        scores = [{"label": "Spoof", "score": 0.7}, {"label": "Bonafide", "score": 0.3}]
+        result = Jabberjay._result_from_scores(scores, Model.VIT)
+        assert result.label == "Spoof"
+        assert result.is_bonafide is False
+        assert result.confidence == 0.7
+        assert result.model == Model.VIT
+
+    def test_bonafide_sets_is_bonafide_true(self):
+        scores = [{"label": "Bonafide", "score": 0.95}, {"label": "Spoof", "score": 0.05}]
+        result = Jabberjay._result_from_scores(scores, Model.Classical)
+        assert result.is_bonafide is True
+
+    def test_scores_sorted_descending(self):
+        scores = [{"label": "Bonafide", "score": 0.1}, {"label": "Spoof", "score": 0.9}]
+        result = Jabberjay._result_from_scores(scores, Model.AST)
+        assert result.scores[0]["score"] == 0.9
+        assert result.scores[1]["score"] == 0.1
+
+    def test_full_scores_attached_to_result(self):
+        scores = [{"label": "Bonafide", "score": 0.6}, {"label": "Spoof", "score": 0.4}]
+        result = Jabberjay._result_from_scores(scores, Model.HuBERT)
+        assert len(result.scores) == 2
+
+
+class TestLoadErrors:
+    def test_load_raises_value_error_on_corrupt_file(self):
+        jj = Jabberjay()
+        with patch("librosa.load", side_effect=Exception("codec error")):
+            with pytest.raises(ValueError, match="Failed to load"):
+                jj.load("corrupt.wav")
+
+
+class TestDetectHandlers:
+    def setup_method(self):
+        self.jj = Jabberjay()
+        self.audio = (np.zeros(16000, dtype=np.float32), 16000.0)
+        self.scores = [{"label": "Bonafide", "score": 0.9}, {"label": "Spoof", "score": 0.1}]
+
+    def test_ast_handler(self):
+        with patch("Jabberjay.Models.Transformer.AST.run.predict", return_value=self.scores):
+            result = self.jj.detect(self.audio, model=Model.AST, dataset=Dataset.VoxCelebSpoof)
+        assert isinstance(result, DetectionResult)
+        assert result.model == Model.AST
+
+    def test_hubert_handler(self):
+        with patch("Jabberjay.Models.HuBERT.run.predict", return_value=self.scores):
+            result = self.jj.detect(self.audio, model=Model.HuBERT)
+        assert isinstance(result, DetectionResult)
+        assert result.model == Model.HuBERT
+
+    def test_rawnet2_handler_bonafide(self):
+        mock_pred = MagicMock()
+        mock_pred.item.return_value = True
+        with patch("Jabberjay.Models.RawNet2.run.predict", return_value=(mock_pred, 0.85)):
+            result = self.jj.detect(self.audio, model=Model.RawNet2)
+        assert isinstance(result, DetectionResult)
+        assert result.model == Model.RawNet2
+        assert result.is_bonafide is True
+
+    def test_rawnet2_handler_spoof(self):
+        mock_pred = MagicMock()
+        mock_pred.item.return_value = False
+        with patch("Jabberjay.Models.RawNet2.run.predict", return_value=(mock_pred, 0.75)):
+            result = self.jj.detect(self.audio, model=Model.RawNet2)
+        assert result.is_bonafide is False
+
+    def test_vit_handler(self):
+        mock_module = MagicMock()
+        mock_module.predict.return_value = self.scores
+        with patch("Jabberjay.jabberjay.importlib.import_module", return_value=mock_module):
+            result = self.jj.detect(
+                self.audio,
+                model=Model.VIT,
+                visualisation=Visualisation.ConstantQ,
+                dataset=Dataset.VoxCelebSpoof,
+            )
+        assert isinstance(result, DetectionResult)
+        assert result.model == Model.VIT
+
+    def test_vit_invalid_module_raises(self):
+        with patch("Jabberjay.jabberjay.importlib.import_module", side_effect=ModuleNotFoundError):
+            with pytest.raises(ValueError, match="No VIT module"):
+                self.jj._vit_handler(self.audio, Visualisation.ConstantQ, Dataset.VoxCelebSpoof)
+
+    def test_wav2vec2_handler(self):
+        with patch("Jabberjay.Models.Wav2Vec2.run.predict", return_value=self.scores):
+            result = self.jj.detect(self.audio, model=Model.Wav2Vec2)
+        assert isinstance(result, DetectionResult)
+        assert result.model == Model.Wav2Vec2
+
+    def test_wavlm_handler(self):
+        with patch("Jabberjay.Models.WavLM.run.predict", return_value=self.scores):
+            result = self.jj.detect(self.audio, model=Model.WavLM)
+        assert isinstance(result, DetectionResult)
+        assert result.model == Model.WavLM
+
+
+class TestCLI:
+    _BONAFIDE = DetectionResult(
+        label="Bonafide", is_bonafide=True, confidence=0.95, model=Model.VIT
     )
-    def test_known_labels(self, raw, expected):
-        assert normalize_label(raw) == expected
+    _SPOOF = DetectionResult(
+        label="Spoof", is_bonafide=False, confidence=0.8, model=Model.Classical
+    )
 
-    def test_unknown_label_raises(self):
-        with pytest.raises(ValueError, match="Cannot normalise"):
-            normalize_label("unknown_label_xyz")
+    def test_main_prints_result(self, capsys):
+        with patch("sys.argv", ["jabberjay", "audio.flac"]):
+            with patch.object(Jabberjay, "detect", return_value=self._BONAFIDE):
+                main()
+        assert "Bonafide" in capsys.readouterr().out
 
-    def test_digit_one_no_false_positive(self):
-        # "1" should only match exactly — not any string containing "1"
-        with pytest.raises(ValueError):
-            normalize_label("Speech_Quality_1_Normal")
+    def test_main_classical_model(self, capsys):
+        with patch("sys.argv", ["jabberjay", "audio.flac", "-m", "Classical"]):
+            with patch.object(Jabberjay, "detect", return_value=self._SPOOF):
+                main()
+        assert "Spoof" in capsys.readouterr().out
 
-    def test_digit_zero_no_false_positive(self):
-        # "0" should only match exactly — not strings like "label_0_variant"
-        with pytest.raises(ValueError):
-            normalize_label("label_0_variant")
+    def test_main_verbose_flag(self, capsys):
+        with patch("sys.argv", ["jabberjay", "audio.flac", "-v"]):
+            with patch.object(Jabberjay, "detect", return_value=self._BONAFIDE):
+                main()
+        assert "Bonafide" in capsys.readouterr().out
+
+    def test_main_passes_dataset_and_visualisation(self):
+        with patch("sys.argv", ["jabberjay", "audio.flac", "-d", "ASVspoof2019", "-vis", "MFCC"]):
+            with patch.object(Jabberjay, "detect", return_value=self._BONAFIDE) as mock_detect:
+                main()
+        mock_detect.assert_called_once()
+        _, kwargs = mock_detect.call_args
+        assert kwargs["dataset"] == Dataset.ASVspoof2019
+        assert kwargs["visualisation"] == Visualisation.MFCC

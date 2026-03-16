@@ -13,6 +13,11 @@ test:
 test-verbose:
     uv run pytest -v
 
+# Run tests and open the HTML coverage report
+coverage:
+    uv run pytest --cov-report=html
+    open htmlcov/index.html
+
 # Lint with ruff
 lint:
     uv run ruff check .
@@ -55,7 +60,7 @@ version:
 
 # Remove build artifacts
 clean:
-    rm -rf dist/ .pytest_cache/ __pycache__/
+    rm -rf dist/ .pytest_cache/ __pycache__/ htmlcov/ .coverage coverage.xml
     find . -type d -name "__pycache__" -exec rm -rf {} +
     find . -type f -name "*.pyc" -delete
 

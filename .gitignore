@@ -1,6 +1,11 @@
 # Python
 *.pyc
 
+# Coverage
+.coverage
+coverage.xml
+htmlcov/
+
 # PyPI
 dist
 

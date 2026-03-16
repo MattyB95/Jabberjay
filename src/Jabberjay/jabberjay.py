@@ -42,6 +42,30 @@ class DetectionResult:
 
 
 class Jabberjay:
+    _logging_enabled: bool = False
+
+    @classmethod
+    def enable_logging(cls, level: str = "DEBUG") -> None:
+        """Enable Jabberjay's built-in logging output to stderr.
+
+        Safe to call multiple times — the handler is only registered once.
+        Subsequent calls with a different level are silently ignored.
+
+        Args:
+            level: Minimum log level to emit. One of ``"DEBUG"``, ``"INFO"``,
+                   ``"WARNING"``, ``"ERROR"``, ``"CRITICAL"``. Defaults to ``"DEBUG"``.
+
+        Example::
+
+            Jabberjay.enable_logging()          # all messages
+            Jabberjay.enable_logging("INFO")    # skip debug messages
+        """
+        if cls._logging_enabled:
+            return
+        logger.enable("Jabberjay")
+        logger.add(sys.stderr, format="{level}: {message}", level=level)
+        cls._logging_enabled = True
+
     @staticmethod
     def list_models() -> list[Model]:
         """Print and return all available models."""
@@ -80,8 +104,8 @@ class Jabberjay:
         self,
         audio: str | Path | Audio,
         model: Model | str = Model.VIT,
-        visualisation: Visualisation | str | None = None,
-        dataset: Dataset | str | None = None,
+        visualisation: Visualisation | str | None = Visualisation.ConstantQ,
+        dataset: Dataset | str | None = Dataset.VoxCelebSpoof,
     ) -> DetectionResult:
         """
         Detect whether audio is bonafide or spoofed.
@@ -100,9 +124,11 @@ class Jabberjay:
             KeyError: If an unrecognised string is passed for model, dataset, or visualisation.
 
         Note:
-            VIT requires both ``visualisation`` and ``dataset``.
-            AST requires ``dataset``.
-            All other models (Classical, RawNet2, HuBERT, Wav2Vec2, WavLM) need neither.
+            VIT requires both ``visualisation`` and ``dataset``; both default to
+            ``ConstantQ`` and ``VoxCelebSpoof`` respectively so a bare
+            ``jj.detect("audio.flac")`` works out of the box.
+            AST requires ``dataset`` (no default).
+            All other models (Classical, RawNet2, HuBERT, Wav2Vec2, WavLM) ignore both.
         """
         # Coerce strings to enums
         if isinstance(model, str):
@@ -148,7 +174,7 @@ class Jabberjay:
                 return self._wav2vec2_handler(y=y, sr=sr)
             case Model.WavLM:
                 return self._wavlm_handler(y=y, sr=sr)
-            case _:
+            case _:  # pragma: no cover
                 raise ValueError(f"Unknown model: {model}")
 
     @staticmethod
