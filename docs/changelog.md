@@ -16,6 +16,11 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **`.zenodo.json`** — explicit Zenodo record metadata (creator ORCID,
   affiliation, keywords, related identifiers for PyPI and docs) so archived
   records are consistent and complete
+- **Pre-commit hooks expanded** — added `trailing-whitespace`, `end-of-file-fixer`,
+  `check-merge-conflict`, `check-added-large-files`, `check-yaml`, `check-json`,
+  `check-toml`, and `detect-private-key` from `pre-commit-hooks`; added
+  `scripts/sync_version.py` local hook to keep `CITATION.cff` and README BibTeX
+  version in sync with `pyproject.toml` automatically on every commit
 
 ### Fixed
 - **`RawNet2/run.py`** — YAML config loading now raises a descriptive
@@ -180,7 +185,8 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
-[0.0.7]: https://github.com/MattyB95/Jabberjay/compare/v0.0.6...HEAD
+[0.0.8]: https://github.com/MattyB95/Jabberjay/compare/v0.0.7...v0.0.8
+[0.0.7]: https://github.com/MattyB95/Jabberjay/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/MattyB95/Jabberjay/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/MattyB95/Jabberjay/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/MattyB95/Jabberjay/compare/v0.0.3...v0.0.4

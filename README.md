@@ -301,7 +301,7 @@ If you use Jabberjay in your research, please cite it. GitHub's **"Cite this rep
   title   = {Jabberjay},
   year    = {2026},
   url     = {https://github.com/MattyB95/Jabberjay},
-  version = {0.0.7},
+  version = {0.0.8},
   doi     = {10.5281/zenodo.19056978},
 }
 ```
