@@ -34,9 +34,6 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   handler example uses `_result_from_scores()` instead of building
   `DetectionResult` manually; label normaliser variable names corrected to
   `_BONAFIDE_SUBSTR` / `_SPOOF_SUBSTR` / `_BONAFIDE_EXACT` / `_SPOOF_EXACT`
-- **Pytest warnings suppressed** — `sklearn.exceptions.InconsistentVersionWarning`
-  (KNN model pickled with sklearn 1.3.0) and `DeprecationWarning` from
-  `audioread` (Python 3.13+ stdlib removals) now filtered in test config
 
 ### Fixed
 - **`VIT/utility.py`** — `BytesIO` buffer is now always closed in the
@@ -48,9 +45,6 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **`_result_from_scores()`** — parameter type restored to
   `list[PredictionScore]`, keeping the type contract consistent end-to-end
   from model handlers through to `DetectionResult.scores`
-- **`RawNet2/model.py`** — added `ty: ignore` suppressions for unavoidable
-  type-checker false positives in third-party summary utility code
-  (`torch.prod` accumulation and untyped `OrderedDict` format calls)
 
 ---
 

@@ -80,8 +80,7 @@ class TestDetectDefaults:
 
 
 class TestEnableLogging:
-    @staticmethod
-    def setup_method():
+    def setup_method(self, method=None):
         # Reset the guard before each test so tests are independent.
         Jabberjay._logging_enabled = False
 

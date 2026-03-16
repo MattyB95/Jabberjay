@@ -37,7 +37,7 @@ class SincConv(nn.Module):
         self.filters = None
         if in_channels != 1:
             msg = (
-                "SincConv only support one input channel (here, in_channels = {%i})"
+                "SincConv only supports one input channel (here, in_channels = {%i})"
                 % in_channels
             )
             raise ValueError(msg)
@@ -362,15 +362,12 @@ class RawNet(nn.Module):
         ], "Input device is not valid, please specify 'cuda' or 'cpu'"
 
         if device == "cuda" and torch.cuda.is_available():
-            dtype = torch.cuda.FloatTensor  # ty: ignore[unresolved-attribute]
+            dtype = torch.cuda.FloatTensor
         else:
             dtype = torch.FloatTensor
         if isinstance(input_size, tuple):
             input_size = [input_size]
-        x = [
-            torch.rand(2, *in_size).type(dtype)  # ty: ignore[no-matching-overload]
-            for in_size in input_size
-        ]
+        x = [torch.rand(2, *in_size).type(dtype) for in_size in input_size]
         summary = OrderedDict()
         hooks = []
         model.apply(register_hook)
