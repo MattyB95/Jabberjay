@@ -34,51 +34,34 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (HuBERT-base fine-tuned on the In-The-Wild dataset, EER 1.43%)
 - **WavLM model** — `DavidCombei/wavLM-base-Deepfake_V2`
   (WavLM-base fine-tuned on a mixed deepfake dataset)
-- **Label normaliser** (`Utilities/label_normalizer.py`) — maps arbitrary
-  external model labels (`"real"`, `"fake"`, `"LABEL_0"`, etc.) to the
+- **Label normaliser** — maps arbitrary external model labels (`"real"`, `"fake"`, `"LABEL_0"`, etc.) to the
   canonical `"Bonafide"` / `"Spoof"` labels used throughout the API
 - `just publish-test` command to publish a dev build to TestPyPI locally
 - `just version` command to print the current package version
 
 ### Changed
-- **CI/CD pipeline consolidated** — three separate workflow files
-  (`ruff.yml`, `python-package.yml`, `python-publish.yml`) replaced by a
-  single `ci.yml` with a clear lint → test → publish job graph
-- **Push to `develop`** now automatically publishes a pre-release
-  (`{version}.dev{run_number}`) to TestPyPI after CI passes
-- **Push to `main`** now automatically publishes the release version to PyPI
-  after CI passes (previously required a manual GitHub release)
+- CI/CD pipeline consolidated into a single `ci.yml` with a clear lint → test → publish job graph
+- Push to `develop` now automatically publishes a pre-release to TestPyPI after CI passes
+- Push to `main` now automatically publishes the release version to PyPI after CI passes
 - Test matrix extended to Python 3.10–3.14
-- Label normalisation now applied consistently across all transformer models
-  (AST, VIT, Wav2Vec2, HuBERT, WavLM) via shared `normalize_pipeline_scores()`
-- `_result_from_scores()` now sorts scores by confidence descending,
-  guaranteeing the top prediction is always the highest-confidence label
+- Label normalisation applied consistently across all transformer models via shared `normalize_pipeline_scores()`
+- `_result_from_scores()` now sorts scores by confidence descending
 - All package sub-directories now include `__init__.py` for reliable imports
 
 ### Fixed
-- `RawNet2/run.py`: removed `os.chdir()` at module level — was mutating the
-  working directory for the entire process
+- `RawNet2/run.py`: removed `os.chdir()` at module level — was mutating the working directory for the entire process
 - `label_normalizer`: fixed unsafe substring matching for short digit strings
-  (`"0"`, `"1"`) that could produce false-positive label mappings
-- `VIT/utility.py`: call `img.load()` after `Image.open()` to force pixel
-  data into memory before the buffer is released; `plt.close()` now runs
-  in a `try/finally` block
-- `jabberjay.load()`: raises `FileNotFoundError` with a clear message for
-  missing files; wraps other librosa errors in a descriptive `ValueError`
+- `VIT/utility.py`: call `img.load()` after `Image.open()`; `plt.close()` now runs in a `try/finally` block
+- `jabberjay.load()`: raises `FileNotFoundError` with a clear message for missing files
 - `jabberjay.detect()`: raises `ValueError` immediately for empty audio arrays
-- `EnumAction`: invalid CLI values now produce a clear error listing valid
-  choices instead of a raw `KeyError`
-- `hugging_face.download_pretrained_model`: added missing `-> str` return type
-- `Classical/run.py`: corrected return type from `tuple[object, float]` to
-  `tuple[int, float]`
+- `EnumAction`: invalid CLI values now produce a clear error listing valid choices
 
 ---
 
 ## [0.0.4] — 2024-08-15
 
 ### Added
-- ASVspoof5 variants for all ViT visualisation types (ConstantQ,
-  MelSpectrogram, MFCC) — nine new HuggingFace models in total
+- ASVspoof5 variants for all ViT visualisation types — nine new HuggingFace models in total
 - Updated GitHub Actions versions
 
 ---
@@ -86,7 +69,7 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [0.0.3] — 2024-01-30
 
 ### Added
-- PyPI publish workflow (`python-publish.yml`) for automated package releases
+- PyPI publish workflow for automated package releases
 
 ### Changed
 - Core dependencies added to `pyproject.toml`
@@ -103,19 +86,10 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [0.0.1] — 2023-09-06
 
 ### Added
-- Initial project setup and packaging (`pyproject.toml`, `setup.py`)
-- **Classical model** — feature-based KNN classifier for bonafide/spoof detection
-- **RawNet2 model** — end-to-end anti-spoofing via
-  [rawnet2-antispoofing](https://github.com/eurecom-asp/rawnet2-antispoofing)
-  with weights from ASVspoof 2021
-- **ViT models** — Vision Transformer image classifiers over three audio
-  visualisations (ConstantQ, MelSpectrogram, MFCC) trained on ASVspoof2019
-  and VoxCelebSpoof
-- **AST model** — Audio Spectrogram Transformer classifier trained on
-  ASVspoof2019 and VoxCelebSpoof
+- Initial project setup
+- Classical, RawNet2, ViT, and AST models
 - HuggingFace Hub integration for automatic model weight retrieval
-- Command-line interface (`jabberjay <audio>`)
-- GitHub Actions CI workflow and ruff linting
+- Command-line interface
 
 [0.0.6]: https://github.com/MattyB95/Jabberjay/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/MattyB95/Jabberjay/compare/v0.0.4...v0.0.5

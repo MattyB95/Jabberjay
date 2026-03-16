@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "Jabberjay"
-version = "0.0.5"
+version = "0.0.6"
 description = "🦜 Synthetic Voice Detection"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -74,6 +74,8 @@ jabberjay = "Jabberjay.jabberjay:main"
 [dependency-groups]
 dev = [
     "black",
+    "mkdocs-material",
+    "mkdocstrings[python]",
     "pre-commit",
     "pytest",
     "pytest-cov",
