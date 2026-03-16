@@ -7,6 +7,30 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.0.8] — 2026-03-16
+
+### Added
+- **Zenodo integration** — repository is now archived on Zenodo; concept DOI
+  (`10.5281/zenodo.19056978`) added to `CITATION.cff`, README badge row, and
+  BibTeX entry in the README citation section
+- **`.zenodo.json`** — explicit Zenodo record metadata (creator ORCID,
+  affiliation, keywords, related identifiers for PyPI and docs) so archived
+  records are consistent and complete
+- **Pre-commit hooks expanded** — added `trailing-whitespace`, `end-of-file-fixer`,
+  `check-merge-conflict`, `check-added-large-files`, `check-yaml`, `check-json`,
+  `check-toml`, and `detect-private-key` from `pre-commit-hooks`; added
+  `scripts/sync_version.py` local hook to keep `CITATION.cff` and README BibTeX
+  version in sync with `pyproject.toml` automatically on every commit
+
+### Fixed
+- **`RawNet2/run.py`** — YAML config loading now raises a descriptive
+  `RuntimeError` instead of a raw `OSError`/`YAMLError` if the bundled config
+  file is missing or malformed
+- **`Utilities/label_normalizer.py`** — removed redundant `float(str(...))`
+  double conversion; score is cast directly with `float()`
+
+---
+
 ## [0.0.7] — 2026-03-16
 
 ### Added
@@ -158,7 +182,8 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
-[0.0.7]: https://github.com/MattyB95/Jabberjay/compare/v0.0.6...HEAD
+[0.0.8]: https://github.com/MattyB95/Jabberjay/compare/v0.0.7...v0.0.8
+[0.0.7]: https://github.com/MattyB95/Jabberjay/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/MattyB95/Jabberjay/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/MattyB95/Jabberjay/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/MattyB95/Jabberjay/compare/v0.0.3...v0.0.4

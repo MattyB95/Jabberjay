@@ -1,4 +1,4 @@
-optimizer: Adam 
+optimizer: Adam
 amsgrad: 1   #for adam optim
 
 
@@ -6,7 +6,7 @@ amsgrad: 1   #for adam optim
 #model-related
 model:
   nb_samp: 64600
-  first_conv: 1024   # no. of filter coefficients 
+  first_conv: 1024   # no. of filter coefficients
   in_channels: 1
   filts: [20, [20, 20], [20, 128], [128, 128]] # no. of filters channel in residual blocks
   blocks: [2, 4]
@@ -14,8 +14,3 @@ model:
   gru_node: 1024
   nb_gru_layer: 3
   nb_classes: 2
-  
-  
-
-
-

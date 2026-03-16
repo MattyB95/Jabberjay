@@ -1,5 +1,7 @@
 """Normalise external model labels to the canonical 'Bonafide' / 'Spoof' labels."""
 
+from typing import cast
+
 from Jabberjay.Utilities.types import PredictionScore
 
 # Exact-match only — short strings that would cause false positives in substring search
@@ -39,7 +41,7 @@ def normalize_pipeline_scores(
     return [
         PredictionScore(
             label=normalize_label(str(s["label"])),
-            score=float(str(s["score"])),
+            score=float(cast(float, s["score"])),
         )
         for s in raw_scores
     ]

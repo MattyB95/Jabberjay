@@ -4,14 +4,19 @@
 
 ![Jabberjay social preview](social_preview.png)
 
+<div align="center">
+
 [![PyPI](https://img.shields.io/pypi/v/jabberjay)](https://pypi.org/project/Jabberjay/)
 [![CI](https://github.com/MattyB95/Jabberjay/actions/workflows/ci.yml/badge.svg)](https://github.com/MattyB95/Jabberjay/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/pypi/pyversions/jabberjay)](https://pypi.org/project/Jabberjay/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Downloads](https://img.shields.io/pypi/dm/jabberjay)](https://pypi.org/project/Jabberjay/)
 [![Docs](https://img.shields.io/badge/docs-mattyb95.github.io%2FJabberjay-blue)](https://mattyb95.github.io/Jabberjay)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19056978.svg)](https://doi.org/10.5281/zenodo.19056978)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/MattyB95?label=Sponsor&logo=GitHub&color=EA4AAA)](https://github.com/sponsors/MattyB95)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/mattyb95)
+
+</div>
 
 ---
 
@@ -296,11 +301,12 @@ If you use Jabberjay in your research, please cite it. GitHub's **"Cite this rep
   title   = {Jabberjay},
   year    = {2026},
   url     = {https://github.com/MattyB95/Jabberjay},
-  version = {0.0.7},
+  version = {0.0.8},
+  doi     = {10.5281/zenodo.19056978},
 }
 ```
 
-A DOI will be available via [Zenodo](https://zenodo.org) once linked to this repository. The entry above will be updated at that point.
+Archived versions are available on [Zenodo](https://doi.org/10.5281/zenodo.19056978). The concept DOI (`10.5281/zenodo.19056978`) always resolves to the latest release.
 
 ---
 
