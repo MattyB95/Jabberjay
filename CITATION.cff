@@ -16,7 +16,7 @@ authors:
     orcid: "https://orcid.org/0000-0002-9377-6240"
 identifiers:
   - type: doi
-    value: "10.5281/zenodo.19057457"
+    value: "10.5281/zenodo.19056977"
     description: "Zenodo concept DOI (resolves to the latest archived version)"
 repository-code: "https://github.com/MattyB95/Jabberjay"
 url: "https://mattyb95.github.io/Jabberjay"

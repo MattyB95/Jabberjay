@@ -11,7 +11,7 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 
 ### Fixed
 - **Zenodo DOI corrected** — all references updated from `10.5281/zenodo.19056978`
-  to the correct concept DOI `10.5281/zenodo.19057457` across `CITATION.cff`,
+  to the correct concept DOI `10.5281/zenodo.19056977` across `CITATION.cff`,
   `README.md`, and both changelogs
 
 ---
@@ -20,7 +20,7 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 
 ### Added
 - **Zenodo integration** — repository is now archived on Zenodo; concept DOI
-  (`10.5281/zenodo.19057457`) added to `CITATION.cff`, README badge row, and
+  (`10.5281/zenodo.19056977`) added to `CITATION.cff`, README badge row, and
   BibTeX entry in the README citation section
 - **`.zenodo.json`** — explicit Zenodo record metadata (creator ORCID,
   affiliation, keywords, related identifiers for PyPI and docs) so archived
