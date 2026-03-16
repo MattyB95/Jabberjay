@@ -318,7 +318,7 @@ class RawNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def summary(self, input_size, batch_size=-1, device="cuda", print_fn=None):
+    def summary(self, input_size, batch_size=-1, device="cuda", print_fn=print):
         model = self
 
         def register_hook(module):
@@ -361,12 +361,15 @@ class RawNet(nn.Module):
         ], "Input device is not valid, please specify 'cuda' or 'cpu'"
 
         if device == "cuda" and torch.cuda.is_available():
-            dtype = torch.cuda.FloatTensor
+            dtype = torch.cuda.FloatTensor  # ty: ignore[unresolved-attribute]
         else:
             dtype = torch.FloatTensor
         if isinstance(input_size, tuple):
             input_size = [input_size]
-        x = [torch.rand(2, *in_size).type(dtype) for in_size in input_size]
+        x = [
+            torch.rand(2, *in_size).type(dtype)  # ty: ignore[no-matching-overload]
+            for in_size in input_size
+        ]
         summary = OrderedDict()
         hooks = []
         model.apply(register_hook)

@@ -4,26 +4,52 @@ build-backend = "hatchling.build"
 
 [project]
 name = "Jabberjay"
-version = "0.0.4"
+version = "0.0.5"
 description = "🦜 Synthetic Voice Detection"
 readme = "README.md"
-requires-python = ">=3.10,<3.12"
+requires-python = ">=3.10"
 license = "MIT"
 authors = [
     { name = "Matthew Boakes", email = "mboakes@turing.ac.uk" },
 ]
 keywords = [
-    "Synthetic",
-    "Voice",
-    "Detection",
+    "synthetic voice detection",
+    "deepfake detection",
+    "anti-spoofing",
+    "audio classification",
+    "speech",
+    "ASVspoof",
+    "bonafide",
+    "spoof",
+    "transformers",
+    "ViT",
+    "HuBERT",
+    "Wav2Vec2",
+    "WavLM",
+    "RawNet2",
+    "machine learning",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Multimedia :: Sound/Audio :: Analysis",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+    "Topic :: Security",
 ]
 dependencies = [
+    "huggingface-hub",
     "joblib",
+    "loguru",
     "librosa",
     "matplotlib",
     "numpy",
@@ -32,22 +58,58 @@ dependencies = [
     "scikit-learn",
     "soundfile",
     "torch",
+    "torchaudio",
     "transformers",
 ]
 
 [project.urls]
 "Homepage" = "https://github.com/MattyB95/Jabberjay"
 "Bug Tracker" = "https://github.com/MattyB95/Jabberjay/issues"
-
-[project.optional-dependencies]
-dev = [
-    "build",
-    "pre-commit",
-    "twine",
-]
+"Changelog" = "https://github.com/MattyB95/Jabberjay/blob/main/CHANGELOG.md"
+"Source" = "https://github.com/MattyB95/Jabberjay"
 
 [project.scripts]
 jabberjay = "Jabberjay.jabberjay:main"
+
+[dependency-groups]
+dev = [
+    "black",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "ty",
+]
+
+[tool.pytest.ini_options]
+addopts = "--cov=src/Jabberjay --cov-report=term-missing --cov-report=xml"
+
+[tool.coverage.run]
+source = ["src/Jabberjay"]
+omit = [
+    "*/__pycache__/*",
+    "*/Models/RawNet2/model.py",  # third-party neural network architecture
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py310", "py311", "py312", "py313", "py314"]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+# E4/E7/E9 and F are safe alongside black; I adds isort; avoid E1-E3/W which overlap with black
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.ty.environment]
+python-version = "3.14"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/Jabberjay"]
