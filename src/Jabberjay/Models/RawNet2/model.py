@@ -362,12 +362,12 @@ class RawNet(nn.Module):
         ], "Input device is not valid, please specify 'cuda' or 'cpu'"
 
         if device == "cuda" and torch.cuda.is_available():
-            dtype = torch.cuda.FloatTensor
+            torch_device = torch.device("cuda")
         else:
-            dtype = torch.FloatTensor
+            torch_device = torch.device("cpu")
         if isinstance(input_size, tuple):
             input_size = [input_size]
-        x = [torch.rand(2, *in_size).type(dtype) for in_size in input_size]
+        x = [torch.rand(2, *in_size).to(torch_device) for in_size in input_size]
         summary = OrderedDict()
         hooks = []
         model.apply(register_hook)
