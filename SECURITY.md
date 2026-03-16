@@ -13,7 +13,7 @@ We support only the most recent release. Please update before reporting a vulner
 
 **Please do not open a public GitHub issue for security vulnerabilities.**
 
-Report vulnerabilities privately by emailing **mboakes@turing.ac.uk**. Include:
+Report vulnerabilities privately by emailing **Matthew.Boakes@Gmail.com**. Include:
 
 - A description of the vulnerability and its potential impact
 - Steps to reproduce or a proof-of-concept
