@@ -7,7 +7,7 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## [0.0.5] — Unreleased
+## [0.0.5] — 2026-03-16
 
 ### Added
 - **Wav2Vec2 model** — `Gustking/wav2vec2-large-xlsr-deepfake-audio-classification`
