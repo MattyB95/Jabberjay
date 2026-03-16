@@ -20,7 +20,7 @@ from Jabberjay import Jabberjay
 jj = Jabberjay()
 result = jj.detect("interview.wav")
 
-print(result)            # Bonafide ✔️  (94.1% confidence, model=VIT)
+print(result)            # Bonafide ✔️ (94.1% confidence, model=VIT)
 print(result.label)      # "Bonafide" or "Spoof"
 print(result.is_bonafide)  # True / False
 print(result.confidence) # 0.0 – 1.0
@@ -46,7 +46,8 @@ Pass a model name as a string, or use the `Model` enum for IDE autocomplete.
     jj.detect("audio.wav", model="HuBERT")
     jj.detect("audio.wav", model="WavLM")
 
-    # AST — requires a dataset
+    # AST — uses a dataset (defaults to VoxCelebSpoof if not specified)
+    jj.detect("audio.wav", model="AST")
     jj.detect("audio.wav", model="AST", dataset="VoxCelebSpoof")
 
     # VIT — requires a dataset and a visualisation

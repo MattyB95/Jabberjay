@@ -1,6 +1,6 @@
 # Release
 #
-# Triggered on every push to main after CI passes.
+# Triggered on every push to main (branch protection ensures CI has passed).
 # Reads the version from pyproject.toml, extracts the matching section from
 # CHANGELOG.md, creates a git tag (v{version}), and publishes a GitHub Release
 # with the changelog notes as the body.
@@ -49,6 +49,10 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           # Extract lines between the current version heading and the next one
           NOTES=$(awk "/^## \[$VERSION\]/{found=1; next} found && /^## \[/{exit} found{print}" CHANGELOG.md)
+          if [ -z "$NOTES" ]; then
+            echo "Error: No changelog section found for version $VERSION in CHANGELOG.md" >&2
+            exit 1
+          fi
           # Write to a file to avoid quoting issues with multiline strings
           echo "$NOTES" > release_notes.md
 

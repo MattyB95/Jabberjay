@@ -58,12 +58,13 @@ Audio Spectrogram Transformer. Applies a transformer directly to a patch-based s
 Available for **ASVspoof2019**, **ASVspoof5**, and **VoxCelebSpoof** datasets.
 
 ```python
+jj.detect("audio.wav", model="AST")  # defaults to VoxCelebSpoof
 jj.detect("audio.wav", model="AST", dataset="VoxCelebSpoof")
 jj.detect("audio.wav", model="AST", dataset="ASVspoof2019")
 ```
 
 !!! note
-    `dataset` is required for AST — there is no default.
+    `dataset` is optional for AST and defaults to `VoxCelebSpoof` if not specified.
 
 ---
 

@@ -9,6 +9,7 @@
 [![Python](https://img.shields.io/pypi/pyversions/jabberjay)](https://pypi.org/project/Jabberjay/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Downloads](https://img.shields.io/pypi/dm/jabberjay)](https://pypi.org/project/Jabberjay/)
+[![Docs](https://img.shields.io/badge/docs-mattyb95.github.io%2FJabberjay-blue)](https://mattyb95.github.io/Jabberjay)
 
 ---
 

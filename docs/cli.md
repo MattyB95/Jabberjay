@@ -50,11 +50,11 @@ jabberjay interview.wav -m WavLM -v
 ## Output
 
 ```
-Bonafide ✔️  (94.1% confidence, model=VIT)
+Bonafide ✔️ (94.1% confidence, model=VIT)
 ```
 
 or
 
 ```
-Spoof ❌  (97.8% confidence, model=HuBERT)
+Spoof ❌ (97.8% confidence, model=HuBERT)
 ```

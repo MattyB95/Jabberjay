@@ -29,7 +29,7 @@ from Jabberjay import Jabberjay
 
 jj = Jabberjay()
 result = jj.detect("interview.wav")
-print(result)  # Bonafide ✔️  (94.1% confidence, model=VIT)
+print(result)  # Bonafide ✔️ (94.1% confidence, model=VIT)
 ```
 
 Or from the command line:
