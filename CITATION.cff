@@ -16,13 +16,13 @@ authors:
     orcid: "https://orcid.org/0000-0002-9377-6240"
 identifiers:
   - type: doi
-    value: "10.5281/zenodo.19057457"
+    value: "10.5281/zenodo.19056977"
     description: "Zenodo concept DOI (resolves to the latest archived version)"
 repository-code: "https://github.com/MattyB95/Jabberjay"
 url: "https://mattyb95.github.io/Jabberjay"
 repository-artifact: "https://pypi.org/project/Jabberjay/"
 license: MIT
-version: 0.0.8.post1
+version: 0.0.8.post2
 date-released: "2026-03-16"
 keywords:
   - synthetic voice detection

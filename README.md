@@ -12,7 +12,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Downloads](https://img.shields.io/pypi/dm/jabberjay)](https://pypi.org/project/Jabberjay/)
 [![Docs](https://img.shields.io/badge/docs-mattyb95.github.io%2FJabberjay-blue)](https://mattyb95.github.io/Jabberjay)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19057457.svg)](https://doi.org/10.5281/zenodo.19057457)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19056977.svg)](https://doi.org/10.5281/zenodo.19056977)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/MattyB95?label=Sponsor&logo=GitHub&color=EA4AAA)](https://github.com/sponsors/MattyB95)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/mattyb95)
 
@@ -301,12 +301,12 @@ If you use Jabberjay in your research, please cite it. GitHub's **"Cite this rep
   title   = {Jabberjay},
   year    = {2026},
   url     = {https://github.com/MattyB95/Jabberjay},
-  version = {0.0.8.post1},
-  doi     = {10.5281/zenodo.19057457},
+  version = {0.0.8.post2},
+  doi     = {10.5281/zenodo.19056977},
 }
 ```
 
-Archived versions are available on [Zenodo](https://doi.org/10.5281/zenodo.19057457). The concept DOI (`10.5281/zenodo.19057457`) always resolves to the latest release.
+Archived versions are available on [Zenodo](https://doi.org/10.5281/zenodo.19056977). The concept DOI (`10.5281/zenodo.19056977`) always resolves to the latest release.
 
 ---
 

@@ -7,11 +7,19 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 
 ---
 
+## [0.0.8.post2] — 2026-03-16
+
+### Fixed
+- **Zenodo concept DOI corrected again** — updated to `10.5281/zenodo.19056977`
+  across `CITATION.cff`, `README.md`, and both changelogs
+
+---
+
 ## [0.0.8.post1] — 2026-03-16
 
 ### Fixed
 - **Zenodo DOI corrected** — all references updated from `10.5281/zenodo.19056978`
-  to the correct concept DOI `10.5281/zenodo.19057457` across `CITATION.cff`,
+  to the correct concept DOI `10.5281/zenodo.19056977` across `CITATION.cff`,
   `README.md`, and both changelogs
 
 ---
@@ -20,7 +28,7 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 
 ### Added
 - **Zenodo integration** — repository is now archived on Zenodo; concept DOI
-  (`10.5281/zenodo.19057457`) added to `CITATION.cff`, README badge row, and
+  (`10.5281/zenodo.19056977`) added to `CITATION.cff`, README badge row, and
   BibTeX entry in the README citation section
 - **`.zenodo.json`** — explicit Zenodo record metadata (creator ORCID,
   affiliation, keywords, related identifiers for PyPI and docs) so archived
@@ -191,6 +199,7 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
+[0.0.8.post2]: https://github.com/MattyB95/Jabberjay/compare/v0.0.8.post1...v0.0.8.post2
 [0.0.8.post1]: https://github.com/MattyB95/Jabberjay/compare/v0.0.8...v0.0.8.post1
 [0.0.8]: https://github.com/MattyB95/Jabberjay/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/MattyB95/Jabberjay/compare/v0.0.6...v0.0.7
