@@ -3,7 +3,7 @@
 All notable changes to Jabberjay are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aiming to remain compatible with [Semantic Versioning](https://semver.org/spec/v2.0.0.html) where possible.
 
 ---
 
