@@ -1,0 +1,64 @@
+# Release
+#
+# Triggered on every push to main after CI passes.
+# Reads the version from pyproject.toml, extracts the matching section from
+# CHANGELOG.md, creates a git tag (v{version}), and publishes a GitHub Release
+# with the changelog notes as the body.
+#
+# If a tag for the current version already exists the workflow exits cleanly
+# so re-pushing main (e.g. after a hotfix) does not fail.
+
+name: Release
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version from pyproject.toml
+        id: version
+        run: |
+          VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check tag does not already exist
+        id: check_tag
+        run: |
+          if git rev-parse "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Extract changelog section
+        if: steps.check_tag.outputs.exists == 'false'
+        id: changelog
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          # Extract lines between the current version heading and the next one
+          NOTES=$(awk "/^## \[$VERSION\]/{found=1; next} found && /^## \[/{exit} found{print}" CHANGELOG.md)
+          # Write to a file to avoid quoting issues with multiline strings
+          echo "$NOTES" > release_notes.md
+
+      - name: Create tag and GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git tag "${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --title "Jabberjay ${{ steps.version.outputs.tag }}" \
+            --notes-file release_notes.md
