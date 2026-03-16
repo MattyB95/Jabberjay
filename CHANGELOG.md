@@ -7,6 +7,24 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.0.6] — 2026-03-16
+
+### Added
+- **Documentation site** — MkDocs + Material for MkDocs, hosted on GitHub Pages at
+  `https://mattyb95.github.io/Jabberjay`; includes Getting Started, Models, CLI,
+  and API Reference pages (auto-generated from docstrings via mkdocstrings)
+- **GitHub Release automation** (`release.yml`) — creates a tagged release with
+  changelog notes automatically on every push to `main`
+- **CodeQL security scanning** (`codeql.yml`) — static analysis on push/PR and
+  on a weekly schedule
+
+### Changed
+- Updated GitHub Actions: `actions/checkout` v4→v6, `astral-sh/setup-uv` v5→v7,
+  `actions/upload-artifact` v4→v7 (via Dependabot)
+- Dependabot PRs now target the `develop` branch
+
+---
+
 ## [0.0.5] — 2026-03-16
 
 ### Added
@@ -99,6 +117,7 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
+[0.0.6]: https://github.com/MattyB95/Jabberjay/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/MattyB95/Jabberjay/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/MattyB95/Jabberjay/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/MattyB95/Jabberjay/compare/v0.0.2...v0.0.3
