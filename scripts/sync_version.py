@@ -33,6 +33,9 @@ def get_version() -> str:
 def sync_citation(version: str) -> bool:
     path = ROOT / "CITATION.cff"
     original = _read(path)
+    version_match = re.search(r"^version:\s*(.+)$", original, flags=re.MULTILINE)
+    if version_match and version_match.group(1).strip() == version:
+        return False
     updated = re.sub(
         r"^version:\s*.+$", f"version: {version}", original, flags=re.MULTILINE
     )
@@ -65,7 +68,7 @@ if __name__ == "__main__":
     print(f"Syncing version {version} from pyproject.toml...")
     changed = any([sync_citation(version), sync_readme(version)])
     if changed:
-        print("Version sync complete — re-staging modified files.")
-        sys.exit(1)  # non-zero so pre-commit re-stages and re-runs
+        print("Version sync complete — stage the modified files and re-run.")
+        sys.exit(1)  # non-zero tells pre-commit files were modified
     else:
         print("All version references already in sync.")

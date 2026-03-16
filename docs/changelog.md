@@ -28,9 +28,6 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   file is missing or malformed
 - **`Utilities/label_normalizer.py`** — removed redundant `float(str(...))`
   double conversion; score is cast directly with `float()`
-- **`Models/RawNet2/model.py`** — replaced deprecated `torch.cuda.FloatTensor`
-  / `torch.FloatTensor` type-casting pattern with `torch.device` + `.to()`,
-  resolving two `ty` type checker errors
 
 ---
 

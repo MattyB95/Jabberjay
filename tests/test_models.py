@@ -388,6 +388,29 @@ class TestClassicalPredict:
 # ---------------------------------------------------------------------------
 
 
+class TestRawNet2Config:
+    def test_oserror_raises_runtime_error(self):
+        from Jabberjay.Models.RawNet2.run import predict
+
+        with patch("builtins.open", side_effect=OSError("missing")):
+            with pytest.raises(RuntimeError, match="Failed to load RawNet2 config"):
+                predict(y=AUDIO[0])
+
+    def test_yaml_error_raises_runtime_error(self):
+        import yaml
+
+        from Jabberjay.Models.RawNet2.run import predict
+
+        with patch("builtins.open", mock_open := MagicMock()):
+            mock_open.return_value.__enter__.return_value = MagicMock()
+            with patch(
+                "Jabberjay.Models.RawNet2.run.yaml.safe_load",
+                side_effect=yaml.YAMLError("bad yaml"),
+            ):
+                with pytest.raises(RuntimeError, match="Failed to load RawNet2 config"):
+                    predict(y=AUDIO[0])
+
+
 class TestRawNet2Predict:
     def test_returns_prediction_and_confidence(self):
         from Jabberjay.Models.RawNet2.run import predict

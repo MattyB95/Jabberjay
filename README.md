@@ -4,7 +4,7 @@
 
 ![Jabberjay social preview](social_preview.png)
 
-<div style="text-align: center">
+<div align="center">
 
 [![PyPI](https://img.shields.io/pypi/v/jabberjay)](https://pypi.org/project/Jabberjay/)
 [![CI](https://github.com/MattyB95/Jabberjay/actions/workflows/ci.yml/badge.svg)](https://github.com/MattyB95/Jabberjay/actions/workflows/ci.yml)
