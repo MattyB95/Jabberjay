@@ -7,11 +7,20 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.0.8.post1] — 2026-03-16
+
+### Fixed
+- **Zenodo DOI corrected** — all references updated from `10.5281/zenodo.19056978`
+  to the correct concept DOI `10.5281/zenodo.19057457` across `CITATION.cff`,
+  `README.md`, and both changelogs
+
+---
+
 ## [0.0.8] — 2026-03-16
 
 ### Added
 - **Zenodo integration** — repository is now archived on Zenodo; concept DOI
-  (`10.5281/zenodo.19056978`) added to `CITATION.cff`, README badge row, and
+  (`10.5281/zenodo.19057457`) added to `CITATION.cff`, README badge row, and
   BibTeX entry in the README citation section
 - **`.zenodo.json`** — explicit Zenodo record metadata (creator ORCID,
   affiliation, keywords, related identifiers for PyPI and docs) so archived
@@ -182,6 +191,7 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
+[0.0.8.post1]: https://github.com/MattyB95/Jabberjay/compare/v0.0.8...v0.0.8.post1
 [0.0.8]: https://github.com/MattyB95/Jabberjay/compare/v0.0.7...v0.0.8
 [0.0.7]: https://github.com/MattyB95/Jabberjay/compare/v0.0.6...v0.0.7
 [0.0.6]: https://github.com/MattyB95/Jabberjay/compare/v0.0.5...v0.0.6
