@@ -1,6 +1,9 @@
 import pytest
 
-from Jabberjay.Utilities.label_normalizer import normalize_label, normalize_pipeline_scores
+from Jabberjay.Utilities.label_normalizer import (
+    normalize_label,
+    normalize_pipeline_scores,
+)
 
 
 class TestLabelNormalizer:

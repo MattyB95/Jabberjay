@@ -60,11 +60,13 @@ class TestDetectDefaults:
 
     def test_vit_default_visualisation_is_constantq(self):
         import inspect
+
         sig = inspect.signature(Jabberjay.detect)
         assert sig.parameters["visualisation"].default == Visualisation.ConstantQ
 
     def test_vit_default_dataset_is_voxcelebspoof(self):
         import inspect
+
         sig = inspect.signature(Jabberjay.detect)
         assert sig.parameters["dataset"].default == Dataset.VoxCelebSpoof
 
@@ -94,6 +96,7 @@ class TestEnableLogging:
 
     def test_enable_logging_only_adds_one_handler(self):
         from loguru import logger as _logger
+
         before = len(_logger._core.handlers)
         Jabberjay.enable_logging()
         Jabberjay.enable_logging()
@@ -186,7 +189,10 @@ class TestResultFromScores:
         assert result.model == Model.VIT
 
     def test_bonafide_sets_is_bonafide_true(self):
-        scores = [{"label": "Bonafide", "score": 0.95}, {"label": "Spoof", "score": 0.05}]
+        scores = [
+            {"label": "Bonafide", "score": 0.95},
+            {"label": "Spoof", "score": 0.05},
+        ]
         result = Jabberjay._result_from_scores(scores, Model.Classical)
         assert result.is_bonafide is True
 
@@ -214,11 +220,18 @@ class TestDetectHandlers:
     def setup_method(self):
         self.jj = Jabberjay()
         self.audio = (np.zeros(16000, dtype=np.float32), 16000.0)
-        self.scores = [{"label": "Bonafide", "score": 0.9}, {"label": "Spoof", "score": 0.1}]
+        self.scores = [
+            {"label": "Bonafide", "score": 0.9},
+            {"label": "Spoof", "score": 0.1},
+        ]
 
     def test_ast_handler(self):
-        with patch("Jabberjay.Models.Transformer.AST.run.predict", return_value=self.scores):
-            result = self.jj.detect(self.audio, model=Model.AST, dataset=Dataset.VoxCelebSpoof)
+        with patch(
+            "Jabberjay.Models.Transformer.AST.run.predict", return_value=self.scores
+        ):
+            result = self.jj.detect(
+                self.audio, model=Model.AST, dataset=Dataset.VoxCelebSpoof
+            )
         assert isinstance(result, DetectionResult)
         assert result.model == Model.AST
 
@@ -231,7 +244,9 @@ class TestDetectHandlers:
     def test_rawnet2_handler_bonafide(self):
         mock_pred = MagicMock()
         mock_pred.item.return_value = True
-        with patch("Jabberjay.Models.RawNet2.run.predict", return_value=(mock_pred, 0.85)):
+        with patch(
+            "Jabberjay.Models.RawNet2.run.predict", return_value=(mock_pred, 0.85)
+        ):
             result = self.jj.detect(self.audio, model=Model.RawNet2)
         assert isinstance(result, DetectionResult)
         assert result.model == Model.RawNet2
@@ -240,14 +255,18 @@ class TestDetectHandlers:
     def test_rawnet2_handler_spoof(self):
         mock_pred = MagicMock()
         mock_pred.item.return_value = False
-        with patch("Jabberjay.Models.RawNet2.run.predict", return_value=(mock_pred, 0.75)):
+        with patch(
+            "Jabberjay.Models.RawNet2.run.predict", return_value=(mock_pred, 0.75)
+        ):
             result = self.jj.detect(self.audio, model=Model.RawNet2)
         assert result.is_bonafide is False
 
     def test_vit_handler(self):
         mock_module = MagicMock()
         mock_module.predict.return_value = self.scores
-        with patch("Jabberjay.jabberjay.importlib.import_module", return_value=mock_module):
+        with patch(
+            "Jabberjay.jabberjay.importlib.import_module", return_value=mock_module
+        ):
             result = self.jj.detect(
                 self.audio,
                 model=Model.VIT,
@@ -258,9 +277,14 @@ class TestDetectHandlers:
         assert result.model == Model.VIT
 
     def test_vit_invalid_module_raises(self):
-        with patch("Jabberjay.jabberjay.importlib.import_module", side_effect=ModuleNotFoundError):
+        with patch(
+            "Jabberjay.jabberjay.importlib.import_module",
+            side_effect=ModuleNotFoundError,
+        ):
             with pytest.raises(ValueError, match="No VIT module"):
-                self.jj._vit_handler(self.audio, Visualisation.ConstantQ, Dataset.VoxCelebSpoof)
+                self.jj._vit_handler(
+                    self.audio, Visualisation.ConstantQ, Dataset.VoxCelebSpoof
+                )
 
     def test_wav2vec2_handler(self):
         with patch("Jabberjay.Models.Wav2Vec2.run.predict", return_value=self.scores):
@@ -302,8 +326,13 @@ class TestCLI:
         assert "Bonafide" in capsys.readouterr().out
 
     def test_main_passes_dataset_and_visualisation(self):
-        with patch("sys.argv", ["jabberjay", "audio.flac", "-d", "ASVspoof2019", "-vis", "MFCC"]):
-            with patch.object(Jabberjay, "detect", return_value=self._BONAFIDE) as mock_detect:
+        with patch(
+            "sys.argv",
+            ["jabberjay", "audio.flac", "-d", "ASVspoof2019", "-vis", "MFCC"],
+        ):
+            with patch.object(
+                Jabberjay, "detect", return_value=self._BONAFIDE
+            ) as mock_detect:
                 main()
         mock_detect.assert_called_once()
         _, kwargs = mock_detect.call_args

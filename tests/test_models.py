@@ -3,13 +3,12 @@
 All network and model-loading operations are mocked so these tests run
 offline without downloading any weights from HuggingFace.
 """
+
 from unittest.mock import MagicMock, patch
 
 import numpy as np
-import pytest
 
-from Jabberjay.Utilities.enum_handler import Dataset, Visualisation
-
+from Jabberjay.Utilities.enum_handler import Dataset
 
 # ---------------------------------------------------------------------------
 # Shared helpers
@@ -32,11 +31,14 @@ def _mock_pipeline(raw_scores=None):
 # Transformer pipeline models (HuBERT, Wav2Vec2, WavLM, AST)
 # ---------------------------------------------------------------------------
 
+
 class TestHuBERTPredict:
     def test_returns_normalised_scores(self):
         from Jabberjay.Models.HuBERT.run import predict
 
-        with patch("Jabberjay.Models.HuBERT.run.pipeline", return_value=_mock_pipeline()):
+        with patch(
+            "Jabberjay.Models.HuBERT.run.pipeline", return_value=_mock_pipeline()
+        ):
             result = predict(y=AUDIO[0], sr=AUDIO[1])
 
         assert result[0]["label"] == "Bonafide"
@@ -45,7 +47,9 @@ class TestHuBERTPredict:
     def test_confidence_preserved(self):
         from Jabberjay.Models.HuBERT.run import predict
 
-        with patch("Jabberjay.Models.HuBERT.run.pipeline", return_value=_mock_pipeline()):
+        with patch(
+            "Jabberjay.Models.HuBERT.run.pipeline", return_value=_mock_pipeline()
+        ):
             result = predict(y=AUDIO[0], sr=AUDIO[1])
 
         assert result[0]["score"] == 0.9
@@ -55,7 +59,9 @@ class TestWav2Vec2Predict:
     def test_returns_normalised_scores(self):
         from Jabberjay.Models.Wav2Vec2.run import predict
 
-        with patch("Jabberjay.Models.Wav2Vec2.run.pipeline", return_value=_mock_pipeline()):
+        with patch(
+            "Jabberjay.Models.Wav2Vec2.run.pipeline", return_value=_mock_pipeline()
+        ):
             result = predict(y=AUDIO[0], sr=AUDIO[1])
 
         assert result[0]["label"] == "Bonafide"
@@ -63,7 +69,9 @@ class TestWav2Vec2Predict:
     def test_confidence_preserved(self):
         from Jabberjay.Models.Wav2Vec2.run import predict
 
-        with patch("Jabberjay.Models.Wav2Vec2.run.pipeline", return_value=_mock_pipeline()):
+        with patch(
+            "Jabberjay.Models.Wav2Vec2.run.pipeline", return_value=_mock_pipeline()
+        ):
             result = predict(y=AUDIO[0], sr=AUDIO[1])
 
         assert result[0]["score"] == 0.9
@@ -73,7 +81,9 @@ class TestWavLMPredict:
     def test_returns_normalised_scores(self):
         from Jabberjay.Models.WavLM.run import predict
 
-        with patch("Jabberjay.Models.WavLM.run.pipeline", return_value=_mock_pipeline()):
+        with patch(
+            "Jabberjay.Models.WavLM.run.pipeline", return_value=_mock_pipeline()
+        ):
             result = predict(y=AUDIO[0], sr=AUDIO[1])
 
         assert result[0]["label"] == "Bonafide"
@@ -81,7 +91,9 @@ class TestWavLMPredict:
     def test_confidence_preserved(self):
         from Jabberjay.Models.WavLM.run import predict
 
-        with patch("Jabberjay.Models.WavLM.run.pipeline", return_value=_mock_pipeline()):
+        with patch(
+            "Jabberjay.Models.WavLM.run.pipeline", return_value=_mock_pipeline()
+        ):
             result = predict(y=AUDIO[0], sr=AUDIO[1])
 
         assert result[0]["score"] == 0.9
@@ -91,7 +103,10 @@ class TestASTPRedict:
     def test_returns_normalised_scores(self):
         from Jabberjay.Models.Transformer.AST.run import predict
 
-        with patch("Jabberjay.Models.Transformer.AST.run.pipeline", return_value=_mock_pipeline()):
+        with patch(
+            "Jabberjay.Models.Transformer.AST.run.pipeline",
+            return_value=_mock_pipeline(),
+        ):
             result = predict(y=AUDIO[0], sr=AUDIO[1], dataset=Dataset.VoxCelebSpoof)
 
         assert result[0]["label"] == "Bonafide"
@@ -111,14 +126,21 @@ class TestASTPRedict:
 # VIT models
 # ---------------------------------------------------------------------------
 
+
 class TestVITPredict:
     def _run_constantq(self, raw_scores=None):
         from Jabberjay.Models.Transformer.VIT.ConstantQ.run import predict
 
         mock_image = MagicMock()
         mock_pipe = _mock_pipeline(raw_scores)
-        with patch("Jabberjay.Models.Transformer.VIT.ConstantQ.run.pipeline", return_value=mock_pipe):
-            with patch("Jabberjay.Models.Transformer.VIT.ConstantQ.run.get_image", return_value=mock_image):
+        with patch(
+            "Jabberjay.Models.Transformer.VIT.ConstantQ.run.pipeline",
+            return_value=mock_pipe,
+        ):
+            with patch(
+                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.get_image",
+                return_value=mock_image,
+            ):
                 return predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
 
     def test_constantq_returns_normalised_scores(self):
@@ -130,8 +152,13 @@ class TestVITPredict:
 
         mock_image = MagicMock()
         mock_pipe = _mock_pipeline()
-        with patch("Jabberjay.Models.Transformer.VIT.MFCC.run.pipeline", return_value=mock_pipe):
-            with patch("Jabberjay.Models.Transformer.VIT.MFCC.run.get_image", return_value=mock_image):
+        with patch(
+            "Jabberjay.Models.Transformer.VIT.MFCC.run.pipeline", return_value=mock_pipe
+        ):
+            with patch(
+                "Jabberjay.Models.Transformer.VIT.MFCC.run.get_image",
+                return_value=mock_image,
+            ):
                 result = predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
 
         assert result[0]["label"] == "Bonafide"
@@ -141,8 +168,14 @@ class TestVITPredict:
 
         mock_image = MagicMock()
         mock_pipe = _mock_pipeline()
-        with patch("Jabberjay.Models.Transformer.VIT.MelSpectrogram.run.pipeline", return_value=mock_pipe):
-            with patch("Jabberjay.Models.Transformer.VIT.MelSpectrogram.run.get_image", return_value=mock_image):
+        with patch(
+            "Jabberjay.Models.Transformer.VIT.MelSpectrogram.run.pipeline",
+            return_value=mock_pipe,
+        ):
+            with patch(
+                "Jabberjay.Models.Transformer.VIT.MelSpectrogram.run.get_image",
+                return_value=mock_image,
+            ):
                 result = predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
 
         assert result[0]["label"] == "Bonafide"
@@ -152,9 +185,9 @@ class TestVITPredict:
 # VIT utility
 # ---------------------------------------------------------------------------
 
+
 class TestGetImage:
     def test_returns_pil_image(self):
-        import io
 
         from PIL import Image
 
@@ -165,14 +198,16 @@ class TestGetImage:
             img.save(buf, format="PNG")
 
         with patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"):
-            with patch("Jabberjay.Models.Transformer.VIT.utility.plt.savefig", side_effect=fake_savefig):
+            with patch(
+                "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
+                side_effect=fake_savefig,
+            ):
                 result = get_image(data=np.zeros((128, 100)), sr=22050.0)
 
         assert isinstance(result, Image.Image)
 
     def test_figure_closed_after_call(self):
         """Ensure plt.close is called even on success (no figure leak)."""
-        import io
 
         from PIL import Image
 
@@ -183,8 +218,13 @@ class TestGetImage:
             img.save(buf, format="PNG")
 
         with patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"):
-            with patch("Jabberjay.Models.Transformer.VIT.utility.plt.savefig", side_effect=fake_savefig):
-                with patch("Jabberjay.Models.Transformer.VIT.utility.plt.close") as mock_close:
+            with patch(
+                "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
+                side_effect=fake_savefig,
+            ):
+                with patch(
+                    "Jabberjay.Models.Transformer.VIT.utility.plt.close"
+                ) as mock_close:
                     get_image(data=np.zeros((128, 100)), sr=22050.0)
 
         mock_close.assert_called_once()
@@ -193,6 +233,7 @@ class TestGetImage:
 # ---------------------------------------------------------------------------
 # RawNet2
 # ---------------------------------------------------------------------------
+
 
 class TestRawNet2Predict:
     def test_returns_prediction_and_confidence(self):
@@ -215,7 +256,10 @@ class TestRawNet2Predict:
         mock_model.return_value = mock_out
 
         with patch("Jabberjay.Models.RawNet2.run.RawNet", return_value=mock_model):
-            with patch("Jabberjay.Models.RawNet2.run.download_pretrained_model", return_value="/fake/model.pth"):
+            with patch(
+                "Jabberjay.Models.RawNet2.run.download_pretrained_model",
+                return_value="/fake/model.pth",
+            ):
                 with patch("torch.load", return_value={}):
                     with patch("torch.no_grad"):
                         prediction, confidence = predict(y=AUDIO[0])
