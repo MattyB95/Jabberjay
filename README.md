@@ -2,6 +2,8 @@
 
 > One API. Every state-of-the-art synthetic voice detector.
 
+![Jabberjay social preview](social_preview.png)
+
 [![PyPI](https://img.shields.io/pypi/v/jabberjay)](https://pypi.org/project/Jabberjay/)
 [![CI](https://github.com/MattyB95/Jabberjay/actions/workflows/ci.yml/badge.svg)](https://github.com/MattyB95/Jabberjay/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/pypi/pyversions/jabberjay)](https://pypi.org/project/Jabberjay/)
