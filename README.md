@@ -10,6 +10,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Downloads](https://img.shields.io/pypi/dm/jabberjay)](https://pypi.org/project/Jabberjay/)
 [![Docs](https://img.shields.io/badge/docs-mattyb95.github.io%2FJabberjay-blue)](https://mattyb95.github.io/Jabberjay)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/MattyB95?label=Sponsor&logo=GitHub&color=EA4AAA)](https://github.com/sponsors/MattyB95)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/mattyb95)
 
 ---
 
@@ -272,6 +274,15 @@ See `just --list` for all available commands.
 Contributions are welcome — especially new models! See [CONTRIBUTING.md](CONTRIBUTING.md) for a full guide.
 
 The quickest way to make an impact is to open a [model request issue](https://github.com/MattyB95/Jabberjay/issues/new?template=model_request.yml) with a HuggingFace link and licence details.
+
+---
+
+## Support
+
+If Jabberjay saves you time, consider supporting its development:
+
+- **[GitHub Sponsors](https://github.com/sponsors/MattyB95)** — recurring or one-off support, directly on GitHub
+- **[Ko-fi](https://ko-fi.com/mattyb95)** — buy me a coffee
 
 ---
 
