@@ -14,8 +14,11 @@ _CONFIG_PATH = os.path.join(_DIR, "model_config_RawNet.yaml")
 
 
 def predict(y: np.ndarray) -> tuple[Tensor, float]:
-    with open(_CONFIG_PATH) as f_yaml:
-        parser = yaml.safe_load(f_yaml)
+    try:
+        with open(_CONFIG_PATH) as f_yaml:
+            parser = yaml.safe_load(f_yaml)
+    except (OSError, yaml.YAMLError) as exc:
+        raise RuntimeError(f"Failed to load RawNet2 config: {_CONFIG_PATH}") from exc
     device = "cuda" if torch.cuda.is_available() else "cpu"
     logger.info(f"Using device: {device}")
     model = RawNet(parser["model"], device)

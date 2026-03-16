@@ -7,6 +7,28 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.0.8] — 2026-03-16
+
+### Added
+- **Zenodo integration** — repository is now archived on Zenodo; concept DOI
+  (`10.5281/zenodo.19056978`) added to `CITATION.cff`, README badge row, and
+  BibTeX entry in the README citation section
+- **`.zenodo.json`** — explicit Zenodo record metadata (creator ORCID,
+  affiliation, keywords, related identifiers for PyPI and docs) so archived
+  records are consistent and complete
+
+### Fixed
+- **`RawNet2/run.py`** — YAML config loading now raises a descriptive
+  `RuntimeError` instead of a raw `OSError`/`YAMLError` if the bundled config
+  file is missing or malformed
+- **`Utilities/label_normalizer.py`** — removed redundant `float(str(...))`
+  double conversion; score is cast directly with `float()`
+- **`Models/RawNet2/model.py`** — replaced deprecated `torch.cuda.FloatTensor`
+  / `torch.FloatTensor` type-casting pattern with `torch.device` + `.to()`,
+  resolving two `ty` type checker errors
+
+---
+
 ## [0.0.7] — 2026-03-16
 
 ### Added

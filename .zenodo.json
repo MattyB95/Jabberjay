@@ -1,0 +1,43 @@
+{
+  "title": "Jabberjay",
+  "description": "Jabberjay is a unified Python API and CLI for synthetic voice detection. It brings together state-of-the-art deepfake audio detection models — including ViT, AST, Wav2Vec2, HuBERT, WavLM, RawNet2, and a classical baseline — under a single consistent interface, allowing researchers and practitioners to detect AI-generated speech without wrestling with individual model dependencies and conventions.",
+  "upload_type": "software",
+  "license": "MIT",
+  "creators": [
+    {
+      "name": "Boakes, Matthew",
+      "affiliation": "The Alan Turing Institute, University of Kent",
+      "orcid": "0000-0002-9377-6240"
+    }
+  ],
+  "keywords": [
+    "synthetic voice detection",
+    "deepfake detection",
+    "anti-spoofing",
+    "audio classification",
+    "speech",
+    "ASVspoof",
+    "machine learning",
+    "transformers"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://pypi.org/project/Jabberjay/",
+      "relation": "isSupplementTo",
+      "resource_type": "software",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://mattyb95.github.io/Jabberjay",
+      "relation": "isDocumentedBy",
+      "resource_type": "other",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://github.com/MattyB95/Jabberjay",
+      "relation": "isSupplementTo",
+      "resource_type": "software",
+      "scheme": "url"
+    }
+  ]
+}
