@@ -67,12 +67,12 @@ Work on `develop` — **do not target `main` directly**.
 
 New models are the most valuable contribution. The bar for inclusion is:
 
-| Requirement | Detail |
-|---|---|
-| **Licence** | Apache 2.0 or MIT only |
-| **Task** | Binary bonafide / spoof classification |
+| Requirement      | Detail                                                 |
+|------------------|--------------------------------------------------------|
+| **Licence**      | Apache 2.0 or MIT only                                 |
+| **Task**         | Binary bonafide / spoof classification                 |
 | **Availability** | Publicly available weights (HuggingFace Hub preferred) |
-| **Input** | Raw audio waveform (not pre-extracted features) |
+| **Input**        | Raw audio waveform (not pre-extracted features)        |
 
 ### Step-by-step
 
@@ -88,11 +88,13 @@ class Model(Enum):
 
 ```python
 # src/Jabberjay/Models/MyModel/run.py
-import numpy as np
 from typing import cast
+
+import numpy as np
 from loguru import logger
 from transformers import pipeline
-from Jabberjay.Utilities.label_normalizer import normalize_label
+
+from Jabberjay.Utilities.label_normalizer import normalize_pipeline_scores
 from Jabberjay.Utilities.types import PredictionScore
 
 _MODEL_ID = "author/model-id-on-huggingface"
@@ -103,13 +105,10 @@ def predict(y: np.ndarray, sr: float) -> list[PredictionScore]:
     pipe = pipeline("audio-classification", model=_MODEL_ID, sampling_rate=_TARGET_SR)
     logger.debug(f"Running MyModel inference on {len(y)} samples at {int(sr)}Hz")
     raw = cast(list[dict[str, object]], pipe({"raw": y, "sampling_rate": int(sr)}))
-    return [
-        PredictionScore(label=normalize_label(str(s["label"])), score=float(str(s["score"])))
-        for s in raw
-    ]
+    return normalize_pipeline_scores(raw)
 ```
 
-If the model uses non-standard labels, `normalize_label()` handles mapping — check `src/Jabberjay/Utilities/label_normalizer.py` and extend `_BONAFIDE_KEYWORDS` / `_SPOOF_KEYWORDS` if needed.
+If the model uses non-standard labels, `normalize_pipeline_scores()` calls `normalize_label()` internally — check `src/Jabberjay/Utilities/label_normalizer.py` and extend `_BONAFIDE_SUBSTR` / `_SPOOF_SUBSTR` (substring matching) or `_BONAFIDE_EXACT` / `_SPOOF_EXACT` (exact matching) if needed.
 
 **3. Add a handler and match case** in `src/Jabberjay/jabberjay.py`:
 
@@ -122,14 +121,8 @@ case Model.MyModel:
 def _mymodel_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
     import Jabberjay.Models.MyModel.run as MyModel
     scores = MyModel.predict(y=y, sr=sr)
-    top = scores[0]
-    return DetectionResult(
-        label=top["label"],
-        is_bonafide=top["label"] == "Bonafide",
-        confidence=top["score"],
-        model=Model.MyModel,
-        scores=scores,
-    )
+    logger.debug(f"MyModel predictions: {scores}")
+    return self._result_from_scores(scores, Model.MyModel)
 ```
 
 **4. Update tests** — add the new enum value to `TestEnums.test_model_members` in `tests/test_jabberjay.py`.

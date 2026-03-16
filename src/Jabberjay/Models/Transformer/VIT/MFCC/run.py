@@ -1,5 +1,3 @@
-from typing import cast
-
 import librosa
 import numpy as np
 from loguru import logger
@@ -19,5 +17,5 @@ def predict(audio: tuple[np.ndarray, float], dataset: Dataset) -> list[Predictio
     logger.debug("Computing MFCC")
     M = librosa.feature.mfcc(y=y, sr=sr)
     image = get_image(data=M, sr=sr)
-    raw = cast(list[dict[str, object]], pipe(image))
+    raw = pipe(image)
     return normalize_pipeline_scores(raw)

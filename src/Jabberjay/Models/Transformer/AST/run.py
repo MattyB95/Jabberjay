@@ -1,5 +1,3 @@
-from typing import cast
-
 import numpy as np
 from loguru import logger
 from transformers import pipeline
@@ -14,5 +12,5 @@ def predict(y: np.ndarray, sr: float, dataset: Dataset) -> list[PredictionScore]
     logger.info(f"Loading AST model: {model}")
     pipe = pipeline("audio-classification", model=model)
     logger.debug(f"Running AST inference on {len(y)} samples at {int(sr)}Hz")
-    raw = cast(list[dict[str, object]], pipe({"raw": y, "sampling_rate": int(sr)}))
+    raw = pipe({"raw": y, "sampling_rate": int(sr)})
     return normalize_pipeline_scores(raw)

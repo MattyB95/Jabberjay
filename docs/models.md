@@ -6,15 +6,15 @@ Jabberjay bundles seven model families. Each is downloaded from Hugging Face Hub
 
 ## Choosing a model
 
-| Model | Type | Datasets | Requires |
-|---|---|---|---|
-| [VIT](#vit) | Vision Transformer | ASVspoof2019, ASVspoof5, VoxCelebSpoof | `dataset`, `visualisation` |
-| [AST](#ast) | Audio Spectrogram Transformer | ASVspoof2019, ASVspoof5, VoxCelebSpoof | `dataset` |
-| [Wav2Vec2](#wav2vec2) | Self-supervised transformer | ASVspoof2019 | — |
-| [HuBERT](#hubert) | Self-supervised transformer | In-The-Wild | — |
-| [WavLM](#wavlm) | Self-supervised transformer | Mixed deepfake | — |
-| [RawNet2](#rawnet2) | End-to-end CNN | ASVspoof 2021 | — |
-| [Classical](#classical) | KNN classifier | ASVspoof2019 | — |
+| Model                   | Type                          | Datasets                               | Requires                   |
+|-------------------------|-------------------------------|----------------------------------------|----------------------------|
+| [VIT](#vit)             | Vision Transformer            | ASVspoof2019, ASVspoof5, VoxCelebSpoof | `dataset`, `visualisation` |
+| [AST](#ast)             | Audio Spectrogram Transformer | ASVspoof2019, ASVspoof5, VoxCelebSpoof | `dataset`                  |
+| [Wav2Vec2](#wav2vec2)   | Self-supervised transformer   | ASVspoof2019                           | —                          |
+| [HuBERT](#hubert)       | Self-supervised transformer   | In-The-Wild                            | —                          |
+| [WavLM](#wavlm)         | Self-supervised transformer   | Mixed deepfake                         | —                          |
+| [RawNet2](#rawnet2)     | End-to-end CNN                | ASVspoof 2021                          | —                          |
+| [Classical](#classical) | KNN classifier                | ASVspoof2019                           | —                          |
 
 **Simple rule of thumb:**
 
@@ -31,11 +31,11 @@ Vision Transformer classifiers that convert the audio to a 2D image (spectrogram
 
 **Nine variants**, covering three visualisation types × three training datasets:
 
-| Visualisation | ASVspoof2019 | ASVspoof5 | VoxCelebSpoof |
-|---|:---:|:---:|:---:|
-| ConstantQ | ✓ | ✓ | ✓ |
-| MelSpectrogram | ✓ | ✓ | ✓ |
-| MFCC | ✓ | ✓ | ✓ |
+| Visualisation  | ASVspoof2019 | ASVspoof5 | VoxCelebSpoof |
+|----------------|:------------:|:---------:|:-------------:|
+| ConstantQ      |      ✓       |     ✓     |       ✓       |
+| MelSpectrogram |      ✓       |     ✓     |       ✓       |
+| MFCC           |      ✓       |     ✓     |       ✓       |
 
 ```python
 jj.detect("audio.wav", model="VIT", dataset="VoxCelebSpoof", visualisation="ConstantQ")

@@ -34,10 +34,11 @@ class SincConv(nn.Module):
     ):
         super(SincConv, self).__init__()
 
+        self.filters = None
         if in_channels != 1:
             msg = (
                 "SincConv only support one input channel (here, in_channels = {%i})"
-                % (in_channels)
+                % in_channels
             )
             raise ValueError(msg)
 
@@ -102,9 +103,9 @@ class SincConv(nn.Module):
         )
 
 
-class Residual_block(nn.Module):
+class ResidualBlock(nn.Module):
     def __init__(self, nb_filts, first=False):
-        super(Residual_block, self).__init__()
+        super(ResidualBlock, self).__init__()
         self.first = first
 
         if not self.first:
@@ -180,14 +181,14 @@ class RawNet(nn.Module):
         self.first_bn = nn.BatchNorm1d(num_features=d_args["filts"][0])
         self.selu = nn.SELU(inplace=True)
         self.block0 = nn.Sequential(
-            Residual_block(nb_filts=d_args["filts"][1], first=True)
+            ResidualBlock(nb_filts=d_args["filts"][1], first=True)
         )
-        self.block1 = nn.Sequential(Residual_block(nb_filts=d_args["filts"][1]))
-        self.block2 = nn.Sequential(Residual_block(nb_filts=d_args["filts"][2]))
+        self.block1 = nn.Sequential(ResidualBlock(nb_filts=d_args["filts"][1]))
+        self.block2 = nn.Sequential(ResidualBlock(nb_filts=d_args["filts"][2]))
         d_args["filts"][2][0] = d_args["filts"][2][1]
-        self.block3 = nn.Sequential(Residual_block(nb_filts=d_args["filts"][2]))
-        self.block4 = nn.Sequential(Residual_block(nb_filts=d_args["filts"][2]))
-        self.block5 = nn.Sequential(Residual_block(nb_filts=d_args["filts"][2]))
+        self.block3 = nn.Sequential(ResidualBlock(nb_filts=d_args["filts"][2]))
+        self.block4 = nn.Sequential(ResidualBlock(nb_filts=d_args["filts"][2]))
+        self.block5 = nn.Sequential(ResidualBlock(nb_filts=d_args["filts"][2]))
         self.avgpool = nn.AdaptiveAvgPool1d(1)
 
         self.fc_attention0 = self._make_attention_fc(
@@ -300,19 +301,19 @@ class RawNet(nn.Module):
 
         return output
 
-    def _make_attention_fc(self, in_features, l_out_features):
-        l_fc = []
-
-        l_fc.append(nn.Linear(in_features=in_features, out_features=l_out_features))
+    @staticmethod
+    def _make_attention_fc(in_features, l_out_features):
+        l_fc = [nn.Linear(in_features=in_features, out_features=l_out_features)]
 
         return nn.Sequential(*l_fc)
 
-    def _make_layer(self, nb_blocks, nb_filts, first=False):
+    @staticmethod
+    def _make_layer(nb_blocks, nb_filts, first=False):
         layers = []
         # def __init__(self, nb_filts, first = False):
         for i in range(nb_blocks):
             first = first if i == 0 else False
-            layers.append(Residual_block(nb_filts=nb_filts, first=first))
+            layers.append(ResidualBlock(nb_filts=nb_filts, first=first))
             if i == 0:
                 nb_filts[0] = nb_filts[1]
 

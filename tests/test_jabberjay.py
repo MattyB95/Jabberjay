@@ -6,6 +6,7 @@ import pytest
 
 from Jabberjay import Dataset, DetectionResult, Jabberjay, Model, Visualisation
 from Jabberjay.jabberjay import main
+from Jabberjay.Utilities.types import PredictionScore
 
 RES_DIR = Path(__file__).parent.parent / "res"
 
@@ -26,8 +27,9 @@ class TestLoad:
 
     def test_load_missing_file_raises(self):
         jj = Jabberjay()
-        with pytest.raises(FileNotFoundError, match="not found"):
-            jj.load("nonexistent_file.wav")
+        with patch("librosa.load", side_effect=FileNotFoundError("No such file")):
+            with pytest.raises(FileNotFoundError, match="not found"):
+                jj.load("nonexistent_file.wav")
 
 
 class TestListMethods:
@@ -78,7 +80,8 @@ class TestDetectDefaults:
 
 
 class TestEnableLogging:
-    def setup_method(self):
+    @staticmethod
+    def setup_method():
         # Reset the guard before each test so tests are independent.
         Jabberjay._logging_enabled = False
 
@@ -137,6 +140,16 @@ class TestDetectValidation:
         with pytest.raises(ValueError, match="empty"):
             self.jj.detect(empty, model=Model.Classical)
 
+    def test_zero_sample_rate_raises(self):
+        bad_audio = (np.zeros(16000, dtype=np.float32), 0)
+        with pytest.raises(ValueError, match="sample rate"):
+            self.jj.detect(bad_audio, model=Model.Classical)
+
+    def test_negative_sample_rate_raises(self):
+        bad_audio = (np.zeros(16000, dtype=np.float32), -1.0)
+        with pytest.raises(ValueError, match="sample rate"):
+            self.jj.detect(bad_audio, model=Model.Classical)
+
 
 class TestDetectPathInput:
     def setup_method(self):
@@ -181,7 +194,10 @@ class TestStringCoercion:
 
 class TestResultFromScores:
     def test_top_score_wins(self):
-        scores = [{"label": "Spoof", "score": 0.7}, {"label": "Bonafide", "score": 0.3}]
+        scores: list[PredictionScore] = [
+            {"label": "Spoof", "score": 0.7},
+            {"label": "Bonafide", "score": 0.3},
+        ]
         result = Jabberjay._result_from_scores(scores, Model.VIT)
         assert result.label == "Spoof"
         assert result.is_bonafide is False
@@ -189,7 +205,7 @@ class TestResultFromScores:
         assert result.model == Model.VIT
 
     def test_bonafide_sets_is_bonafide_true(self):
-        scores = [
+        scores: list[PredictionScore] = [
             {"label": "Bonafide", "score": 0.95},
             {"label": "Spoof", "score": 0.05},
         ]
@@ -197,13 +213,19 @@ class TestResultFromScores:
         assert result.is_bonafide is True
 
     def test_scores_sorted_descending(self):
-        scores = [{"label": "Bonafide", "score": 0.1}, {"label": "Spoof", "score": 0.9}]
+        scores: list[PredictionScore] = [
+            {"label": "Bonafide", "score": 0.1},
+            {"label": "Spoof", "score": 0.9},
+        ]
         result = Jabberjay._result_from_scores(scores, Model.AST)
         assert result.scores[0]["score"] == 0.9
         assert result.scores[1]["score"] == 0.1
 
     def test_full_scores_attached_to_result(self):
-        scores = [{"label": "Bonafide", "score": 0.6}, {"label": "Spoof", "score": 0.4}]
+        scores: list[PredictionScore] = [
+            {"label": "Bonafide", "score": 0.6},
+            {"label": "Spoof", "score": 0.4},
+        ]
         result = Jabberjay._result_from_scores(scores, Model.HuBERT)
         assert len(result.scores) == 2
 
@@ -220,7 +242,7 @@ class TestDetectHandlers:
     def setup_method(self):
         self.jj = Jabberjay()
         self.audio = (np.zeros(16000, dtype=np.float32), 16000.0)
-        self.scores = [
+        self.scores: list[PredictionScore] = [
             {"label": "Bonafide", "score": 0.9},
             {"label": "Spoof", "score": 0.1},
         ]
