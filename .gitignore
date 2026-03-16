@@ -9,6 +9,9 @@ htmlcov/
 # PyPI
 dist
 
+# Docs
+site/
+
 # Project
 data
 

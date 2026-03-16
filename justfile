@@ -58,6 +58,14 @@ publish-test: build
 version:
     @grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'
 
+# Serve docs locally with live reload
+docs:
+    uv run mkdocs serve
+
+# Build docs site to site/ directory
+docs-build:
+    uv run mkdocs build
+
 # Remove build artifacts
 clean:
     rm -rf dist/ .pytest_cache/ __pycache__/ htmlcov/ .coverage coverage.xml

@@ -1,0 +1,31 @@
+# Docs
+#
+# Builds and deploys the MkDocs documentation site to GitHub Pages.
+# Triggered on every push to main so the live docs always reflect the
+# latest release.
+
+name: Docs
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    name: Deploy docs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Install dev dependencies
+        run: uv sync --group dev
+
+      - name: Deploy to GitHub Pages
+        run: uv run mkdocs gh-deploy --force

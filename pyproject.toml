@@ -74,6 +74,8 @@ jabberjay = "Jabberjay.jabberjay:main"
 [dependency-groups]
 dev = [
     "black",
+    "mkdocs-material",
+    "mkdocstrings[python]",
     "pre-commit",
     "pytest",
     "pytest-cov",
