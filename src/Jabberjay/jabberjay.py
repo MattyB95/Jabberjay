@@ -87,7 +87,8 @@ class Jabberjay:
         print("Visualisations:", ", ".join(v.value for v in visualisations))
         return visualisations
 
-    def load(self, path: str | Path) -> Audio:
+    @staticmethod
+    def load(path: str | Path) -> Audio:
         """Load an audio file and return (samples, sample_rate)."""
         path = str(path)
         logger.debug(f"Loading audio file: {path}")
@@ -145,6 +146,8 @@ class Jabberjay:
         y, sr = audio
         if len(y) == 0:
             raise ValueError("Audio array is empty — nothing to classify.")
+        if sr <= 0:
+            raise ValueError(f"Invalid sample rate: {sr}. Must be a positive number.")
 
         logger.info(
             f"Running detection — model={model.value}, "
@@ -201,7 +204,8 @@ class Jabberjay:
         logger.debug(f"AST predictions: {scores}")
         return self._result_from_scores(scores, Model.AST)
 
-    def _classical_handler(self, audio: Audio) -> DetectionResult:
+    @staticmethod
+    def _classical_handler(audio: Audio) -> DetectionResult:
         import Jabberjay.Models.Classical.run as Classical
 
         prediction, confidence = Classical.predict(audio=audio)
@@ -216,7 +220,8 @@ class Jabberjay:
             model=Model.Classical,
         )
 
-    def _rawnet2_handler(self, y: np.ndarray) -> DetectionResult:
+    @staticmethod
+    def _rawnet2_handler(y: np.ndarray) -> DetectionResult:
         import Jabberjay.Models.RawNet2.run as RawNet2
 
         prediction, confidence = RawNet2.predict(y=y)

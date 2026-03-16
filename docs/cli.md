@@ -10,13 +10,13 @@ jabberjay <audio> [-m MODEL] [-d DATASET] [-vis VISUALISATION] [-v]
 
 ## Arguments
 
-| Argument | Description | Default |
-|---|---|---|
-| `audio` | Path to the audio file to analyse | — |
-| `-m`, `--model` | Model to use | `VIT` |
-| `-d`, `--dataset` | Dataset the model was trained on | `VoxCelebSpoof` |
-| `-vis`, `--visualisation` | Visualisation type (VIT only) | `ConstantQ` |
-| `-v`, `--verbose` | Enable debug logging to stderr | off |
+| Argument                  | Description                       | Default         |
+|---------------------------|-----------------------------------|-----------------|
+| `audio`                   | Path to the audio file to analyse | —               |
+| `-m`, `--model`           | Model to use                      | `VIT`           |
+| `-d`, `--dataset`         | Dataset the model was trained on  | `VoxCelebSpoof` |
+| `-vis`, `--visualisation` | Visualisation type (VIT only)     | `ConstantQ`     |
+| `-v`, `--verbose`         | Enable debug logging to stderr    | off             |
 
 ## Valid values
 

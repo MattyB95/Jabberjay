@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "Jabberjay"
-version = "0.0.6"
+version = "0.0.7"
 description = "🦜 Synthetic Voice Detection"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [
-    { name = "Matthew Boakes", email = "mboakes@turing.ac.uk" },
+    { name = "Matthew Boakes", email = "Matthew.Boakes@Gmail.com" },
 ]
 keywords = [
     "synthetic voice detection",

@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+type: software
+title: Jabberjay
+abstract: >
+  Jabberjay is a unified Python API and CLI for synthetic voice detection.
+  It brings together state-of-the-art deepfake audio detection models —
+  including ViT, AST, Wav2Vec2, HuBERT, WavLM, RawNet2, and a classical
+  baseline — under a single consistent interface, allowing researchers and
+  practitioners to detect AI-generated speech without wrestling with
+  individual model dependencies and conventions.
+authors:
+  - family-names: Boakes
+    given-names: Matthew
+    email: Matthew.Boakes@Gmail.com
+    orcid: "https://orcid.org/0000-0002-9377-6240"
+repository-code: "https://github.com/MattyB95/Jabberjay"
+url: "https://mattyb95.github.io/Jabberjay"
+repository-artifact: "https://pypi.org/project/Jabberjay/"
+license: MIT
+version: 0.0.7
+date-released: "2026-03-16"
+keywords:
+  - synthetic voice detection
+  - deepfake detection
+  - anti-spoofing
+  - audio classification
+  - speech
+  - ASVspoof
+  - machine learning
+  - transformers

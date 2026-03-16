@@ -4,18 +4,24 @@ All network and model-loading operations are mocked so these tests run
 offline without downloading any weights from HuggingFace.
 """
 
+import io
 from unittest.mock import MagicMock, patch
 
 import numpy as np
+import pytest
 
 from Jabberjay.Utilities.enum_handler import Dataset
+from Jabberjay.Utilities.types import PredictionScore
 
 # ---------------------------------------------------------------------------
 # Shared helpers
 # ---------------------------------------------------------------------------
 
 AUDIO = (np.zeros(16000, dtype=np.float32), 16000.0)
-FAKE_RAW_SCORES = [{"label": "bonafide", "score": 0.9}, {"label": "fake", "score": 0.1}]
+FAKE_RAW_SCORES: list[PredictionScore] = [
+    {"label": "bonafide", "score": 0.9},
+    {"label": "fake", "score": 0.1},
+]
 
 
 def _mock_pipeline(raw_scores=None):
@@ -128,11 +134,13 @@ class TestASTPRedict:
 
 
 class TestVITPredict:
-    def _run_constantq(self, raw_scores=None):
+    @staticmethod
+    def _run_constantq(raw_scores=None):
         from Jabberjay.Models.Transformer.VIT.ConstantQ.run import predict
 
         mock_image = MagicMock()
         mock_pipe = _mock_pipeline(raw_scores)
+        mock_cqt = np.zeros((84, 32))
         with patch(
             "Jabberjay.Models.Transformer.VIT.ConstantQ.run.pipeline",
             return_value=mock_pipe,
@@ -141,7 +149,15 @@ class TestVITPredict:
                 "Jabberjay.Models.Transformer.VIT.ConstantQ.run.get_image",
                 return_value=mock_image,
             ):
-                return predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
+                with patch(
+                    "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.cqt",
+                    return_value=mock_cqt,
+                ):
+                    with patch(
+                        "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.amplitude_to_db",
+                        return_value=mock_cqt,
+                    ):
+                        return predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
 
     def test_constantq_returns_normalised_scores(self):
         result = self._run_constantq()
@@ -228,6 +244,143 @@ class TestGetImage:
                     get_image(data=np.zeros((128, 100)), sr=22050.0)
 
         mock_close.assert_called_once()
+
+    def test_figure_closed_on_error(self):
+        """Ensure plt.close is called even when rendering raises (no figure leak)."""
+        import pytest
+
+        from Jabberjay.Models.Transformer.VIT.utility import get_image
+
+        with patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"):
+            with patch(
+                "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
+                side_effect=RuntimeError("render error"),
+            ):
+                with patch(
+                    "Jabberjay.Models.Transformer.VIT.utility.plt.close"
+                ) as mock_close:
+                    with pytest.raises(RuntimeError):
+                        get_image(data=np.zeros((128, 100)), sr=22050.0)
+
+        mock_close.assert_called_once()
+
+    def test_buffer_closed_on_success(self):
+        """Ensure the BytesIO buffer is closed after a successful call."""
+        from PIL import Image
+
+        from Jabberjay.Models.Transformer.VIT.utility import get_image
+
+        mock_buf = MagicMock(spec=io.BytesIO)
+        mock_buf.read.return_value = b""
+
+        real_buf = io.BytesIO()
+        real_image = Image.new("RGB", (10, 10))
+        real_image.save(real_buf, format="PNG")
+        real_buf.seek(0)
+        mock_buf.__enter__ = MagicMock(return_value=mock_buf)
+        mock_buf.__exit__ = MagicMock(return_value=False)
+
+        def fake_savefig(buf, **kwargs):
+            real_image.save(buf, format="PNG")
+
+        with patch(
+            "Jabberjay.Models.Transformer.VIT.utility.io.BytesIO", return_value=mock_buf
+        ):
+            with patch(
+                "Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"
+            ):
+                with patch(
+                    "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
+                    side_effect=fake_savefig,
+                ):
+                    with patch("Jabberjay.Models.Transformer.VIT.utility.plt.close"):
+                        with patch(
+                            "Jabberjay.Models.Transformer.VIT.utility.Image.open",
+                            return_value=real_image,
+                        ):
+                            get_image(data=np.zeros((128, 100)), sr=22050.0)
+
+        mock_buf.close.assert_called_once()
+
+    def test_buffer_closed_on_error(self):
+        """Ensure the BytesIO buffer is closed even when Image.open raises."""
+        import pytest
+
+        from Jabberjay.Models.Transformer.VIT.utility import get_image
+
+        mock_buf = MagicMock(spec=io.BytesIO)
+
+        def fake_savefig(buf, **kwargs):
+            pass
+
+        with patch(
+            "Jabberjay.Models.Transformer.VIT.utility.io.BytesIO", return_value=mock_buf
+        ):
+            with patch(
+                "Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"
+            ):
+                with patch(
+                    "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
+                    side_effect=fake_savefig,
+                ):
+                    with patch("Jabberjay.Models.Transformer.VIT.utility.plt.close"):
+                        with patch(
+                            "Jabberjay.Models.Transformer.VIT.utility.Image.open",
+                            side_effect=RuntimeError("corrupt image"),
+                        ):
+                            with pytest.raises(RuntimeError):
+                                get_image(data=np.zeros((128, 100)), sr=22050.0)
+
+        mock_buf.close.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# Classical
+# ---------------------------------------------------------------------------
+
+
+class TestClassicalPredict:
+    def test_returns_prediction_and_confidence(self):
+        from Jabberjay.Models.Classical.run import predict
+
+        mock_clf = MagicMock()
+        mock_clf.predict.return_value = [1]
+        mock_clf.predict_proba.return_value = np.array([[0.1, 0.9]])
+
+        with patch(
+            "Jabberjay.Models.Classical.run.download_pretrained_model",
+            return_value="/fake/model.joblib",
+        ):
+            with patch("Jabberjay.Models.Classical.run.load", return_value=mock_clf):
+                with patch(
+                    "Jabberjay.Models.Classical.run.get_features",
+                    return_value=MagicMock(),
+                ):
+                    prediction, confidence = predict(audio=AUDIO)
+
+        assert prediction == 1
+        assert confidence == pytest.approx(0.9)
+
+    def test_spoof_prediction(self):
+        from Jabberjay.Models.Classical.run import predict
+
+        mock_clf = MagicMock()
+        mock_clf.predict.return_value = [0]
+        mock_clf.predict_proba.return_value = np.array([[0.8, 0.2]])
+
+        with patch(
+            "Jabberjay.Models.Classical.run.download_pretrained_model",
+            return_value="/fake/model.joblib",
+        ):
+            with patch("Jabberjay.Models.Classical.run.load", return_value=mock_clf):
+                with patch(
+                    "Jabberjay.Models.Classical.run.get_features",
+                    return_value=MagicMock(),
+                ):
+                    prediction, confidence = predict(audio=AUDIO)
+
+        assert prediction == 0
+        assert confidence == pytest.approx(0.8)
 
 
 # ---------------------------------------------------------------------------

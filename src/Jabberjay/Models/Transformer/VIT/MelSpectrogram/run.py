@@ -1,5 +1,3 @@
-from typing import cast
-
 import librosa
 import numpy as np
 from loguru import logger
@@ -20,5 +18,5 @@ def predict(audio: tuple[np.ndarray, float], dataset: Dataset) -> list[Predictio
     S = librosa.feature.melspectrogram(y=y, sr=sr)
     S_db = librosa.power_to_db(S=S, ref=np.max)
     image = get_image(data=S_db, sr=sr)
-    raw = cast(list[dict[str, object]], pipe(image))
+    raw = pipe(image)
     return normalize_pipeline_scores(raw)

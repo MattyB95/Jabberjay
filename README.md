@@ -10,6 +10,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Downloads](https://img.shields.io/pypi/dm/jabberjay)](https://pypi.org/project/Jabberjay/)
 [![Docs](https://img.shields.io/badge/docs-mattyb95.github.io%2FJabberjay-blue)](https://mattyb95.github.io/Jabberjay)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/MattyB95?label=Sponsor&logo=GitHub&color=EA4AAA)](https://github.com/sponsors/MattyB95)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/mattyb95)
 
 ---
 
@@ -62,49 +64,49 @@ print(result.confidence)   # 0.941
 
 ### Vision Transformer (ViT)
 
-| **Model**                                                                                                   | **Dataset**   | **Visualisation** |
-|-------------------------------------------------------------------------------------------------------------|---------------|-------------------|
-| [MattyB95/VIT-ASVspoof2019-ConstantQ-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof2019-ConstantQ-Synthetic-Voice-Detection)        | ASVspoof2019  | ConstantQ         |
-| [MattyB95/VIT-ASVspoof2019-Mel_Spectrogram-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof2019-Mel_Spectrogram-Synthetic-Voice-Detection)  | ASVspoof2019  | MelSpectrogram    |
-| [MattyB95/VIT-ASVspoof2019-MFCC-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof2019-MFCC-Synthetic-Voice-Detection)             | ASVspoof2019  | MFCC              |
-| [MattyB95/VIT-ASVspoof5-ConstantQ-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof5-ConstantQ-Synthetic-Voice-Detection)           | ASVspoof5     | ConstantQ         |
-| [MattyB95/VIT-ASVspoof5-Mel_Spectrogram-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof5-Mel_Spectrogram-Synthetic-Voice-Detection)     | ASVspoof5     | MelSpectrogram    |
-| [MattyB95/VIT-ASVspoof5-MFCC-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof5-MFCC-Synthetic-Voice-Detection)                | ASVspoof5     | MFCC              |
-| [MattyB95/VIT-VoxCelebSpoof-ConstantQ-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-VoxCelebSpoof-ConstantQ-Synthetic-Voice-Detection)       | VoxCelebSpoof | ConstantQ         |
+| **Model**                                                                                                                                                           | **Dataset**   | **Visualisation** |
+|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|-------------------|
+| [MattyB95/VIT-ASVspoof2019-ConstantQ-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof2019-ConstantQ-Synthetic-Voice-Detection)               | ASVspoof2019  | ConstantQ         |
+| [MattyB95/VIT-ASVspoof2019-Mel_Spectrogram-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof2019-Mel_Spectrogram-Synthetic-Voice-Detection)   | ASVspoof2019  | MelSpectrogram    |
+| [MattyB95/VIT-ASVspoof2019-MFCC-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof2019-MFCC-Synthetic-Voice-Detection)                         | ASVspoof2019  | MFCC              |
+| [MattyB95/VIT-ASVspoof5-ConstantQ-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof5-ConstantQ-Synthetic-Voice-Detection)                     | ASVspoof5     | ConstantQ         |
+| [MattyB95/VIT-ASVspoof5-Mel_Spectrogram-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof5-Mel_Spectrogram-Synthetic-Voice-Detection)         | ASVspoof5     | MelSpectrogram    |
+| [MattyB95/VIT-ASVspoof5-MFCC-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-ASVspoof5-MFCC-Synthetic-Voice-Detection)                               | ASVspoof5     | MFCC              |
+| [MattyB95/VIT-VoxCelebSpoof-ConstantQ-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-VoxCelebSpoof-ConstantQ-Synthetic-Voice-Detection)             | VoxCelebSpoof | ConstantQ         |
 | [MattyB95/VIT-VoxCelebSpoof-Mel_Spectrogram-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-VoxCelebSpoof-Mel_Spectrogram-Synthetic-Voice-Detection) | VoxCelebSpoof | MelSpectrogram    |
-| [MattyB95/VIT-VoxCelebSpoof-MFCC-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-VoxCelebSpoof-MFCC-Synthetic-Voice-Detection)            | VoxCelebSpoof | MFCC              |
+| [MattyB95/VIT-VoxCelebSpoof-MFCC-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/VIT-VoxCelebSpoof-MFCC-Synthetic-Voice-Detection)                       | VoxCelebSpoof | MFCC              |
 
 ### Audio Spectrogram Transformer (AST)
 
-| **Model**                                                                                   | **Dataset**   |
-|---------------------------------------------------------------------------------------------|---------------|
-| [MattyB95/AST-ASVspoof2019-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/AST-ASVspoof2019-Synthetic-Voice-Detection)  | ASVspoof2019  |
-| [MattyB95/AST-ASVspoof5-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/AST-ASVspoof5-Synthetic-Voice-Detection)     | ASVspoof5     |
+| **Model**                                                                                                                           | **Dataset**   |
+|-------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| [MattyB95/AST-ASVspoof2019-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/AST-ASVspoof2019-Synthetic-Voice-Detection)   | ASVspoof2019  |
+| [MattyB95/AST-ASVspoof5-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/AST-ASVspoof5-Synthetic-Voice-Detection)         | ASVspoof5     |
 | [MattyB95/AST-VoxCelebSpoof-Synthetic-Voice-Detection](https://huggingface.co/MattyB95/AST-VoxCelebSpoof-Synthetic-Voice-Detection) | VoxCelebSpoof |
 
 ### Wav2Vec2
 
-| **Model**                                                                                                    | **Dataset**  |
-|--------------------------------------------------------------------------------------------------------------|--------------|
+| **Model**                                                                                                                                       | **Dataset**  |
+|-------------------------------------------------------------------------------------------------------------------------------------------------|--------------|
 | [Gustking/wav2vec2-large-xlsr-deepfake-audio-classification](https://huggingface.co/Gustking/wav2vec2-large-xlsr-deepfake-audio-classification) | ASVspoof2019 |
 
 ### HuBERT
 
-| **Model**                                                                                                    | **Dataset**  |
-|--------------------------------------------------------------------------------------------------------------|--------------|
-| [abhishtagatya/hubert-base-960h-itw-deepfake](https://huggingface.co/abhishtagatya/hubert-base-960h-itw-deepfake) | In-The-Wild  |
+| **Model**                                                                                                         | **Dataset** |
+|-------------------------------------------------------------------------------------------------------------------|-------------|
+| [abhishtagatya/hubert-base-960h-itw-deepfake](https://huggingface.co/abhishtagatya/hubert-base-960h-itw-deepfake) | In-The-Wild |
 
 ### WavLM
 
-| **Model**                                                                                                    | **Dataset**  |
-|--------------------------------------------------------------------------------------------------------------|--------------|
-| [DavidCombei/wavLM-base-Deepfake_V2](https://huggingface.co/DavidCombei/wavLM-base-Deepfake_V2) | Mixed        |
+| **Model**                                                                                       | **Dataset** |
+|-------------------------------------------------------------------------------------------------|-------------|
+| [DavidCombei/wavLM-base-Deepfake_V2](https://huggingface.co/DavidCombei/wavLM-base-Deepfake_V2) | Mixed       |
 
 ### Other
 
-| **Model** | **Paper** | **Codebase** |
-|-----------|-----------|--------------|
-| Classical | — | Built-in KNN baseline |
+| **Model** | **Paper**                                                                   | **Codebase**                                                                |
+|-----------|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| Classical | —                                                                           | Built-in KNN baseline                                                       |
 | RawNet2   | [Tak et al., ICASSP 2021](https://doi.org/10.1109/ICASSP39728.2021.9414234) | [rawnet2-antispoofing](https://github.com/eurecom-asp/rawnet2-antispoofing) |
 
 ---
@@ -181,13 +183,13 @@ result = jj.detect(
 
 Every call to `detect()` returns a `DetectionResult` regardless of the model used:
 
-| Attribute | Type | Description |
-|---|---|---|
-| `label` | `str` | `"Bonafide"` or `"Spoof"` |
-| `is_bonafide` | `bool` | `True` if the audio is classified as genuine |
-| `confidence` | `float` | Confidence score for the top prediction (0.0–1.0) |
-| `model` | `Model` | The model that produced this result |
-| `scores` | `list[dict] \| None` | Full label/score breakdown for VIT, AST, Wav2Vec2, HuBERT, and WavLM (sorted highest-first); `None` for Classical and RawNet2 |
+| Attribute     | Type                 | Description                                                                                                                   |
+|---------------|----------------------|-------------------------------------------------------------------------------------------------------------------------------|
+| `label`       | `str`                | `"Bonafide"` or `"Spoof"`                                                                                                     |
+| `is_bonafide` | `bool`               | `True` if the audio is classified as genuine                                                                                  |
+| `confidence`  | `float`              | Confidence score for the top prediction (0.0–1.0)                                                                             |
+| `model`       | `Model`              | The model that produced this result                                                                                           |
+| `scores`      | `list[dict] \| None` | Full label/score breakdown for VIT, AST, Wav2Vec2, HuBERT, and WavLM (sorted highest-first); `None` for Classical and RawNet2 |
 
 ```python
 if result.is_bonafide:
@@ -229,13 +231,13 @@ jj.list_visualisations() # prints and returns list[Visualisation]
 
 The `examples/` directory contains focused, runnable scripts:
 
-| Script | What it shows |
-|---|---|
-| [`quickstart.py`](examples/quickstart.py) | Minimum viable usage |
-| [`choosing_a_model.py`](examples/choosing_a_model.py) | Every model family, string and enum APIs |
-| [`preloading_audio.py`](examples/preloading_audio.py) | Efficient multi-model runs with `jj.load()` |
+| Script                                                  | What it shows                                    |
+|---------------------------------------------------------|--------------------------------------------------|
+| [`quickstart.py`](examples/quickstart.py)               | Minimum viable usage                             |
+| [`choosing_a_model.py`](examples/choosing_a_model.py)   | Every model family, string and enum APIs         |
+| [`preloading_audio.py`](examples/preloading_audio.py)   | Efficient multi-model runs with `jj.load()`      |
 | [`exploring_results.py`](examples/exploring_results.py) | All `DetectionResult` fields and score breakdown |
-| [`run_all.py`](examples/run_all.py) | Exhaustive sweep across every model combination |
+| [`run_all.py`](examples/run_all.py)                     | Exhaustive sweep across every model combination  |
 
 ```bash
 just example                           # run quickstart
@@ -255,13 +257,13 @@ cd Jabberjay
 just install   # install all dependencies including dev tools
 ```
 
-| Command | Description |
-|---|---|
-| `just test` | Run the test suite |
-| `just check` | Lint, format check, and type check |
-| `just fix` | Auto-fix lint issues and reformat |
-| `just detect audio.wav` | Run the CLI against a file |
-| `just build` | Build the package |
+| Command                 | Description                        |
+|-------------------------|------------------------------------|
+| `just test`             | Run the test suite                 |
+| `just check`            | Lint, format check, and type check |
+| `just fix`              | Auto-fix lint issues and reformat  |
+| `just detect audio.wav` | Run the CLI against a file         |
+| `just build`            | Build the package                  |
 
 See `just --list` for all available commands.
 
@@ -272,6 +274,33 @@ See `just --list` for all available commands.
 Contributions are welcome — especially new models! See [CONTRIBUTING.md](CONTRIBUTING.md) for a full guide.
 
 The quickest way to make an impact is to open a [model request issue](https://github.com/MattyB95/Jabberjay/issues/new?template=model_request.yml) with a HuggingFace link and licence details.
+
+---
+
+## Support
+
+If Jabberjay saves you time, consider supporting its development:
+
+- **[GitHub Sponsors](https://github.com/sponsors/MattyB95)** — recurring or one-off support, directly on GitHub
+- **[Ko-fi](https://ko-fi.com/mattyb95)** — buy me a coffee
+
+---
+
+## Citation
+
+If you use Jabberjay in your research, please cite it. GitHub's **"Cite this repository"** button (in the sidebar) will generate APA or BibTeX automatically from the `CITATION.cff` file, or you can use the entry below directly:
+
+```bibtex
+@software{boakes_jabberjay_2026,
+  author  = {Boakes, Matthew},
+  title   = {Jabberjay},
+  year    = {2026},
+  url     = {https://github.com/MattyB95/Jabberjay},
+  version = {0.0.7},
+}
+```
+
+A DOI will be available via [Zenodo](https://zenodo.org) once linked to this repository. The entry above will be updated at that point.
 
 ---
 

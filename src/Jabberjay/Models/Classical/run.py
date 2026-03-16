@@ -10,8 +10,8 @@ def predict(audio: tuple[np.ndarray, float]) -> tuple[int, float]:
     repo_id = "MattyB95/Jabberjay_Classical_Machine_Learning_Models"
     filename = "KNeighborsClassifier.joblib"
     logger.info(f"Downloading model: {filename} from {repo_id}")
-    model = download_pretrained_model(repo_id=repo_id, filename=filename)
-    clf = load(filename=model)
+    model_path = download_pretrained_model(repo_id=repo_id, filename=filename)
+    clf = load(filename=model_path)
     logger.debug("Extracting audio features")
     features = get_features(audio=audio)
     logger.debug(f"Feature vector shape: {features.shape}")

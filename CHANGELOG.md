@@ -7,6 +7,47 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.0.7] — 2026-03-16
+
+### Added
+- **`CITATION.cff`** — machine-readable citation metadata for academic use;
+  GitHub surfaces this as a "Cite this repository" button; compatible with
+  Zenodo, Zotero, and other reference managers
+- **Sample rate validation** — `detect()` now raises `ValueError` immediately
+  for zero or negative sample rates when a pre-loaded audio tuple is passed,
+  preventing silent failures in downstream model inference
+- **Test coverage for new behaviour** — 7 new tests covering sample rate
+  validation, `BytesIO` buffer cleanup on both success and error paths,
+  figure cleanup on error paths, and `Classical.predict()` bonafide/spoof paths
+
+### Changed
+- **Dependency minimum versions pinned** — all runtime dependencies now carry
+  lower-bound constraints (`torch>=2.0`, `transformers>=4.30`,
+  `huggingface-hub>=0.20`, `librosa>=0.10`, etc.) to prevent silent
+  incompatibilities on fresh installs
+- **Contact and copyright updated** — maintainer email changed to
+  `Matthew.Boakes@Gmail.com` across `CODE_OF_CONDUCT.md`, `SECURITY.md`, and
+  `pyproject.toml`; `LICENSE` updated to `2024-2026 Matthew Boakes and The
+  Alan Turing Institute`
+- **`CONTRIBUTING.md` model template corrected** — example `run.py` now uses
+  `cast()` + `normalize_pipeline_scores()` (matching real handlers) and the
+  handler example uses `_result_from_scores()` instead of building
+  `DetectionResult` manually; label normaliser variable names corrected to
+  `_BONAFIDE_SUBSTR` / `_SPOOF_SUBSTR` / `_BONAFIDE_EXACT` / `_SPOOF_EXACT`
+
+### Fixed
+- **`VIT/utility.py`** — `BytesIO` buffer is now always closed in the
+  `finally` block, preventing a resource leak if `Image.open()` or
+  `img.load()` raises
+- **`Classical/run.py`** — renamed `model` variable to `model_path` to
+  accurately reflect that `download_pretrained_model()` returns a file path,
+  not a model object
+- **`_result_from_scores()`** — parameter type restored to
+  `list[PredictionScore]`, keeping the type contract consistent end-to-end
+  from model handlers through to `DetectionResult.scores`
+
+---
+
 ## [0.0.6] — 2026-03-16
 
 ### Added
@@ -117,6 +158,7 @@ Jabberjay uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
+[0.0.7]: https://github.com/MattyB95/Jabberjay/compare/v0.0.6...HEAD
 [0.0.6]: https://github.com/MattyB95/Jabberjay/compare/v0.0.5...v0.0.6
 [0.0.5]: https://github.com/MattyB95/Jabberjay/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/MattyB95/Jabberjay/compare/v0.0.3...v0.0.4
