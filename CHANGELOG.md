@@ -7,6 +7,30 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 
 ---
 
+## [0.0.9] — 2026-04-04
+
+### Changed
+- **Python 3.10 support dropped** — minimum Python version raised to 3.11
+  (`requires-python = ">=3.11"`); Python 3.10 classifier removed, CI test
+  matrix updated to `["3.11", "3.12", "3.13", "3.14"]`, and documentation
+  updated accordingly; follows numpy's requirement of Python >= 3.11
+- **Dependency constraints relaxed from exact pins to lower bounds** — replaced
+  `==` pins on `huggingface-hub`, `numpy`, `pillow`, `torch`, `torchaudio`, and
+  `transformers` with `>=` lower-bound constraints, giving library users
+  flexibility to resolve their own dependency graphs; `uv.lock` continues to
+  provide reproducible installs for development and CI
+
+### Security
+- **Pygments updated to 2.20.0** (`uv.lock`) — resolves
+  [CVE-2026-4539](https://www.cve.org/CVERecord?id=CVE-2026-4539) /
+  [GHSA-5239-wwwm-4pmq](https://github.com/advisories/GHSA-5239-wwwm-4pmq),
+  a ReDoS vulnerability in `AdlLexer` affecting Pygments < 2.20.0
+  (Dependabot alert [#3](https://github.com/MattyB95/Jabberjay/security/dependabot/3));
+  Pygments is a dev/docs dependency via MkDocs and has no impact on the runtime
+  library
+
+---
+
 ## [0.0.8.post2] — 2026-03-16
 
 ### Fixed
@@ -199,6 +223,7 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
+[0.0.9]: https://github.com/MattyB95/Jabberjay/compare/v0.0.8.post2...v0.0.9
 [0.0.8.post2]: https://github.com/MattyB95/Jabberjay/compare/v0.0.8.post1...v0.0.8.post2
 [0.0.8.post1]: https://github.com/MattyB95/Jabberjay/compare/v0.0.8...v0.0.8.post1
 [0.0.8]: https://github.com/MattyB95/Jabberjay/compare/v0.0.7...v0.0.8
