@@ -45,7 +45,7 @@ Spoof ❌  (97.8% confidence, model=HuBERT)
 pip install jabberjay
 ```
 
-Requires Python ≥ 3.10. Models are downloaded from Hugging Face Hub on first use and cached locally.
+Requires Python ≥ 3.11. Models are downloaded from Hugging Face Hub on first use and cached locally.
 
 ---
 
@@ -301,7 +301,7 @@ If you use Jabberjay in your research, please cite it. GitHub's **"Cite this rep
   title   = {Jabberjay},
   year    = {2026},
   url     = {https://github.com/MattyB95/Jabberjay},
-  version = {0.0.8.post2},
+  version = {0.0.9},
   doi     = {10.5281/zenodo.19056977},
 }
 ```

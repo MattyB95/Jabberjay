@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "Jabberjay"
-version = "0.0.8.post2"
+version = "0.0.9"
 description = "🦜 Synthetic Voice Detection"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
     { name = "Matthew Boakes", email = "Matthew.Boakes@Gmail.com" },
@@ -32,7 +32,6 @@ keywords = [
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -47,19 +46,19 @@ classifiers = [
     "Topic :: Security",
 ]
 dependencies = [
-    "huggingface-hub",
-    "joblib",
-    "loguru",
-    "librosa",
-    "matplotlib",
-    "numpy",
-    "Pillow",
-    "PyYAML",
-    "scikit-learn",
-    "soundfile",
-    "torch",
-    "torchaudio",
-    "transformers",
+    "huggingface-hub>=1.9.0",
+    "joblib>=1.5.0",
+    "loguru>=0.7.0",
+    "librosa>=0.11.0",
+    "matplotlib>=3.10.0",
+    "numpy>=2.0.0",
+    "pillow>=10.0",
+    "PyYAML>=6.0.0",
+    "scikit-learn>=1.8.0",
+    "soundfile>=0.13.0",
+    "torch>=2.11.0",
+    "torchaudio>=2.11.0",
+    "transformers>=5.5.0",
 ]
 
 [project.urls]
@@ -73,13 +72,13 @@ jabberjay = "Jabberjay.jabberjay:main"
 
 [dependency-groups]
 dev = [
-    "black",
-    "mkdocs-material",
-    "mkdocstrings[python]",
-    "pre-commit",
-    "pytest",
-    "pytest-cov",
-    "ruff",
+    "black>=26.3.0",
+    "mkdocs-material>=9.7.0",
+    "mkdocstrings[python]>=1.0.3",
+    "pre-commit>=4.5.0",
+    "pytest>=9.0.0",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.15.0",
     "ty",
 ]
 
@@ -101,7 +100,7 @@ exclude_lines = [
 
 [tool.black]
 line-length = 88
-target-version = ["py310", "py311", "py312", "py313"]
+target-version = ["py311", "py312", "py313"]
 
 [tool.ruff]
 line-length = 88
