@@ -79,7 +79,7 @@ dev = [
     "pytest>=9.0.0",
     "pytest-cov>=7.1.0",
     "ruff>=0.15.0",
-    "ty>=0.0.0",
+    "ty",
 ]
 
 [tool.pytest.ini_options]

@@ -14,11 +14,12 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
   (`requires-python = ">=3.11"`); Python 3.10 classifier removed, CI test
   matrix updated to `["3.11", "3.12", "3.13", "3.14"]`, and documentation
   updated accordingly; follows numpy's requirement of Python >= 3.11
-- **Dependency constraints relaxed from exact pins to lower bounds** — replaced
-  `==` pins on `huggingface-hub`, `numpy`, `pillow`, `torch`, `torchaudio`, and
-  `transformers` with `>=` lower-bound constraints, giving library users
-  flexibility to resolve their own dependency graphs; `uv.lock` continues to
-  provide reproducible installs for development and CI
+- **Dependency constraints updated to lower bounds** — all runtime dependencies
+  (`huggingface-hub`, `joblib`, `librosa`, `loguru`, `matplotlib`, `numpy`,
+  `pillow`, `PyYAML`, `scikit-learn`, `soundfile`, `torch`, `torchaudio`,
+  `transformers`) now specify `>=` minimum-version constraints, giving library
+  users flexibility to resolve their own dependency graphs; `uv.lock` continues
+  to provide reproducible installs for development and CI
 
 ### Security
 - **Pygments updated to 2.20.0** (`uv.lock`) — resolves
