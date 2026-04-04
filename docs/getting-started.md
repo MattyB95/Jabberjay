@@ -6,7 +6,7 @@
 pip install jabberjay
 ```
 
-Requires **Python ≥ 3.10**. Models are downloaded from Hugging Face Hub on first use and cached locally — no manual setup required.
+Requires **Python ≥ 3.11**. Models are downloaded from Hugging Face Hub on first use and cached locally — no manual setup required.
 
 ---
 
