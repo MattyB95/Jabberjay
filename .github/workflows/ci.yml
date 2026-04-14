@@ -24,11 +24,16 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions:
+  contents: read
+
 jobs:
   # ── Lint & type-check ──────────────────────────────────────────────────────
   lint:
     name: Lint & type-check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v6
 
@@ -51,6 +56,8 @@ jobs:
     name: Test (Python ${{ matrix.python-version }})
     needs: [lint]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
