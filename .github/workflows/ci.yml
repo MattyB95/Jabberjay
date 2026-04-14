@@ -38,6 +38,8 @@ jobs:
       - uses: actions/checkout@v6
 
       - uses: astral-sh/setup-uv@v7
+        with:
+          cache: true
 
       - name: Install dev dependencies
         run: uv sync --group dev
@@ -50,6 +52,9 @@ jobs:
 
       - name: Type-check with ty
         run: uv run ty check src/
+
+      - name: Audit dependencies for known vulnerabilities
+        run: uv audit
 
   # ── Test matrix ────────────────────────────────────────────────────────────
   test:
@@ -68,6 +73,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python-version }}
+          cache: true
 
       - name: Install dependencies
         run: uv sync --group dev
@@ -81,6 +87,7 @@ jobs:
         with:
           name: coverage-report
           path: coverage.xml
+          retention-days: 30
 
   # ── Publish pre-release to TestPyPI (develop only) ────────────────────────
   publish-test:
@@ -94,6 +101,8 @@ jobs:
       - uses: actions/checkout@v6
 
       - uses: astral-sh/setup-uv@v7
+        with:
+          cache: true
 
       - name: Inject .devN version suffix
         run: |
@@ -122,6 +131,8 @@ jobs:
       - uses: actions/checkout@v6
 
       - uses: astral-sh/setup-uv@v7
+        with:
+          cache: true
 
       - name: Build package
         run: uv build

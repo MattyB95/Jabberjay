@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "Jabberjay"
-version = "0.0.9"
+version = "0.0.10"
 description = "🦜 Synthetic Voice Detection"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -46,19 +46,19 @@ classifiers = [
     "Topic :: Security",
 ]
 dependencies = [
-    "huggingface-hub>=1.9.0",
-    "joblib>=1.5.0",
-    "loguru>=0.7.0",
+    "huggingface-hub>=1.10.2",
+    "joblib>=1.5.3",
+    "loguru>=0.7.3",
     "librosa>=0.11.0",
-    "matplotlib>=3.10.0",
-    "numpy>=2.0.0",
-    "pillow>=10.0",
-    "PyYAML>=6.0.0",
+    "matplotlib>=3.10.8",
+    "numpy>=2.4.4",
+    "pillow>=12.2.0",
+    "PyYAML>=6.0.3",
     "scikit-learn>=1.8.0",
-    "soundfile>=0.13.0",
+    "soundfile>=0.13.1",
     "torch>=2.11.0",
     "torchaudio>=2.11.0",
-    "transformers>=5.5.0",
+    "transformers>=5.5.4",
 ]
 
 [project.urls]
@@ -72,14 +72,14 @@ jabberjay = "Jabberjay.jabberjay:main"
 
 [dependency-groups]
 dev = [
-    "black>=26.3.0",
-    "mkdocs-material>=9.7.0",
+    "black>=26.3.1",
+    "mkdocs-material>=9.7.6",
     "mkdocstrings[python]>=1.0.3",
-    "pre-commit>=4.5.0",
-    "pytest>=9.0.0",
+    "pre-commit>=4.5.1",
+    "pytest>=9.0.3",
     "pytest-cov>=7.1.0",
-    "ruff>=0.15.0",
-    "ty",
+    "ruff>=0.15.10",
+    "ty>=0.0.30",
 ]
 
 [tool.pytest.ini_options]
@@ -100,7 +100,7 @@ exclude_lines = [
 
 [tool.black]
 line-length = 88
-target-version = ["py311", "py312", "py313"]
+target-version = ["py311", "py312", "py313", "py314"]
 
 [tool.ruff]
 line-length = 88

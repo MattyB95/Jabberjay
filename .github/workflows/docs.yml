@@ -23,6 +23,8 @@ jobs:
           fetch-depth: 0
 
       - uses: astral-sh/setup-uv@v7
+        with:
+          cache: true
 
       - name: Install dev dependencies
         run: uv sync --group dev

@@ -105,7 +105,7 @@ class TestWavLMPredict:
         assert result[0]["score"] == 0.9
 
 
-class TestASTPRedict:
+class TestASTPredict:
     def test_returns_normalised_scores(self):
         from Jabberjay.Models.Transformer.AST.run import predict
 
@@ -314,22 +314,29 @@ class TestGetImage:
             pass
 
         with patch(
-            "Jabberjay.Models.Transformer.VIT.utility.io.BytesIO", return_value=mock_buf
+            "Jabberjay.Models.Transformer.VIT.utility.plt.subplots",
+            return_value=(MagicMock(), MagicMock()),
         ):
             with patch(
-                "Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"
+                "Jabberjay.Models.Transformer.VIT.utility.io.BytesIO",
+                return_value=mock_buf,
             ):
                 with patch(
-                    "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
-                    side_effect=fake_savefig,
+                    "Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"
                 ):
-                    with patch("Jabberjay.Models.Transformer.VIT.utility.plt.close"):
+                    with patch(
+                        "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
+                        side_effect=fake_savefig,
+                    ):
                         with patch(
-                            "Jabberjay.Models.Transformer.VIT.utility.Image.open",
-                            side_effect=RuntimeError("corrupt image"),
+                            "Jabberjay.Models.Transformer.VIT.utility.plt.close"
                         ):
-                            with pytest.raises(RuntimeError):
-                                get_image(data=np.zeros((128, 100)), sr=22050.0)
+                            with patch(
+                                "Jabberjay.Models.Transformer.VIT.utility.Image.open",
+                                side_effect=RuntimeError("corrupt image"),
+                            ):
+                                with pytest.raises(RuntimeError):
+                                    get_image(data=np.zeros((128, 100)), sr=22050.0)
 
         mock_buf.close.assert_called_once()
 

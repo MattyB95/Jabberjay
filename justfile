@@ -1,3 +1,5 @@
+set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
+
 default:
     @just --list
 
@@ -14,9 +16,15 @@ test-verbose:
     uv run pytest -v
 
 # Run tests and open the HTML coverage report
+[unix]
 coverage:
     uv run pytest --cov-report=html
     open htmlcov/index.html
+
+[windows]
+coverage:
+    uv run pytest --cov-report=html
+    Invoke-Item htmlcov/index.html
 
 # Lint with ruff
 lint:
@@ -56,7 +64,7 @@ publish-test: build
 
 # Show the current package version
 version:
-    @grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/'
+    @uv run python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])"
 
 # Serve docs locally with live reload
 docs:
@@ -67,10 +75,16 @@ docs-build:
     uv run mkdocs build
 
 # Remove build artifacts
+[unix]
 clean:
-    rm -rf dist/ .pytest_cache/ __pycache__/ htmlcov/ .coverage coverage.xml
+    rm -rf dist/ .pytest_cache/ htmlcov/ .coverage coverage.xml
     find . -type d -name "__pycache__" -exec rm -rf {} +
     find . -type f -name "*.pyc" -delete
+
+[windows]
+clean:
+    Remove-Item -Recurse -Force dist, .pytest_cache, htmlcov, .coverage, coverage.xml -ErrorAction SilentlyContinue
+    Get-ChildItem -Path . -Recurse -Filter "*.pyc" | Remove-Item -Force -ErrorAction SilentlyContinue
 
 # Run the CLI against a file (usage: just detect path/to/audio.wav)
 detect audio model="VIT" dataset="VoxCelebSpoof" vis="ConstantQ":

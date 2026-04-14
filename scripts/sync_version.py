@@ -47,7 +47,7 @@ def sync_citation(version: str) -> bool:
     )
     if updated != original:
         _write(path, updated)
-        print(f"  updated CITATION.cff → version {version}, date {date.today()}")
+        print(f"  updated CITATION.cff -> version {version}, date {date.today()}")
         return True
     return False
 
@@ -58,7 +58,7 @@ def sync_readme(version: str) -> bool:
     updated = re.sub(r"(  version\s*=\s*\{)[^}]+(\})", rf"\g<1>{version}\2", original)
     if updated != original:
         _write(path, updated)
-        print(f"  updated README.md → BibTeX version {version}")
+        print(f"  updated README.md -> BibTeX version {version}")
         return True
     return False
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     print(f"Syncing version {version} from pyproject.toml...")
     changed = any([sync_citation(version), sync_readme(version)])
     if changed:
-        print("Version sync complete — stage the modified files and re-run.")
+        print("Version sync complete - stage the modified files and re-run.")
         sys.exit(1)  # non-zero tells pre-commit files were modified
     else:
         print("All version references already in sync.")
