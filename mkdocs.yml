@@ -48,7 +48,6 @@ nav:
   - Models: models.md
   - CLI: cli.md
   - API Reference: api-reference.md
-  - Changelog: changelog.md
 
 markdown_extensions:
   - admonition

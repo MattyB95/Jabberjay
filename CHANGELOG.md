@@ -7,6 +7,46 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 
 ---
 
+## [0.0.10] — 2026-04-14
+
+### Added
+- **`py.typed` marker** — PEP 561 marker file added to `src/Jabberjay/`; downstream
+  type-checkers (mypy, pyright, ty) now recognise Jabberjay's inline type hints
+- **`justfile` Windows support** — `set windows-shell` directive added so all `just`
+  recipes work natively in PowerShell; `clean` and `coverage` split into `[unix]` /
+  `[windows]` platform variants; `version` replaced with a cross-platform Python
+  one-liner using `tomllib`
+- **`tests/conftest.py`** — forces the non-interactive Agg matplotlib backend before
+  any test runs, preventing `TclError` failures caused by the uv-managed Python
+  distribution not bundling Tk
+- **Dependency vulnerability scanning** — `uv audit` step added to the lint job in
+  `ci.yml`; scans the lockfile against the PyPI advisory database on every push and PR
+
+### Changed
+- **Pre-commit tool versions aligned with dev dependencies** — `ruff` bumped
+  `v0.11.2 → v0.15.10` and `black` bumped `25.1.0 → 26.3.1` in
+  `.pre-commit-config.yaml` to match the versions resolved in `uv.lock`
+- **`ty` pinned** — dev dependency updated from bare `"ty"` to `"ty>=0.0.30"` for
+  reproducible installs
+- **`black` target-version extended** — `"py314"` added to `[tool.black]` to match
+  the Python 3.14 entry in the CI test matrix
+- **CI caching enabled** — `cache: true` added to all `astral-sh/setup-uv` steps
+  across `ci.yml` and `docs.yml`; coverage artifact retention set to 30 days
+- **Docs changelog removed** — `docs/changelog.md` deleted; `CHANGELOG.md` at the
+  repository root is now the single source of truth; the MkDocs navigation entry
+  has been removed accordingly
+- **`label_normalizer.py` type hint tightened** — `raw_scores` parameter type
+  narrowed from `list[dict[str, object]]` to `list[dict[str, str | float]]`
+
+### Fixed
+- **`TestASTPredict` class name typo** — corrected from `TestASTPRedict` in
+  `tests/test_models.py`
+- **`test_buffer_closed_on_error` test isolation** — `plt.subplots` now patched in
+  the error-path test so the assertion targets the `finally`-block `buf.close()` call
+  rather than being short-circuited by a TkAgg `TclError` from real matplotlib
+
+---
+
 ## [0.0.9] — 2026-04-04
 
 ### Changed
@@ -36,7 +76,7 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 
 ### Fixed
 - **Zenodo concept DOI corrected again** — updated to `10.5281/zenodo.19056977`
-  across `CITATION.cff`, `README.md`, and both changelogs
+  across `CITATION.cff` and `README.md`
 
 ---
 
@@ -45,7 +85,7 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 ### Fixed
 - **Zenodo DOI corrected** — all references updated from `10.5281/zenodo.19056978`
   to the correct concept DOI `10.5281/zenodo.19056977` across `CITATION.cff`,
-  `README.md`, and both changelogs
+  `README.md`
 
 ---
 
@@ -224,6 +264,7 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
+[0.0.10]: https://github.com/MattyB95/Jabberjay/compare/v0.0.9...v0.0.10
 [0.0.9]: https://github.com/MattyB95/Jabberjay/compare/v0.0.8.post2...v0.0.9
 [0.0.8.post2]: https://github.com/MattyB95/Jabberjay/compare/v0.0.8.post1...v0.0.8.post2
 [0.0.8.post1]: https://github.com/MattyB95/Jabberjay/compare/v0.0.8...v0.0.8.post1

@@ -35,7 +35,7 @@ def normalize_label(raw_label: str) -> str:
 
 
 def normalize_pipeline_scores(
-    raw_scores: list[dict[str, object]],
+    raw_scores: list[dict[str, str | float]],
 ) -> list[PredictionScore]:
     """Convert raw transformers pipeline output to normalised PredictionScores."""
     return [
