@@ -307,6 +307,28 @@ class TestDetectHandlers:
                     self.audio, Visualisation.ConstantQ, Dataset.VoxCelebSpoof
                 )
 
+    def test_spectra0_handler(self):
+        with patch("Jabberjay.Models.Spectra0.run.predict", return_value=self.scores):
+            result = self.jj.detect(self.audio, model=Model.Spectra0)
+        assert isinstance(result, DetectionResult)
+        assert result.model == Model.Spectra0
+
+    def test_spectra_aasist_handler(self):
+        with patch(
+            "Jabberjay.Models.SpectraAASIST.run.predict", return_value=self.scores
+        ):
+            result = self.jj.detect(self.audio, model=Model.SpectraAASIST)
+        assert isinstance(result, DetectionResult)
+        assert result.model == Model.SpectraAASIST
+
+    def test_spectra_aasist3_handler(self):
+        with patch(
+            "Jabberjay.Models.SpectraAASIST3.run.predict", return_value=self.scores
+        ):
+            result = self.jj.detect(self.audio, model=Model.SpectraAASIST3)
+        assert isinstance(result, DetectionResult)
+        assert result.model == Model.SpectraAASIST3
+
     def test_wav2vec2_handler(self):
         with patch("Jabberjay.Models.Wav2Vec2.run.predict", return_value=self.scores):
             result = self.jj.detect(self.audio, model=Model.Wav2Vec2)

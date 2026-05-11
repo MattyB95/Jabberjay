@@ -10,9 +10,9 @@
 [![CI](https://github.com/MattyB95/Jabberjay/actions/workflows/ci.yml/badge.svg)](https://github.com/MattyB95/Jabberjay/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/pypi/pyversions/jabberjay)](https://pypi.org/project/Jabberjay/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Downloads](https://img.shields.io/pypi/dm/jabberjay)](https://pypi.org/project/Jabberjay/)
+[![Downloads](https://static.pepy.tech/badge/jabberjay/month)](https://pepy.tech/project/jabberjay)
 [![Docs](https://img.shields.io/badge/docs-mattyb95.github.io%2FJabberjay-blue)](https://mattyb95.github.io/Jabberjay)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19056977.svg)](https://doi.org/10.5281/zenodo.19056977)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19056977-blue)](https://doi.org/10.5281/zenodo.19056977)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/MattyB95?label=Sponsor&logo=GitHub&color=EA4AAA)](https://github.com/sponsors/MattyB95)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/mattyb95)
 
@@ -24,7 +24,7 @@
 
 Synthetic voice detection is a fragmented landscape — state-of-the-art models are scattered across research repositories, each with its own dependencies, input formats, and output conventions. Jabberjay brings them all under one consistent Python API and CLI so you can detect AI-generated speech without wrestling with model internals.
 
-- **Seven model families** — ViT, AST, Wav2Vec2, HuBERT, WavLM, RawNet2, and a classical baseline
+- **Ten model families** — ViT, AST, Spectra0, Spectra-AASIST, Spectra-AASIST3, Wav2Vec2, HuBERT, WavLM, RawNet2, and a classical baseline
 - **Unified output** — every model returns the same `DetectionResult` with `label`, `confidence`, and `scores`
 - **Zero boilerplate** — pass a file path, get a verdict; models are downloaded and cached automatically
 - **Flexible** — use strings for quick experiments, enums for IDE autocomplete, or pre-load audio to run multiple models on the same clip
@@ -107,6 +107,14 @@ print(result.confidence)   # 0.941
 |-------------------------------------------------------------------------------------------------|-------------|
 | [DavidCombei/wavLM-base-Deepfake_V2](https://huggingface.co/DavidCombei/wavLM-base-Deepfake_V2) | Mixed       |
 
+### Spectra Family (lab260)
+
+| **Model**                                                                         | **Architecture**                  |
+|-----------------------------------------------------------------------------------|-----------------------------------|
+| [lab260/spectra_0](https://huggingface.co/lab260/spectra_0)                       | Wav2Vec2-XLS-R-300M + ECAPA-TDNN |
+| [lab260/Spectra-AASIST](https://huggingface.co/lab260/Spectra-AASIST)             | Wav2Vec2-XLS-R-300M + AASIST     |
+| [lab260/Spectra-AASIST3](https://huggingface.co/lab260/Spectra-AASIST3)           | Wav2Vec2-XLS-R-300M + KAN-AASIST |
+
 ### Other
 
 | **Model** | **Paper**                                                                   | **Codebase**                                                                |
@@ -121,7 +129,7 @@ print(result.confidence)   # 0.941
 ### Command Line Interface
 
 ```
-usage: jabberjay [-h] [-m {AST,Classical,HuBERT,RawNet2,VIT,Wav2Vec2,WavLM}]
+usage: jabberjay [-h] [-m {AST,Classical,HuBERT,RawNet2,Spectra0,SpectraAASIST,SpectraAASIST3,VIT,Wav2Vec2,WavLM}]
                  [-d {ASVspoof2019,ASVspoof5,VoxCelebSpoof}]
                  [-vis {ConstantQ,MelSpectrogram,MFCC}] [-v]
                  audio
@@ -132,6 +140,9 @@ usage: jabberjay [-h] [-m {AST,Classical,HuBERT,RawNet2,VIT,Wav2Vec2,WavLM}]
 jabberjay audio.wav
 
 # Self-contained models (no dataset or visualisation required)
+jabberjay audio.wav -m Spectra0
+jabberjay audio.wav -m SpectraAASIST
+jabberjay audio.wav -m SpectraAASIST3
 jabberjay audio.wav -m Wav2Vec2
 jabberjay audio.wav -m HuBERT
 jabberjay audio.wav -m WavLM
@@ -163,6 +174,9 @@ String names and enum values are both accepted:
 jj = Jabberjay()
 
 # Self-contained models — no extra arguments needed
+result = jj.detect("audio.wav", model="Spectra0")
+result = jj.detect("audio.wav", model="SpectraAASIST")
+result = jj.detect("audio.wav", model="SpectraAASIST3")
 result = jj.detect("audio.wav", model="Wav2Vec2")
 result = jj.detect("audio.wav", model="HuBERT")
 result = jj.detect("audio.wav", model="WavLM")
@@ -194,7 +208,7 @@ Every call to `detect()` returns a `DetectionResult` regardless of the model use
 | `is_bonafide` | `bool`               | `True` if the audio is classified as genuine                                                                                  |
 | `confidence`  | `float`              | Confidence score for the top prediction (0.0–1.0)                                                                             |
 | `model`       | `Model`              | The model that produced this result                                                                                           |
-| `scores`      | `list[dict] \| None` | Full label/score breakdown for VIT, AST, Wav2Vec2, HuBERT, and WavLM (sorted highest-first); `None` for Classical and RawNet2 |
+| `scores`      | `list[dict] \| None` | Full label/score breakdown for VIT, AST, Spectra0, Wav2Vec2, HuBERT, and WavLM (sorted highest-first); `None` for Classical and RawNet2 |
 
 ```python
 if result.is_bonafide:

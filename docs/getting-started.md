@@ -42,6 +42,9 @@ Pass a model name as a string, or use the `Model` enum for IDE autocomplete.
     # Self-contained models — no extra arguments needed
     jj.detect("audio.wav", model="Classical")
     jj.detect("audio.wav", model="RawNet2")
+    jj.detect("audio.wav", model="Spectra0")
+    jj.detect("audio.wav", model="SpectraAASIST")
+    jj.detect("audio.wav", model="SpectraAASIST3")
     jj.detect("audio.wav", model="Wav2Vec2")
     jj.detect("audio.wav", model="HuBERT")
     jj.detect("audio.wav", model="WavLM")
@@ -87,6 +90,9 @@ audio = jj.load("interview.wav")
 results = [
     jj.detect(audio, model=Model.Classical),
     jj.detect(audio, model=Model.RawNet2),
+    jj.detect(audio, model=Model.Spectra0),
+    jj.detect(audio, model=Model.SpectraAASIST),
+    jj.detect(audio, model=Model.SpectraAASIST3),
     jj.detect(audio, model=Model.Wav2Vec2),
     jj.detect(audio, model=Model.HuBERT),
     jj.detect(audio, model=Model.WavLM),
@@ -116,7 +122,7 @@ if result.is_bonafide:
 else:
     print(f"Synthetic voice detected ({result.confidence:.1%} confidence)")
 
-# Full score breakdown — available for transformer models (VIT, AST, Wav2Vec2, HuBERT, WavLM)
+# Full score breakdown — available for transformer models (VIT, AST, Spectra0, SpectraAASIST, SpectraAASIST3, Wav2Vec2, HuBERT, WavLM)
 # None for Classical and RawNet2
 if result.scores:
     for entry in result.scores:

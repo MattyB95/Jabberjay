@@ -1,25 +1,28 @@
 # Models
 
-Jabberjay bundles seven model families. Each is downloaded from Hugging Face Hub on first use and cached locally.
+Jabberjay bundles ten model families. Each is downloaded from Hugging Face Hub on first use and cached locally.
 
 ---
 
 ## Choosing a model
 
-| Model                   | Type                          | Datasets                               | Requires                   |
-|-------------------------|-------------------------------|----------------------------------------|----------------------------|
-| [VIT](#vit)             | Vision Transformer            | ASVspoof2019, ASVspoof5, VoxCelebSpoof | `dataset`, `visualisation` |
-| [AST](#ast)             | Audio Spectrogram Transformer | ASVspoof2019, ASVspoof5, VoxCelebSpoof | `dataset`                  |
-| [Wav2Vec2](#wav2vec2)   | Self-supervised transformer   | ASVspoof2019                           | —                          |
-| [HuBERT](#hubert)       | Self-supervised transformer   | In-The-Wild                            | —                          |
-| [WavLM](#wavlm)         | Self-supervised transformer   | Mixed deepfake                         | —                          |
-| [RawNet2](#rawnet2)     | End-to-end CNN                | ASVspoof 2021                          | —                          |
-| [Classical](#classical) | KNN classifier                | ASVspoof2019                           | —                          |
+| Model                     | Type                          | Datasets                               | Requires                   |
+|---------------------------|-------------------------------|----------------------------------------|----------------------------|
+| [VIT](#vit)               | Vision Transformer            | ASVspoof2019, ASVspoof5, VoxCelebSpoof | `dataset`, `visualisation` |
+| [AST](#ast)               | Audio Spectrogram Transformer | ASVspoof2019, ASVspoof5, VoxCelebSpoof | `dataset`                  |
+| [Spectra0](#spectra0)         | Wav2Vec2 + ECAPA-TDNN         | ASVspoof19/21, ASVspoof5, In-the-Wild  | —                          |
+| [SpectraAASIST](#spectraaasist)   | Wav2Vec2 + AASIST             | ASVspoof19/21, ASVspoof5, In-the-Wild  | —                          |
+| [SpectraAASIST3](#spectraaasist3) | Wav2Vec2 + KAN-AASIST         | ASVspoof19/21, ASVspoof5, In-the-Wild  | —                          |
+| [Wav2Vec2](#wav2vec2)     | Self-supervised transformer   | ASVspoof2019                           | —                          |
+| [HuBERT](#hubert)         | Self-supervised transformer   | In-The-Wild                            | —                          |
+| [WavLM](#wavlm)           | Self-supervised transformer   | Mixed deepfake                         | —                          |
+| [RawNet2](#rawnet2)       | End-to-end CNN                | ASVspoof 2021                          | —                          |
+| [Classical](#classical)   | KNN classifier                | ASVspoof2019                           | —                          |
 
 **Simple rule of thumb:**
 
+- For the lowest error rate on In-The-Wild audio — use **SpectraAASIST3** (EER 0.96%)
 - For a quick, general-purpose result — use **WavLM** or **HuBERT**
-- For the lowest error rate on In-The-Wild audio — use **HuBERT** (EER 1.43%)
 - For a lightweight baseline with no deep learning — use **Classical**
 - To sweep all models and compare — use `jj.load()` once, then call `jj.detect()` for each
 
@@ -68,6 +71,78 @@ jj.detect("audio.wav", model="AST", dataset="ASVspoof2019")
 
 ---
 
+## Spectra0
+
+`lab260/spectra_0`
+
+SSL encoder (Wav2Vec2-XLS-R-300M) → MLP projection → ECAPA-TDNN binary classifier, trained across multiple anti-spoofing benchmarks.
+
+| Benchmark       | EER (%) |
+|-----------------|---------|
+| ASVspoof19 LA   | 0.181   |
+| ASVspoof21 LA   | 6.475   |
+| ASVspoof21 DF   | 5.410   |
+| ASVspoof5       | 14.426  |
+| ADD2022         | 14.716  |
+| In-the-Wild     | 1.026   |
+
+```python
+jj.detect("audio.wav", model="Spectra0")
+```
+
+!!! note
+    On first run, Spectra0 downloads both its own weights and the `facebook/wav2vec2-xls-r-300m` SSL encoder (~1.2 GB total). Both are cached by HuggingFace Hub after the first download.
+
+---
+
+## SpectraAASIST
+
+`lab260/Spectra-AASIST`
+
+SSL encoder (Wav2Vec2-XLS-R-300M) → MLP projection → AASIST graph attention network with standard linear layers.
+
+| Benchmark       | EER (%) |
+|-----------------|---------|
+| ASVspoof19 LA   | 0.159   |
+| ASVspoof21 LA   | 5.164   |
+| ASVspoof21 DF   | 2.568   |
+| ASVspoof5       | 14.056  |
+| ADD2022         | 15.205  |
+| In-the-Wild     | 1.461   |
+
+```python
+jj.detect("audio.wav", model="SpectraAASIST")
+```
+
+!!! note
+    Downloads `facebook/wav2vec2-xls-r-300m` on first run (~1.2 GB total, cached by HuggingFace Hub).
+
+---
+
+## SpectraAASIST3
+
+`lab260/Spectra-AASIST3`
+
+SSL encoder (Wav2Vec2-XLS-R-300M) → MLP projection → AASIST graph attention network with **KAN (Kolmogorov-Arnold Network)** linear layers — the strongest model in the Spectra family on In-the-Wild audio.
+
+| Benchmark       | EER (%) |
+|-----------------|---------|
+| ASVspoof19 LA   | 0.723   |
+| ASVspoof21 LA   | 4.506   |
+| ASVspoof21 DF   | 1.998   |
+| ASVspoof5       | 13.820  |
+| ADD2022         | 15.187  |
+| In-the-Wild     | 0.961   |
+
+```python
+jj.detect("audio.wav", model="SpectraAASIST3")
+```
+
+!!! note
+    Downloads `facebook/wav2vec2-xls-r-300m` on first run (~1.2 GB total, cached by HuggingFace Hub).
+
+---
+
 ## Wav2Vec2
 
 `Gustking/wav2vec2-large-xlsr-deepfake-audio-classification`
@@ -84,7 +159,7 @@ jj.detect("audio.wav", model="Wav2Vec2")
 
 `abhishtagatya/hubert-base-960h-itw-deepfake`
 
-HuBERT-base fine-tuned on the **In-The-Wild** dataset. EER 1.43% — the lowest of all bundled models on real-world audio.
+HuBERT-base fine-tuned on the **In-The-Wild** dataset. EER 1.43%.
 
 ```python
 jj.detect("audio.wav", model="HuBERT")

@@ -173,6 +173,12 @@ class Jabberjay:
                 return self._vit_handler(
                     audio=audio, visualisation=visualisation, dataset=dataset
                 )
+            case Model.Spectra0:
+                return self._spectra0_handler(y=y, sr=sr)
+            case Model.SpectraAASIST:
+                return self._spectra_aasist_handler(y=y, sr=sr)
+            case Model.SpectraAASIST3:
+                return self._spectra_aasist3_handler(y=y, sr=sr)
             case Model.Wav2Vec2:
                 return self._wav2vec2_handler(y=y, sr=sr)
             case Model.WavLM:
@@ -252,6 +258,27 @@ class Jabberjay:
         scores = vit_module.predict(audio=audio, dataset=dataset)
         logger.debug(f"VIT predictions: {scores}")
         return self._result_from_scores(scores, Model.VIT)
+
+    def _spectra0_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
+        import Jabberjay.Models.Spectra0.run as Spectra0
+
+        scores = Spectra0.predict(y=y, sr=sr)
+        logger.debug(f"Spectra-0 predictions: {scores}")
+        return self._result_from_scores(scores, Model.Spectra0)
+
+    def _spectra_aasist_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
+        import Jabberjay.Models.SpectraAASIST.run as SpectraAASIST
+
+        scores = SpectraAASIST.predict(y=y, sr=sr)
+        logger.debug(f"Spectra-AASIST predictions: {scores}")
+        return self._result_from_scores(scores, Model.SpectraAASIST)
+
+    def _spectra_aasist3_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
+        import Jabberjay.Models.SpectraAASIST3.run as SpectraAASIST3
+
+        scores = SpectraAASIST3.predict(y=y, sr=sr)
+        logger.debug(f"Spectra-AASIST3 predictions: {scores}")
+        return self._result_from_scores(scores, Model.SpectraAASIST3)
 
     def _wav2vec2_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
         import Jabberjay.Models.Wav2Vec2.run as Wav2Vec2
