@@ -165,16 +165,16 @@ class TestAASISTComponents:
         assert m.shape == (1, 1, 8)
 
     def test_residual_block_first_no_downsample(self):
-        from Jabberjay.Models.SpectraAASIST.model import Residual_block
+        from Jabberjay.Models.SpectraAASIST.model import ResidualBlock
 
-        block = Residual_block(nb_filts=[1, 32], first=True)
+        block = ResidualBlock(nb_filts=[1, 32], first=True)
         x = torch.randn(1, 1, 8, 8)
         assert block(x).shape == (1, 32, 8, 8)
 
     def test_residual_block_not_first_with_downsample(self):
-        from Jabberjay.Models.SpectraAASIST.model import Residual_block
+        from Jabberjay.Models.SpectraAASIST.model import ResidualBlock
 
-        block = Residual_block(nb_filts=[32, 64]).eval()
+        block = ResidualBlock(nb_filts=[32, 64]).eval()
         with torch.no_grad():
             out = block(torch.randn(1, 32, 8, 8))
         assert out.shape == (1, 64, 8, 8)
@@ -297,15 +297,15 @@ class TestAASIST3Components:
         assert m.shape == (1, 1, 4)
 
     def test_residual_block_first(self):
-        from Jabberjay.Models.SpectraAASIST3.model import Residual_block
+        from Jabberjay.Models.SpectraAASIST3.model import ResidualBlock
 
-        block = Residual_block(nb_filts=[1, 32], first=True)
+        block = ResidualBlock(nb_filts=[1, 32], first=True)
         assert block(torch.randn(1, 1, 8, 8)).shape == (1, 32, 8, 8)
 
     def test_residual_block_with_downsample(self):
-        from Jabberjay.Models.SpectraAASIST3.model import Residual_block
+        from Jabberjay.Models.SpectraAASIST3.model import ResidualBlock
 
-        block = Residual_block(nb_filts=[32, 64]).eval()
+        block = ResidualBlock(nb_filts=[32, 64]).eval()
         with torch.no_grad():
             assert block(torch.randn(1, 32, 8, 8)).shape == (1, 64, 8, 8)
 
