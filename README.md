@@ -24,7 +24,7 @@
 
 Synthetic voice detection is a fragmented landscape — state-of-the-art models are scattered across research repositories, each with its own dependencies, input formats, and output conventions. Jabberjay brings them all under one consistent Python API and CLI so you can detect AI-generated speech without wrestling with model internals.
 
-- **Ten model families** — ViT, AST, Spectra0, Spectra-AASIST, Spectra-AASIST3, Wav2Vec2, HuBERT, WavLM, RawNet2, and a classical baseline
+- **Ten model families** — ViT, AST, Spectra0, SpectraAASIST, SpectraAASIST3, Wav2Vec2, HuBERT, WavLM, RawNet2, and a classical baseline
 - **Unified output** — every model returns the same `DetectionResult` with `label`, `confidence`, and `scores`
 - **Zero boilerplate** — pass a file path, get a verdict; models are downloaded and cached automatically
 - **Flexible** — use strings for quick experiments, enums for IDE autocomplete, or pre-load audio to run multiple models on the same clip
