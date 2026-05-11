@@ -10,9 +10,9 @@
 [![CI](https://github.com/MattyB95/Jabberjay/actions/workflows/ci.yml/badge.svg)](https://github.com/MattyB95/Jabberjay/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/pypi/pyversions/jabberjay)](https://pypi.org/project/Jabberjay/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Downloads](https://img.shields.io/pypi/dm/jabberjay)](https://pypi.org/project/Jabberjay/)
+[![Downloads](https://static.pepy.tech/badge/jabberjay/month)](https://pepy.tech/project/jabberjay)
 [![Docs](https://img.shields.io/badge/docs-mattyb95.github.io%2FJabberjay-blue)](https://mattyb95.github.io/Jabberjay)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19056977.svg)](https://doi.org/10.5281/zenodo.19056977)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19056977-blue)](https://doi.org/10.5281/zenodo.19056977)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/MattyB95?label=Sponsor&logo=GitHub&color=EA4AAA)](https://github.com/sponsors/MattyB95)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/mattyb95)
 

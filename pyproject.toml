@@ -46,11 +46,11 @@ classifiers = [
     "Topic :: Security",
 ]
 dependencies = [
-    "huggingface-hub>=1.10.2",
+    "huggingface-hub>=1.14.0",
     "joblib>=1.5.3",
     "loguru>=0.7.3",
     "librosa>=0.11.0",
-    "matplotlib>=3.10.8",
+    "matplotlib>=3.10.9",
     "numpy>=2.4.4",
     "pillow>=12.2.0",
     "PyYAML>=6.0.3",
@@ -58,7 +58,7 @@ dependencies = [
     "soundfile>=0.13.1",
     "torch>=2.11.0",
     "torchaudio>=2.11.0",
-    "transformers>=5.5.4",
+    "transformers>=5.8.0",
 ]
 
 [project.urls]
@@ -74,12 +74,12 @@ jabberjay = "Jabberjay.jabberjay:main"
 dev = [
     "black>=26.3.1",
     "mkdocs-material>=9.7.6",
-    "mkdocstrings[python]>=1.0.3",
-    "pre-commit>=4.5.1",
+    "mkdocstrings[python]>=1.0.4",
+    "pre-commit>=4.6.0",
     "pytest>=9.0.3",
     "pytest-cov>=7.1.0",
-    "ruff>=0.15.10",
-    "ty>=0.0.30",
+    "ruff>=0.15.12",
+    "ty>=0.0.35",
 ]
 
 [tool.pytest.ini_options]
