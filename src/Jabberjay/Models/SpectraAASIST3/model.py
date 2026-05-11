@@ -37,6 +37,7 @@ class KANLinear(nn.Module):
             .expand(in_features, -1)
             .contiguous()
         )
+        self.grid: torch.Tensor
         self.register_buffer("grid", grid)
         self.base_weight = nn.Parameter(torch.Tensor(out_features, in_features))
         self.spline_weight = nn.Parameter(

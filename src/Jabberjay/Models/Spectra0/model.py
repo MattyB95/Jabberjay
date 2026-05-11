@@ -23,7 +23,9 @@ class SEModule(nn.Module):
 
 
 class Bottle2neck(nn.Module):
-    def __init__(self, inplanes, planes, kernel_size=None, dilation=None, scale=8):
+    def __init__(
+        self, inplanes, planes, kernel_size: int = 3, dilation: int = 1, scale=8
+    ):
         super().__init__()
         width = int(math.floor(planes / scale))
         self.conv1 = nn.Conv1d(inplanes, width * scale, kernel_size=1)

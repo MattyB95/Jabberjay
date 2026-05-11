@@ -9,7 +9,7 @@ class Wav2Vec2Encoder(nn.Module):
             model_name_or_path, gradient_checkpointing=False
         )
         self.model.config.apply_spec_augment = False
-        self.model.masked_spec_embed = None
+        self.model.masked_spec_embed = None  # type: ignore
 
     def forward(self, x):
         if x.ndim == 3:

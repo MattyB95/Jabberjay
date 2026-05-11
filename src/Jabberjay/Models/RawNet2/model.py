@@ -34,7 +34,7 @@ class SincConv(nn.Module):
     ):
         super(SincConv, self).__init__()
 
-        self.filters = None
+        self.filters: Tensor
         if in_channels != 1:
             msg = (
                 "SincConv only supports one input channel (here, in_channels = {%i})"
