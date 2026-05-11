@@ -342,6 +342,82 @@ class TestGetImage:
 
 
 # ---------------------------------------------------------------------------
+# Spectra0
+# ---------------------------------------------------------------------------
+
+
+class _SpectraModelTestBase:
+    """Shared test logic for all Spectra models that return softmax scores."""
+
+    model_module: str
+    model_class: str
+
+    def _make_mock_model(self, logits):
+        import torch
+
+        mock_model = MagicMock()
+        mock_model.eval.return_value = mock_model
+        mock_model.to.return_value = mock_model
+        mock_model.return_value = torch.tensor([logits])
+        return mock_model
+
+    def _patch_path(self):
+        return f"Jabberjay.Models.{self.model_module}.run.{self.model_class}.from_pretrained"
+
+    def test_returns_bonafide_and_spoof_scores(self):
+        import importlib
+
+        predict = importlib.import_module(
+            f"Jabberjay.Models.{self.model_module}.run"
+        ).predict
+        mock_model = self._make_mock_model([0.2, 0.8])
+        with patch(self._patch_path(), return_value=mock_model):
+            result = predict(y=AUDIO[0], sr=AUDIO[1])
+        assert {r["label"] for r in result} == {"Bonafide", "Spoof"}
+
+    def test_higher_bonafide_logit_yields_higher_bonafide_score(self):
+        import importlib
+
+        predict = importlib.import_module(
+            f"Jabberjay.Models.{self.model_module}.run"
+        ).predict
+        mock_model = self._make_mock_model([0.1, 0.9])
+        with patch(self._patch_path(), return_value=mock_model):
+            result = predict(y=AUDIO[0], sr=AUDIO[1])
+        bonafide = next(r for r in result if r["label"] == "Bonafide")
+        spoof = next(r for r in result if r["label"] == "Spoof")
+        assert bonafide["score"] > spoof["score"]
+
+    def test_scores_sum_to_one(self):
+        import importlib
+
+        import pytest
+
+        predict = importlib.import_module(
+            f"Jabberjay.Models.{self.model_module}.run"
+        ).predict
+        mock_model = self._make_mock_model([0.3, 0.7])
+        with patch(self._patch_path(), return_value=mock_model):
+            result = predict(y=AUDIO[0], sr=AUDIO[1])
+        assert sum(r["score"] for r in result) == pytest.approx(1.0, abs=1e-5)
+
+
+class TestSpectra0Predict(_SpectraModelTestBase):
+    model_module = "Spectra0"
+    model_class = "Spectra0Model"
+
+
+class TestSpectraAASISTPredict(_SpectraModelTestBase):
+    model_module = "SpectraAASIST"
+    model_class = "SpectraAASIST"
+
+
+class TestSpectraAASIST3Predict(_SpectraModelTestBase):
+    model_module = "SpectraAASIST3"
+    model_class = "SpectraAASIST3"
+
+
+# ---------------------------------------------------------------------------
 # Classical
 # ---------------------------------------------------------------------------
 
@@ -397,25 +473,39 @@ class TestClassicalPredict:
 
 class TestRawNet2Config:
     def test_oserror_raises_runtime_error(self):
+        import Jabberjay.Models.RawNet2.run as rawnet2_run
         from Jabberjay.Models.RawNet2.run import predict
 
-        with patch("builtins.open", side_effect=OSError("missing")):
-            with pytest.raises(RuntimeError, match="Failed to load RawNet2 config"):
-                predict(y=AUDIO[0])
+        original = rawnet2_run._CONFIG
+        rawnet2_run._CONFIG = None  # reset cache so the open is attempted
+        try:
+            with patch("builtins.open", side_effect=OSError("missing")):
+                with pytest.raises(RuntimeError, match="Failed to load RawNet2 config"):
+                    predict(y=AUDIO[0])
+        finally:
+            rawnet2_run._CONFIG = original
 
     def test_yaml_error_raises_runtime_error(self):
         import yaml
 
+        import Jabberjay.Models.RawNet2.run as rawnet2_run
         from Jabberjay.Models.RawNet2.run import predict
 
-        with patch("builtins.open", mock_open := MagicMock()):
-            mock_open.return_value.__enter__.return_value = MagicMock()
-            with patch(
-                "Jabberjay.Models.RawNet2.run.yaml.safe_load",
-                side_effect=yaml.YAMLError("bad yaml"),
-            ):
-                with pytest.raises(RuntimeError, match="Failed to load RawNet2 config"):
-                    predict(y=AUDIO[0])
+        original = rawnet2_run._CONFIG
+        rawnet2_run._CONFIG = None  # reset cache so the open is attempted
+        try:
+            with patch("builtins.open", mock_open := MagicMock()):
+                mock_open.return_value.__enter__.return_value = MagicMock()
+                with patch(
+                    "Jabberjay.Models.RawNet2.run.yaml.safe_load",
+                    side_effect=yaml.YAMLError("bad yaml"),
+                ):
+                    with pytest.raises(
+                        RuntimeError, match="Failed to load RawNet2 config"
+                    ):
+                        predict(y=AUDIO[0])
+        finally:
+            rawnet2_run._CONFIG = original
 
 
 class TestRawNet2Predict:

@@ -24,7 +24,7 @@ jobs:
 
       - uses: astral-sh/setup-uv@v7
         with:
-          cache: true
+          enable-cache: true
 
       - name: Install dev dependencies
         run: uv sync --group dev
