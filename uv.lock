@@ -876,11 +876,11 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "huggingface-hub", specifier = ">=1.10.2" },
+    { name = "huggingface-hub", specifier = ">=1.14.0" },
     { name = "joblib", specifier = ">=1.5.3" },
     { name = "librosa", specifier = ">=0.11.0" },
     { name = "loguru", specifier = ">=0.7.3" },
-    { name = "matplotlib", specifier = ">=3.10.8" },
+    { name = "matplotlib", specifier = ">=3.10.9" },
     { name = "numpy", specifier = ">=2.4.4" },
     { name = "pillow", specifier = ">=12.2.0" },
     { name = "pyyaml", specifier = ">=6.0.3" },
@@ -888,19 +888,19 @@ requires-dist = [
     { name = "soundfile", specifier = ">=0.13.1" },
     { name = "torch", specifier = ">=2.11.0" },
     { name = "torchaudio", specifier = ">=2.11.0" },
-    { name = "transformers", specifier = ">=5.5.4" },
+    { name = "transformers", specifier = ">=5.8.0" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "black", specifier = ">=26.3.1" },
     { name = "mkdocs-material", specifier = ">=9.7.6" },
-    { name = "mkdocstrings", extras = ["python"], specifier = ">=1.0.3" },
-    { name = "pre-commit", specifier = ">=4.5.1" },
+    { name = "mkdocstrings", extras = ["python"], specifier = ">=1.0.4" },
+    { name = "pre-commit", specifier = ">=4.6.0" },
     { name = "pytest", specifier = ">=9.0.3" },
     { name = "pytest-cov", specifier = ">=7.1.0" },
-    { name = "ruff", specifier = ">=0.15.10" },
-    { name = "ty", specifier = ">=0.0.30" },
+    { name = "ruff", specifier = ">=0.15.12" },
+    { name = "ty", specifier = ">=0.0.35" },
 ]
 
 [[package]]
