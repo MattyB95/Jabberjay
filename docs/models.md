@@ -21,7 +21,7 @@ Jabberjay bundles ten model families. Each is downloaded from Hugging Face Hub o
 
 **Simple rule of thumb:**
 
-- For the lowest error rate on In-The-Wild audio — use **SpectraAASIST3** (EER 0.96%)
+- For the lowest error rate on In-The-Wild audio — use **SpectraAASIST3** (EER 0.961%)
 - For a quick, general-purpose result — use **WavLM** or **HuBERT**
 - For a lightweight baseline with no deep learning — use **Classical**
 - To sweep all models and compare — use `jj.load()` once, then call `jj.detect()` for each

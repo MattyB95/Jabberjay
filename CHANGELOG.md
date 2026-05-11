@@ -18,7 +18,7 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 - **Spectra-AASIST3 model** — `lab260/Spectra-AASIST3`; same architecture as
   Spectra-AASIST but with KAN-Linear (B-spline Kolmogorov-Arnold Network)
   attention layers replacing standard linear layers; EER 0.961% on
-  ASVspoof2019 LA eval — lowest of all bundled models
+  In-the-Wild eval — lowest of all bundled models
 - All three Spectra models registered in the `Model` enum and handler dispatch;
   model-specific `__init__.py`, `model.py`, and `run.py` modules added under
   `src/Jabberjay/Models/`

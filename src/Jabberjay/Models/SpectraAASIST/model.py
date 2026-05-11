@@ -127,7 +127,7 @@ class GraphAttentionLayer(nn.Module):
         return self.act(self.bn(x.view(-1, s[-1])).view(s))
 
 
-class Residual_block(nn.Module):
+class ResidualBlock(nn.Module):
     def __init__(self, nb_filts, first=False):
         super().__init__()
         self.first = first
@@ -164,8 +164,8 @@ class Encoder(nn.Module):
         self.first_bn1 = nn.BatchNorm2d(64)
         self.selu = nn.SELU(inplace=True)
         self.enc = nn.Sequential(
-            *[Residual_block(nb_filts=filts[i], first=(i == 1)) for i in range(1, 5)]
-            + [Residual_block(nb_filts=filts[4]), Residual_block(nb_filts=filts[4])]
+            *[ResidualBlock(nb_filts=filts[i], first=(i == 1)) for i in range(1, 5)]
+            + [ResidualBlock(nb_filts=filts[4]), ResidualBlock(nb_filts=filts[4])]
         )
 
     def forward(self, x):
