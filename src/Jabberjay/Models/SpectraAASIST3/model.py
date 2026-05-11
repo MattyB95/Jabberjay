@@ -166,9 +166,9 @@ class HtrgGraphAttentionLayer(nn.Module):
 
     def _derive_att_map(self, x, num_type1, num_type2):
         nb = x.size(1)
-        pw = x.unsqueeze(2).expand(-1, -1, nb, -1) * x.transpose(1, 2).unsqueeze(
-            1
-        ).expand(-1, nb, -1, -1).transpose(1, 2)
+        pw = x.unsqueeze(2).expand(-1, -1, nb, -1) * x.unsqueeze(1).expand(
+            -1, nb, -1, -1
+        )
         att_map = torch.tanh(self.att_proj(pw))
         board = torch.zeros_like(att_map[:, :, :, 0]).unsqueeze(-1)
         board[:, :num_type1, :num_type1] = torch.matmul(
@@ -225,9 +225,9 @@ class GraphAttentionLayer(nn.Module):
     def forward(self, x):
         x = self.input_drop(x)
         nb = x.size(1)
-        pw = x.unsqueeze(2).expand(-1, -1, nb, -1) * x.transpose(1, 2).unsqueeze(
-            1
-        ).expand(-1, nb, -1, -1).transpose(1, 2)
+        pw = x.unsqueeze(2).expand(-1, -1, nb, -1) * x.unsqueeze(1).expand(
+            -1, nb, -1, -1
+        )
         att_map = F.softmax(
             torch.matmul(torch.tanh(self.att_proj(pw)), self.att_weight) / self.temp,
             dim=-2,
