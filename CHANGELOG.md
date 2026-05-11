@@ -7,6 +7,59 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 
 ---
 
+## [0.0.11] — 2026-05-11
+
+### Added
+- **Spectra0 model** — `lab260/spectra_0`; Wav2Vec2-XLS-R-300M encoder + MLP
+  bridge + ECAPA-TDNN classifier; EER 1.39% on ASVspoof2019 LA eval
+- **Spectra-AASIST model** — `lab260/Spectra-AASIST`; Wav2Vec2-XLS-R-300M
+  encoder + MLP bridge + AASIST graph attention network (heterogeneous
+  spectral-temporal GAT with linear attention layers)
+- **Spectra-AASIST3 model** — `lab260/Spectra-AASIST3`; same architecture as
+  Spectra-AASIST but with KAN-Linear (B-spline Kolmogorov-Arnold Network)
+  attention layers replacing standard linear layers; EER 0.961% on
+  ASVspoof2019 LA eval — lowest of all bundled models
+- All three Spectra models registered in the `Model` enum and handler dispatch;
+  model-specific `__init__.py`, `model.py`, and `run.py` modules added under
+  `src/Jabberjay/Models/`
+
+### Changed
+- **README downloads badge** — switched from shields.io PyPI (rate-limited
+  upstream) to pepy.tech for reliable download counts
+- **README DOI badge** — switched from a Zenodo-hosted SVG (renders as raw
+  `DOI` text on GitHub) to a shields.io static badge for correct rendering
+- **Dependency pins updated** — `huggingface-hub`, `matplotlib`, `transformers`,
+  `mkdocstrings`, `pre-commit`, `ruff`, and `ty` bumped to current latest
+  releases in `pyproject.toml`
+- **Pre-commit ruff hook ID** — renamed from the legacy alias `ruff` to
+  `ruff-check` in `.pre-commit-config.yaml` following upstream rename in
+  `astral-sh/ruff-pre-commit`
+- **CI `setup-uv` cache input corrected** — `cache: true` replaced with
+  `enable-cache: true` in `ci.yml` and `docs.yml`; `cache` is not a valid
+  input for `astral-sh/setup-uv@v7` and caused all CI jobs to fail
+
+### Performance
+- **`SincConv` filter bank precomputed at init** — the Mel-scale sinc band-pass
+  filter bank in `RawNet2/model.py` was rebuilt from scratch on every
+  `forward()` call despite being fully deterministic from the constructor
+  parameters; computation now runs once in `__init__` and is reused
+- **`RawNet2` config cached after first load** — `model_config_RawNet.yaml`
+  was parsed on every `predict()` call; a module-level sentinel now ensures
+  the file is read once and reused for the lifetime of the process
+
+### Fixed
+- **`RawNet2` device log level** — `logger.info` corrected to `logger.debug`
+  for device-selection messages, consistent with all other model handlers
+- **`Spectra` shared encoder extracted** — `Wav2Vec2Encoder` and `MLPBridge`
+  were copy-pasted verbatim into `Spectra0`, `SpectraAASIST`, and
+  `SpectraAASIST3` model files; both classes now live in a single
+  `Models/Spectra/shared.py` module that all three import from
+- **Documentation updated** — models page, CLI reference, index, and getting
+  started guide updated to reflect ten model families and all three Spectra
+  models; SpectraAASIST3 noted as current recommended model
+
+---
+
 ## [0.0.10] — 2026-04-14
 
 ### Added
@@ -264,6 +317,7 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
+[0.0.11]: https://github.com/MattyB95/Jabberjay/compare/v0.0.10...v0.0.11
 [0.0.10]: https://github.com/MattyB95/Jabberjay/compare/v0.0.9...v0.0.10
 [0.0.9]: https://github.com/MattyB95/Jabberjay/compare/v0.0.8.post2...v0.0.9
 [0.0.8.post2]: https://github.com/MattyB95/Jabberjay/compare/v0.0.8.post1...v0.0.8.post2

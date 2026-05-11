@@ -68,33 +68,26 @@ class SincConv(nn.Module):
         fmelmin = np.min(fmel)
         filbandwidthsmel = np.linspace(fmelmin, fmelmax, self.out_channels + 1)
         filbandwidthsf = self.to_hz(filbandwidthsmel)  # Mel to Hz conversion
-        self.mel = filbandwidthsf
-        self.hsupp = torch.arange(
+        hsupp = torch.arange(
             -(self.kernel_size - 1) / 2, (self.kernel_size - 1) / 2 + 1
         )
-        self.band_pass = torch.zeros(self.out_channels, self.kernel_size)
-
-    def forward(self, x):
-        for i in range(len(self.mel) - 1):
-            fmin = self.mel[i]
-            fmax = self.mel[i + 1]
+        hamming = Tensor(np.hamming(self.kernel_size))
+        band_pass = torch.zeros(self.out_channels, self.kernel_size)
+        for i in range(len(filbandwidthsf) - 1):
+            fmin, fmax = filbandwidthsf[i], filbandwidthsf[i + 1]
             hHigh = (2 * fmax / self.sample_rate) * np.sinc(
-                2 * fmax * self.hsupp / self.sample_rate
+                2 * fmax * hsupp / self.sample_rate
             )
             hLow = (2 * fmin / self.sample_rate) * np.sinc(
-                2 * fmin * self.hsupp / self.sample_rate
+                2 * fmin * hsupp / self.sample_rate
             )
-            hideal = hHigh - hLow
+            band_pass[i, :] = hamming * Tensor(hHigh - hLow)
+        self.filters = band_pass.view(self.out_channels, 1, self.kernel_size)
 
-            self.band_pass[i, :] = Tensor(np.hamming(self.kernel_size)) * Tensor(hideal)
-
-        band_pass_filter = self.band_pass.to(self.device)
-
-        self.filters = (band_pass_filter).view(self.out_channels, 1, self.kernel_size)
-
+    def forward(self, x):
         return F.conv1d(
             x,
-            self.filters,
+            self.filters.to(self.device),
             stride=self.stride,
             padding=self.padding,
             dilation=self.dilation,

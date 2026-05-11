@@ -473,25 +473,39 @@ class TestClassicalPredict:
 
 class TestRawNet2Config:
     def test_oserror_raises_runtime_error(self):
+        import Jabberjay.Models.RawNet2.run as rawnet2_run
         from Jabberjay.Models.RawNet2.run import predict
 
-        with patch("builtins.open", side_effect=OSError("missing")):
-            with pytest.raises(RuntimeError, match="Failed to load RawNet2 config"):
-                predict(y=AUDIO[0])
+        original = rawnet2_run._CONFIG
+        rawnet2_run._CONFIG = None  # reset cache so the open is attempted
+        try:
+            with patch("builtins.open", side_effect=OSError("missing")):
+                with pytest.raises(RuntimeError, match="Failed to load RawNet2 config"):
+                    predict(y=AUDIO[0])
+        finally:
+            rawnet2_run._CONFIG = original
 
     def test_yaml_error_raises_runtime_error(self):
         import yaml
 
+        import Jabberjay.Models.RawNet2.run as rawnet2_run
         from Jabberjay.Models.RawNet2.run import predict
 
-        with patch("builtins.open", mock_open := MagicMock()):
-            mock_open.return_value.__enter__.return_value = MagicMock()
-            with patch(
-                "Jabberjay.Models.RawNet2.run.yaml.safe_load",
-                side_effect=yaml.YAMLError("bad yaml"),
-            ):
-                with pytest.raises(RuntimeError, match="Failed to load RawNet2 config"):
-                    predict(y=AUDIO[0])
+        original = rawnet2_run._CONFIG
+        rawnet2_run._CONFIG = None  # reset cache so the open is attempted
+        try:
+            with patch("builtins.open", mock_open := MagicMock()):
+                mock_open.return_value.__enter__.return_value = MagicMock()
+                with patch(
+                    "Jabberjay.Models.RawNet2.run.yaml.safe_load",
+                    side_effect=yaml.YAMLError("bad yaml"),
+                ):
+                    with pytest.raises(
+                        RuntimeError, match="Failed to load RawNet2 config"
+                    ):
+                        predict(y=AUDIO[0])
+        finally:
+            rawnet2_run._CONFIG = original
 
 
 class TestRawNet2Predict:

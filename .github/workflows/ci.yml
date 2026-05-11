@@ -39,7 +39,7 @@ jobs:
 
       - uses: astral-sh/setup-uv@v7
         with:
-          cache: true
+          enable-cache: true
 
       - name: Install dev dependencies
         run: uv sync --group dev
@@ -73,7 +73,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python-version }}
-          cache: true
+          enable-cache: true
 
       - name: Install dependencies
         run: uv sync --group dev
@@ -102,7 +102,7 @@ jobs:
 
       - uses: astral-sh/setup-uv@v7
         with:
-          cache: true
+          enable-cache: true
 
       - name: Inject .devN version suffix
         run: |
@@ -132,7 +132,7 @@ jobs:
 
       - uses: astral-sh/setup-uv@v7
         with:
-          cache: true
+          enable-cache: true
 
       - name: Build package
         run: uv build

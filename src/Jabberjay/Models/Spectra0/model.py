@@ -3,7 +3,8 @@ import math
 import torch
 import torch.nn as nn
 from huggingface_hub import PyTorchModelHubMixin
-from transformers import Wav2Vec2Model
+
+from Jabberjay.Models.Spectra.shared import MLPBridge, Wav2Vec2Encoder
 
 
 class SEModule(nn.Module):
@@ -108,45 +109,6 @@ class ECAPA_TDNN(nn.Module):
         mu = torch.sum(x * w, dim=2)
         sg = torch.sqrt((torch.sum((x**2) * w, dim=2) - mu**2).clamp(min=1e-4))
         return self.fc6(self.bn5(torch.cat((mu, sg), 1)))
-
-
-class Wav2Vec2Encoder(nn.Module):
-    def __init__(self, model_name_or_path: str = "facebook/wav2vec2-xls-r-300m"):
-        super().__init__()
-        self.model = Wav2Vec2Model.from_pretrained(
-            model_name_or_path, gradient_checkpointing=False
-        )
-        self.model.config.apply_spec_augment = False
-        self.model.masked_spec_embed = None
-
-    def forward(self, x):
-        if x.ndim == 3:
-            x = x.squeeze(-1)
-        return self.model(x, return_dict=True).last_hidden_state
-
-
-class MLPBridge(nn.Module):
-    def __init__(
-        self,
-        input_dim: int,
-        output_dim: int,
-        hidden_dim: int = 128,
-        dropout: float = 0.1,
-        activation=None,
-    ):
-        super().__init__()
-        if activation is None:
-            activation = nn.SELU()
-        self.mlp = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            activation,
-            nn.Dropout(dropout),
-            nn.Linear(hidden_dim, output_dim),
-            nn.Dropout(dropout),
-        )
-
-    def forward(self, x):
-        return self.mlp(x)
 
 
 class Spectra0Model(nn.Module, PyTorchModelHubMixin):
