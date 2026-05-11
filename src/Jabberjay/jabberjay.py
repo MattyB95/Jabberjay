@@ -129,7 +129,8 @@ class Jabberjay:
             ``ConstantQ`` and ``VoxCelebSpoof`` respectively so a bare
             ``jj.detect("audio.flac")`` works out of the box.
             AST requires ``dataset`` (no default).
-            All other models (Classical, RawNet2, HuBERT, Wav2Vec2, WavLM) ignore both.
+            All other models (Classical, RawNet2, Spectra0, SpectraAASIST,
+            SpectraAASIST3, HuBERT, Wav2Vec2, WavLM) ignore both.
         """
         # Coerce strings to enums
         if isinstance(model, str):

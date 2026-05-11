@@ -208,7 +208,7 @@ Every call to `detect()` returns a `DetectionResult` regardless of the model use
 | `is_bonafide` | `bool`               | `True` if the audio is classified as genuine                                                                                  |
 | `confidence`  | `float`              | Confidence score for the top prediction (0.0–1.0)                                                                             |
 | `model`       | `Model`              | The model that produced this result                                                                                           |
-| `scores`      | `list[dict] \| None` | Full label/score breakdown for VIT, AST, Spectra0, Wav2Vec2, HuBERT, and WavLM (sorted highest-first); `None` for Classical and RawNet2 |
+| `scores`      | `list[dict] \| None` | Full label/score breakdown for VIT, AST, Spectra0, SpectraAASIST, SpectraAASIST3, Wav2Vec2, HuBERT, and WavLM (sorted highest-first); `None` for Classical and RawNet2 |
 
 ```python
 if result.is_bonafide:

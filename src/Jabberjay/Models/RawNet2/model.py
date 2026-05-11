@@ -82,12 +82,14 @@ class SincConv(nn.Module):
                 2 * fmin * hsupp / self.sample_rate
             )
             band_pass[i, :] = hamming * Tensor(hHigh - hLow)
-        self.filters = band_pass.view(self.out_channels, 1, self.kernel_size)
+        self.register_buffer(
+            "filters", band_pass.view(self.out_channels, 1, self.kernel_size)
+        )
 
     def forward(self, x):
         return F.conv1d(
             x,
-            self.filters.to(self.device),
+            self.filters,
             stride=self.stride,
             padding=self.padding,
             dilation=self.dilation,

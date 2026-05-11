@@ -11,7 +11,7 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 
 ### Added
 - **Spectra0 model** — `lab260/spectra_0`; Wav2Vec2-XLS-R-300M encoder + MLP
-  bridge + ECAPA-TDNN classifier; EER 1.39% on ASVspoof2019 LA eval
+  bridge + ECAPA-TDNN classifier; EER 0.181% on ASVspoof2019 LA eval
 - **Spectra-AASIST model** — `lab260/Spectra-AASIST`; Wav2Vec2-XLS-R-300M
   encoder + MLP bridge + AASIST graph attention network (heterogeneous
   spectral-temporal GAT with linear attention layers)
