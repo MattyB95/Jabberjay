@@ -7,6 +7,15 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 
 ---
 
+## [0.0.12] — 2026-05-31
+
+### Changed
+- **Lockfile updated** — `idna` bumped `3.14 → 3.15` and `pymdown-extensions`
+  bumped `10.21.2 → 10.21.3` in `uv.lock`; both are indirect dependencies and
+  do not affect the published package
+
+---
+
 ## [0.0.11] — 2026-05-11
 
 ### Added
@@ -317,6 +326,7 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
+[0.0.12]: https://github.com/MattyB95/Jabberjay/compare/v0.0.11...v0.0.12
 [0.0.11]: https://github.com/MattyB95/Jabberjay/compare/v0.0.10...v0.0.11
 [0.0.10]: https://github.com/MattyB95/Jabberjay/compare/v0.0.9...v0.0.10
 [0.0.9]: https://github.com/MattyB95/Jabberjay/compare/v0.0.8.post2...v0.0.9
