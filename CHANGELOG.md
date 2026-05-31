@@ -7,6 +7,15 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 
 ---
 
+## [0.0.12] — 2026-05-31
+
+### Changed
+- **Lockfile updated** — `idna` bumped `3.14 → 3.15` and `pymdown-extensions`
+  bumped `10.21.2 → 10.21.3` in `uv.lock`; both are indirect dependencies and
+  do not affect the published package
+
+---
+
 ## [0.0.11] — 2026-05-11
 
 ### Added
