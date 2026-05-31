@@ -1331,7 +1331,7 @@
   <p>VIT requires both <code>visualisation</code> and <code>dataset</code>; both default to
 <code>ConstantQ</code> and <code>VoxCelebSpoof</code> respectively so a bare
 <code>jj.detect("audio.flac")</code> works out of the box.
-AST requires <code>dataset</code> (no default).
+AST requires <code>dataset</code>; defaults to <code>VoxCelebSpoof</code>.
 All other models (Classical, RawNet2, Spectra0, SpectraAASIST,
 SpectraAASIST3, HuBERT, Wav2Vec2, WavLM) ignore both.</p>
 </details>
@@ -1415,7 +1415,7 @@ Jabberjay.enable_logging(&quot;INFO&quot;)    # skip debug messages
 
     <div class="doc doc-contents ">
 
-        <p>Print and return all available datasets.</p>
+        <p>Return all available datasets.</p>
 
 
     </div>
@@ -1437,7 +1437,7 @@ Jabberjay.enable_logging(&quot;INFO&quot;)    # skip debug messages
 
     <div class="doc doc-contents ">
 
-        <p>Print and return all available models.</p>
+        <p>Return all available models.</p>
 
 
     </div>
@@ -1459,7 +1459,7 @@ Jabberjay.enable_logging(&quot;INFO&quot;)    # skip debug messages
 
     <div class="doc doc-contents ">
 
-        <p>Print and return all available visualisations.</p>
+        <p>Return all available visualisations.</p>
 
 
     </div>
