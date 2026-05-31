@@ -7,6 +7,36 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 
 ---
 
+## [0.0.13] — 2026-05-31
+
+### Changed
+- **Spectra preprocessing centralised** — `_preprocess()`, `_TARGET_SR`, and `_MAX_LEN`
+  extracted from `Spectra0`, `SpectraAASIST`, and `SpectraAASIST3` run modules into a
+  single `Models/Spectra/shared.py`; no behaviour change
+- **Transformer pipeline helper** — `Utilities/pipeline.py` introduces `run_pipeline()`;
+  `HuBERT`, `Wav2Vec2`, `WavLM`, and `AST` run modules now delegate to this shared
+  function, removing ~40 lines of duplicate boilerplate
+- **Exception handling tightened in `load()`** — bare `except Exception` narrowed to
+  `(OSError, RuntimeError, EOFError)` so programming errors are no longer silently
+  swallowed
+- **`list_*` methods no longer print** — `list_models()`, `list_datasets()`, and
+  `list_visualisations()` return their lists silently; callers print if needed
+- **Dependency upper bounds added** — `numpy`, `torch`, and `torchaudio` now carry
+  `<3` upper bounds to guard against silent major-version breaks
+- **Docs PR build check** — `docs.yml` now runs `mkdocs build --strict` on every pull
+  request so broken documentation is caught before merge; deploy to GitHub Pages
+  remains main-only
+- **`ty` pre-commit hook** — type-check now runs locally on every commit via
+  `.pre-commit-config.yaml`
+- **Pytest warning filters added** — `audioread` Python 3.13+ deprecation noise and
+  the sklearn pickle-version advisory suppressed in test output
+
+### Fixed
+- **`download_pretrained_model()` docstring** — missing docstring added to
+  `Utilities/hugging_face.py`
+
+---
+
 ## [0.0.12] — 2026-05-31
 
 ### Changed

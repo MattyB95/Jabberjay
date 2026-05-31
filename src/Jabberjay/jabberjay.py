@@ -122,7 +122,7 @@ class Jabberjay:
             VIT requires both ``visualisation`` and ``dataset``; both default to
             ``ConstantQ`` and ``VoxCelebSpoof`` respectively so a bare
             ``jj.detect("audio.flac")`` works out of the box.
-            AST requires ``dataset`` (no default).
+            AST requires ``dataset``; defaults to ``VoxCelebSpoof``.
             All other models (Classical, RawNet2, Spectra0, SpectraAASIST,
             SpectraAASIST3, HuBERT, Wav2Vec2, WavLM) ignore both.
         """
