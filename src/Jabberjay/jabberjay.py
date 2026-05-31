@@ -4,6 +4,7 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import audioread.exceptions
 import librosa
 import numpy as np
 from loguru import logger
@@ -90,7 +91,7 @@ class Jabberjay:
             y, sr = librosa.load(path)
         except FileNotFoundError:
             raise FileNotFoundError(f"Audio file not found: {path}")
-        except (OSError, RuntimeError, EOFError) as exc:
+        except (OSError, RuntimeError, EOFError, audioread.exceptions.NoBackendError) as exc:
             raise ValueError(f"Failed to load audio from '{path}': {exc}") from exc
         logger.info(f"Loaded {len(y) / sr:.2f}s of audio at {int(sr)}Hz")
         return y, sr
