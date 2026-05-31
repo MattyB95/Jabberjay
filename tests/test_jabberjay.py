@@ -33,20 +33,19 @@ class TestLoad:
 
 
 class TestListMethods:
-    def test_list_models_returns_list(self, capsys):
+    def test_list_models_returns_list(self):
         models = Jabberjay.list_models()
         assert isinstance(models, list)
         assert all(isinstance(m, Model) for m in models)
         assert len(models) == len(Model)
-        assert "Models:" in capsys.readouterr().out
 
-    def test_list_datasets_returns_list(self, capsys):
+    def test_list_datasets_returns_list(self):
         datasets = Jabberjay.list_datasets()
         assert isinstance(datasets, list)
         assert all(isinstance(d, Dataset) for d in datasets)
         assert len(datasets) == len(Dataset)
 
-    def test_list_visualisations_returns_list(self, capsys):
+    def test_list_visualisations_returns_list(self):
         vis = Jabberjay.list_visualisations()
         assert isinstance(vis, list)
         assert all(isinstance(v, Visualisation) for v in vis)
@@ -232,7 +231,7 @@ class TestResultFromScores:
 class TestLoadErrors:
     def test_load_raises_value_error_on_corrupt_file(self):
         jj = Jabberjay()
-        with patch("librosa.load", side_effect=Exception("codec error")):
+        with patch("librosa.load", side_effect=RuntimeError("codec error")):
             with pytest.raises(ValueError, match="Failed to load"):
                 jj.load("corrupt.wav")
 

@@ -844,7 +844,7 @@ wheels = [
 
 [[package]]
 name = "jabberjay"
-version = "0.0.11"
+version = "0.0.12"
 source = { editable = "." }
 dependencies = [
     { name = "huggingface-hub" },
@@ -881,13 +881,13 @@ requires-dist = [
     { name = "librosa", specifier = ">=0.11.0" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "matplotlib", specifier = ">=3.10.9" },
-    { name = "numpy", specifier = ">=2.4.4" },
+    { name = "numpy", specifier = ">=2.4.4,<3" },
     { name = "pillow", specifier = ">=12.2.0" },
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "scikit-learn", specifier = ">=1.8.0" },
     { name = "soundfile", specifier = ">=0.13.1" },
-    { name = "torch", specifier = ">=2.11.0" },
-    { name = "torchaudio", specifier = ">=2.11.0" },
+    { name = "torch", specifier = ">=2.11.0,<3" },
+    { name = "torchaudio", specifier = ">=2.11.0,<3" },
     { name = "transformers", specifier = ">=5.8.0" },
 ]
 

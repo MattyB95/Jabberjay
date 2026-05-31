@@ -51,13 +51,13 @@ dependencies = [
     "loguru>=0.7.3",
     "librosa>=0.11.0",
     "matplotlib>=3.10.9",
-    "numpy>=2.4.4",
+    "numpy>=2.4.4,<3",
     "pillow>=12.2.0",
     "PyYAML>=6.0.3",
     "scikit-learn>=1.8.0",
     "soundfile>=0.13.1",
-    "torch>=2.11.0",
-    "torchaudio>=2.11.0",
+    "torch>=2.11.0,<3",
+    "torchaudio>=2.11.0,<3",
     "transformers>=5.8.0",
 ]
 
