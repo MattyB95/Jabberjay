@@ -4,6 +4,7 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import audioread.exceptions
 import librosa
 import numpy as np
 from loguru import logger
@@ -68,24 +69,18 @@ class Jabberjay:
 
     @staticmethod
     def list_models() -> list[Model]:
-        """Print and return all available models."""
-        models = list(Model)
-        print("Models:", ", ".join(m.value for m in models))
-        return models
+        """Return all available models."""
+        return list(Model)
 
     @staticmethod
     def list_datasets() -> list[Dataset]:
-        """Print and return all available datasets."""
-        datasets = list(Dataset)
-        print("Datasets:", ", ".join(d.value for d in datasets))
-        return datasets
+        """Return all available datasets."""
+        return list(Dataset)
 
     @staticmethod
     def list_visualisations() -> list[Visualisation]:
-        """Print and return all available visualisations."""
-        visualisations = list(Visualisation)
-        print("Visualisations:", ", ".join(v.value for v in visualisations))
-        return visualisations
+        """Return all available visualisations."""
+        return list(Visualisation)
 
     @staticmethod
     def load(path: str | Path) -> Audio:
@@ -96,7 +91,12 @@ class Jabberjay:
             y, sr = librosa.load(path)
         except FileNotFoundError:
             raise FileNotFoundError(f"Audio file not found: {path}")
-        except Exception as exc:
+        except (
+            OSError,
+            RuntimeError,
+            EOFError,
+            audioread.exceptions.NoBackendError,
+        ) as exc:
             raise ValueError(f"Failed to load audio from '{path}': {exc}") from exc
         logger.info(f"Loaded {len(y) / sr:.2f}s of audio at {int(sr)}Hz")
         return y, sr
@@ -128,7 +128,7 @@ class Jabberjay:
             VIT requires both ``visualisation`` and ``dataset``; both default to
             ``ConstantQ`` and ``VoxCelebSpoof`` respectively so a bare
             ``jj.detect("audio.flac")`` works out of the box.
-            AST requires ``dataset`` (no default).
+            AST requires ``dataset``; defaults to ``VoxCelebSpoof``.
             All other models (Classical, RawNet2, Spectra0, SpectraAASIST,
             SpectraAASIST3, HuBERT, Wav2Vec2, WavLM) ignore both.
         """

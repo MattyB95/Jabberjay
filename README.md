@@ -239,9 +239,9 @@ results = [
 #### Discovering available options
 
 ```python
-jj.list_models()         # prints and returns list[Model]
-jj.list_datasets()       # prints and returns list[Dataset]
-jj.list_visualisations() # prints and returns list[Visualisation]
+jj.list_models()         # returns list[Model]
+jj.list_datasets()       # returns list[Dataset]
+jj.list_visualisations() # returns list[Visualisation]
 ```
 
 ---
@@ -315,7 +315,7 @@ If you use Jabberjay in your research, please cite it. GitHub's **"Cite this rep
   title   = {Jabberjay},
   year    = {2026},
   url     = {https://github.com/MattyB95/Jabberjay},
-  version = {0.0.12},
+  version = {0.0.13},
   doi     = {10.5281/zenodo.19056977},
 }
 ```

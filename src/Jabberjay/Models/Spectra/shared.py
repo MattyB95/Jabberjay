@@ -1,5 +1,25 @@
+import numpy as np
+import torch
 import torch.nn as nn
+import torchaudio
 from transformers import Wav2Vec2Model
+
+_TARGET_SR: int = 16_000
+_MAX_LEN: int = 64600
+
+
+def preprocess(y: np.ndarray, sr: float) -> torch.Tensor:
+    """Resample, apply preemphasis, and pad/trim to _MAX_LEN samples."""
+    audio = torch.from_numpy(y).float()
+    if sr != _TARGET_SR:
+        audio = torchaudio.functional.resample(audio, int(sr), _TARGET_SR)
+    audio = torchaudio.functional.preemphasis(audio.unsqueeze(0)).squeeze(0)
+    x_len = audio.shape[0]
+    if x_len >= _MAX_LEN:
+        audio = audio[:_MAX_LEN]
+    else:
+        audio = audio.repeat(int(_MAX_LEN / x_len) + 1)[:_MAX_LEN]
+    return audio.unsqueeze(0)  # (1, _MAX_LEN)
 
 
 class Wav2Vec2Encoder(nn.Module):

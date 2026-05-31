@@ -1,0 +1,29 @@
+# Sync develop
+#
+# After every squash-merge PR into main, resets the develop branch to match
+# main exactly — eliminating the "already-merged commits reappear" problem
+# that squash merging causes on long-lived branches.
+#
+# Uses the default GITHUB_TOKEN, which intentionally does not re-trigger
+# other workflows on the force-push (CI already passed on main).
+
+name: Sync develop to main
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  sync:
+    name: Reset develop to main
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Reset develop to main
+        run: git push --force-with-lease origin HEAD:refs/heads/develop

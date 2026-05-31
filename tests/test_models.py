@@ -38,13 +38,14 @@ def _mock_pipeline(raw_scores=None):
 # ---------------------------------------------------------------------------
 
 
+_PIPELINE_PATH = "Jabberjay.Utilities.pipeline.pipeline"
+
+
 class TestHuBERTPredict:
     def test_returns_normalised_scores(self):
         from Jabberjay.Models.HuBERT.run import predict
 
-        with patch(
-            "Jabberjay.Models.HuBERT.run.pipeline", return_value=_mock_pipeline()
-        ):
+        with patch(_PIPELINE_PATH, return_value=_mock_pipeline()):
             result = predict(y=AUDIO[0], sr=AUDIO[1])
 
         assert result[0]["label"] == "Bonafide"
@@ -53,9 +54,7 @@ class TestHuBERTPredict:
     def test_confidence_preserved(self):
         from Jabberjay.Models.HuBERT.run import predict
 
-        with patch(
-            "Jabberjay.Models.HuBERT.run.pipeline", return_value=_mock_pipeline()
-        ):
+        with patch(_PIPELINE_PATH, return_value=_mock_pipeline()):
             result = predict(y=AUDIO[0], sr=AUDIO[1])
 
         assert result[0]["score"] == 0.9
@@ -65,9 +64,7 @@ class TestWav2Vec2Predict:
     def test_returns_normalised_scores(self):
         from Jabberjay.Models.Wav2Vec2.run import predict
 
-        with patch(
-            "Jabberjay.Models.Wav2Vec2.run.pipeline", return_value=_mock_pipeline()
-        ):
+        with patch(_PIPELINE_PATH, return_value=_mock_pipeline()):
             result = predict(y=AUDIO[0], sr=AUDIO[1])
 
         assert result[0]["label"] == "Bonafide"
@@ -75,9 +72,7 @@ class TestWav2Vec2Predict:
     def test_confidence_preserved(self):
         from Jabberjay.Models.Wav2Vec2.run import predict
 
-        with patch(
-            "Jabberjay.Models.Wav2Vec2.run.pipeline", return_value=_mock_pipeline()
-        ):
+        with patch(_PIPELINE_PATH, return_value=_mock_pipeline()):
             result = predict(y=AUDIO[0], sr=AUDIO[1])
 
         assert result[0]["score"] == 0.9
@@ -87,9 +82,7 @@ class TestWavLMPredict:
     def test_returns_normalised_scores(self):
         from Jabberjay.Models.WavLM.run import predict
 
-        with patch(
-            "Jabberjay.Models.WavLM.run.pipeline", return_value=_mock_pipeline()
-        ):
+        with patch(_PIPELINE_PATH, return_value=_mock_pipeline()):
             result = predict(y=AUDIO[0], sr=AUDIO[1])
 
         assert result[0]["label"] == "Bonafide"
@@ -97,9 +90,7 @@ class TestWavLMPredict:
     def test_confidence_preserved(self):
         from Jabberjay.Models.WavLM.run import predict
 
-        with patch(
-            "Jabberjay.Models.WavLM.run.pipeline", return_value=_mock_pipeline()
-        ):
+        with patch(_PIPELINE_PATH, return_value=_mock_pipeline()):
             result = predict(y=AUDIO[0], sr=AUDIO[1])
 
         assert result[0]["score"] == 0.9
@@ -109,10 +100,7 @@ class TestASTPredict:
     def test_returns_normalised_scores(self):
         from Jabberjay.Models.Transformer.AST.run import predict
 
-        with patch(
-            "Jabberjay.Models.Transformer.AST.run.pipeline",
-            return_value=_mock_pipeline(),
-        ):
+        with patch(_PIPELINE_PATH, return_value=_mock_pipeline()):
             result = predict(y=AUDIO[0], sr=AUDIO[1], dataset=Dataset.VoxCelebSpoof)
 
         assert result[0]["label"] == "Bonafide"
@@ -121,7 +109,7 @@ class TestASTPredict:
         from Jabberjay.Models.Transformer.AST.run import predict
 
         mock_factory = MagicMock(return_value=_mock_pipeline())
-        with patch("Jabberjay.Models.Transformer.AST.run.pipeline", mock_factory):
+        with patch(_PIPELINE_PATH, mock_factory):
             predict(y=AUDIO[0], sr=AUDIO[1], dataset=Dataset.ASVspoof2019)
 
         call_kwargs = mock_factory.call_args

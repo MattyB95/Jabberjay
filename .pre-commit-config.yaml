@@ -31,3 +31,11 @@ repos:
     hooks:
       - id: ruff-check
         args: [ --fix ]
+
+  - repo: local
+    hooks:
+      - id: ty-check
+        name: Type-check with ty
+        language: system
+        entry: uv run ty check src/
+        pass_filenames: false

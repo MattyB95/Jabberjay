@@ -2,17 +2,43 @@
 #
 # Builds and deploys the MkDocs documentation site to GitHub Pages.
 # Triggered on every push to main so the live docs always reflect the
-# latest release.
+# latest release. Also runs a build-only check on pull requests so
+# broken docs are caught before merge.
 
 name: Docs
 
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main, develop ]
 
 jobs:
+  build:
+    name: Build docs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install dev dependencies
+        run: uv sync --group dev
+
+      - name: Build docs
+        run: uv run mkdocs build --strict
+
   deploy:
     name: Deploy docs
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [build]
     runs-on: ubuntu-latest
     permissions:
       contents: write

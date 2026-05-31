@@ -146,7 +146,7 @@ Jabberjay.enable_logging("INFO")    # INFO and above only
 ## Discovering available options
 
 ```python
-jj.list_models()         # prints and returns all Model enum values
-jj.list_datasets()       # prints and returns all Dataset enum values
-jj.list_visualisations() # prints and returns all Visualisation enum values
+jj.list_models()         # returns all Model enum values
+jj.list_datasets()       # returns all Dataset enum values
+jj.list_visualisations() # returns all Visualisation enum values
 ```

@@ -47,7 +47,6 @@ result = jj.detect(
 print(result)
 
 # ── Discover what's available ──────────────────────────────────────────────
-print()
-jj.list_models()
-jj.list_datasets()
-jj.list_visualisations()
+print(jj.list_models())
+print(jj.list_datasets())
+print(jj.list_visualisations())
