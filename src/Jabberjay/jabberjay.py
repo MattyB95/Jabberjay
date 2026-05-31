@@ -91,7 +91,12 @@ class Jabberjay:
             y, sr = librosa.load(path)
         except FileNotFoundError:
             raise FileNotFoundError(f"Audio file not found: {path}")
-        except (OSError, RuntimeError, EOFError, audioread.exceptions.NoBackendError) as exc:
+        except (
+            OSError,
+            RuntimeError,
+            EOFError,
+            audioread.exceptions.NoBackendError,
+        ) as exc:
             raise ValueError(f"Failed to load audio from '{path}': {exc}") from exc
         logger.info(f"Loaded {len(y) / sr:.2f}s of audio at {int(sr)}Hz")
         return y, sr
