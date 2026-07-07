@@ -371,6 +371,26 @@ class TestCLI:
             main()
         assert "Spoof" in capsys.readouterr().out
 
+    def test_main_prints_result_without_crashing_on_non_utf8_stdout(self):
+        """Regression test: DetectionResult.__str__ embeds emoji (✔️/❌) that
+        used to raise UnicodeEncodeError when stdout uses a non-UTF-8 encoding
+        (e.g. Windows cp1252, the default outside Windows Terminal/UTF-8 mode)."""
+        import io
+
+        buffer = io.BytesIO()
+        fake_stdout = io.TextIOWrapper(buffer, encoding="cp1252")
+        fake_stderr = io.TextIOWrapper(io.BytesIO(), encoding="cp1252")
+        with (
+            patch("sys.argv", ["jabberjay", "audio.flac"]),
+            patch.object(Jabberjay, "detect", return_value=self._BONAFIDE),
+            patch("sys.stdout", fake_stdout),
+            patch("sys.stderr", fake_stderr),
+        ):
+            main()
+
+        fake_stdout.flush()
+        assert "Bonafide" in buffer.getvalue().decode("utf-8")
+
     def test_main_verbose_flag(self, capsys):
         with (
             patch("sys.argv", ["jabberjay", "audio.flac", "-v"]),

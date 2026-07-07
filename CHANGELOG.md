@@ -34,6 +34,17 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
   the `run_pipeline()` consolidation and would have produced duplicate,
   uncached code; now shows the current pattern and documents
   `Utilities.model_cache.cached_loader` for non-pipeline models
+- **Dependencies updated** — all runtime and dev dependencies bumped to their
+  latest compatible versions (notably `huggingface-hub` 1.14→1.22,
+  `transformers` 5.8→5.13, `scikit-learn` 1.8→1.9, `ty` 0.0.35→0.0.56,
+  `ruff` 0.15.12→0.15.20); no code changes required
+
+### Fixed
+- **CLI crash on non-UTF-8 consoles** — `jabberjay <audio>` raised
+  `UnicodeEncodeError` when stdout used a non-UTF-8 encoding (e.g. Windows
+  `cp1252`, the default outside Windows Terminal/UTF-8 mode), because
+  `DetectionResult.__str__` embeds `✔️`/`❌`. `main()` now reconfigures
+  stdout/stderr to UTF-8 on startup
 
 ---
 
