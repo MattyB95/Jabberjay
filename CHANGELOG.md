@@ -7,7 +7,14 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 
 ---
 
-## [Unreleased]
+## [0.0.14] — 2026-07-07
+
+### Added
+- **Cache-hit regression tests** — direct unit tests for the new
+  `cached_loader()`/`clear_all()` registry (cache hits, per-argument
+  isolation, `maxsize` eviction, multi-loader clearing), plus one "loaded
+  once across repeated calls" test per caching integration point
+  (`pipeline.py`, VIT, the shared Spectra loader, RawNet2, Classical)
 
 ### Changed
 - **Model/pipeline caching** — every model family (`HuBERT`, `Wav2Vec2`, `WavLM`,
@@ -23,6 +30,12 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
   unicode in comments/docstrings). `Models/RawNet2/model.py` is exempted from
   the new categories via `per-file-ignores` since it's vendored third-party
   code (see `coverage.omit`)
+- **`CONTRIBUTING.md` "adding a new model" template updated** — it predated
+  the `run_pipeline()` consolidation and would have produced duplicate,
+  uncached code; now shows the current pattern and documents
+  `Utilities.model_cache.cached_loader` for non-pipeline models
+
+---
 
 ## [0.0.13] — 2026-05-31
 
@@ -373,6 +386,7 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
+[0.0.14]: https://github.com/MattyB95/Jabberjay/compare/v0.0.13...v0.0.14
 [0.0.13]: https://github.com/MattyB95/Jabberjay/compare/v0.0.12...v0.0.13
 [0.0.12]: https://github.com/MattyB95/Jabberjay/compare/v0.0.11...v0.0.12
 [0.0.11]: https://github.com/MattyB95/Jabberjay/compare/v0.0.10...v0.0.11
