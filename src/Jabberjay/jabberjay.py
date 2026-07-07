@@ -307,8 +307,10 @@ def main():
     # DetectionResult.__str__ and the CLI description embed emoji; force
     # UTF-8 output so this doesn't crash on non-UTF-8 consoles (e.g. Windows
     # cp1252, which is still the default outside Windows Terminal/UTF-8 mode)
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # ty: ignore
-    sys.stderr.reconfigure(encoding="utf-8", errors="replace")  # ty: ignore
+    if reconfigure := getattr(sys.stdout, "reconfigure", None):
+        reconfigure(encoding="utf-8", errors="replace")
+    if reconfigure := getattr(sys.stderr, "reconfigure", None):
+        reconfigure(encoding="utf-8", errors="replace")
 
     parser = argparse.ArgumentParser(
         prog="Jabberjay",
