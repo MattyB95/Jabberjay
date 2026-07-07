@@ -89,7 +89,7 @@ filterwarnings = [
     # backfill packages handle this transparently so the warning is noise
     "ignore::DeprecationWarning:audioread",
     # Classical model .joblib was pickled with sklearn 1.3.0; loads and runs
-    # correctly on 1.8.0 — KNeighborsClassifier is stable across this range
+    # correctly on 1.9.0 — KNeighborsClassifier is stable across this range
     "ignore::sklearn.exceptions.InconsistentVersionWarning",
 ]
 
