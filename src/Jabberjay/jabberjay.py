@@ -29,7 +29,7 @@ class DetectionResult:
     """True if the audio was classified as genuine."""
 
     confidence: float
-    """Confidence score for the top prediction (0.0–1.0)."""
+    """Confidence score for the top prediction (0.0-1.0)."""
 
     model: Model
     """The model used to produce this result."""
@@ -89,8 +89,8 @@ class Jabberjay:
         logger.debug(f"Loading audio file: {path}")
         try:
             y, sr = librosa.load(path)
-        except FileNotFoundError:
-            raise FileNotFoundError(f"Audio file not found: {path}")
+        except FileNotFoundError as exc:
+            raise FileNotFoundError(f"Audio file not found: {path}") from exc
         except (
             OSError,
             RuntimeError,
@@ -304,6 +304,14 @@ class Jabberjay:
 
 
 def main():
+    # DetectionResult.__str__ and the CLI description embed emoji; force
+    # UTF-8 output so this doesn't crash on non-UTF-8 consoles (e.g. Windows
+    # cp1252, which is still the default outside Windows Terminal/UTF-8 mode)
+    if reconfigure := getattr(sys.stdout, "reconfigure", None):
+        reconfigure(encoding="utf-8", errors="replace")
+    if reconfigure := getattr(sys.stderr, "reconfigure", None):
+        reconfigure(encoding="utf-8", errors="replace")
+
     parser = argparse.ArgumentParser(
         prog="Jabberjay",
         description="🦜 Synthetic Voice Detection",

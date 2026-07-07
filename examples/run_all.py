@@ -46,7 +46,7 @@ for model in (
 for ds in Dataset:
     row(f"AST/{ds.value}", jj.detect(audio, model=Model.AST, dataset=ds))
 
-# VIT — one model per (dataset × visualisation) combination
+# VIT — one model per (dataset x visualisation) combination
 for vis in Visualisation:
     for ds in Dataset:
         row(

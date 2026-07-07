@@ -7,6 +7,47 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 
 ---
 
+## [0.0.14] — 2026-07-07
+
+### Added
+- **Cache-hit regression tests** — direct unit tests for the new
+  `cached_loader()`/`clear_all()` registry (cache hits, per-argument
+  isolation, `maxsize` eviction, multi-loader clearing), plus one "loaded
+  once across repeated calls" test per caching integration point
+  (`pipeline.py`, VIT, the shared Spectra loader, RawNet2, Classical)
+
+### Changed
+- **Model/pipeline caching** — every model family (`HuBERT`, `Wav2Vec2`, `WavLM`,
+  `AST`, `VIT`, `Spectra0`, `SpectraAASIST`, `SpectraAASIST3`, `RawNet2`,
+  `Classical`) now caches its loaded weights in-process via a new
+  `Utilities/model_cache.py` helper, instead of reloading them from disk on
+  every `detect()` call. Bounded per-model (`maxsize=1`-`8`) so memory doesn't
+  grow unbounded across a long sweep like `examples/run_all.py`
+- **Ruff rule set expanded** — added `UP` (pyupgrade), `B` (bugbear), `SIM`
+  (simplify), and `RUF`, none of which conflict with black; fixed the
+  resulting findings across the first-party codebase (unused unpacked test
+  variables, missing exception chaining, nested `with` statements, ambiguous
+  unicode in comments/docstrings). `Models/RawNet2/model.py` is exempted from
+  the new categories via `per-file-ignores` since it's vendored third-party
+  code (see `coverage.omit`)
+- **`CONTRIBUTING.md` "adding a new model" template updated** — it predated
+  the `run_pipeline()` consolidation and would have produced duplicate,
+  uncached code; now shows the current pattern and documents
+  `Utilities.model_cache.cached_loader` for non-pipeline models
+- **Dependencies updated** — all runtime and dev dependencies bumped to their
+  latest compatible versions (notably `huggingface-hub` 1.14→1.22,
+  `transformers` 5.8→5.13, `scikit-learn` 1.8→1.9, `ty` 0.0.35→0.0.56,
+  `ruff` 0.15.12→0.15.20); no code changes required
+
+### Fixed
+- **CLI crash on non-UTF-8 consoles** — `jabberjay <audio>` raised
+  `UnicodeEncodeError` when stdout used a non-UTF-8 encoding (e.g. Windows
+  `cp1252`, the default outside Windows Terminal/UTF-8 mode), because
+  `DetectionResult.__str__` embeds `✔️`/`❌`. `main()` now reconfigures
+  stdout/stderr to UTF-8 on startup
+
+---
+
 ## [0.0.13] — 2026-05-31
 
 ### Changed
@@ -356,6 +397,7 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
+[0.0.14]: https://github.com/MattyB95/Jabberjay/compare/v0.0.13...v0.0.14
 [0.0.13]: https://github.com/MattyB95/Jabberjay/compare/v0.0.12...v0.0.13
 [0.0.12]: https://github.com/MattyB95/Jabberjay/compare/v0.0.11...v0.0.12
 [0.0.11]: https://github.com/MattyB95/Jabberjay/compare/v0.0.10...v0.0.11

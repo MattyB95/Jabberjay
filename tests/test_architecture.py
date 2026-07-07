@@ -48,12 +48,12 @@ class TestWav2Vec2Encoder:
             return Wav2Vec2Encoder(), mock_model
 
     def test_forward_2d_input(self):
-        encoder, mock_model = self._make_encoder()
+        encoder, _mock_model = self._make_encoder()
         out = encoder(torch.randn(1, 16000))
         assert out.shape == (1, 10, 1024)
 
     def test_forward_3d_input_squeezed(self):
-        encoder, mock_model = self._make_encoder()
+        encoder, _mock_model = self._make_encoder()
         out = encoder(torch.randn(1, 16000, 1))
         assert out.shape == (1, 10, 1024)
 
@@ -161,7 +161,7 @@ class TestAASISTComponents:
 
         layer = HtrgGraphAttentionLayer(in_dim=16, out_dim=8).eval()
         with torch.no_grad():
-            out_t, out_s, m = layer(torch.randn(1, 3, 16), torch.randn(1, 3, 16))
+            _out_t, _out_s, m = layer(torch.randn(1, 3, 16), torch.randn(1, 3, 16))
         assert m.shape == (1, 1, 8)
 
     def test_residual_block_first_no_downsample(self):
@@ -197,7 +197,7 @@ class TestAASISTComponents:
         ).eval()
         out_t, out_s = torch.randn(1, 2, 64), torch.randn(1, 10, 64)
         with torch.no_grad():
-            t, s, m = branch(out_t, out_s)
+            t, _s, m = branch(out_t, out_s)
         assert t.shape[-1] == 32
         assert m.shape == (1, 1, 32)
 
@@ -285,7 +285,7 @@ class TestAASIST3Components:
         layer = HtrgGraphAttentionLayer(in_dim=8, out_dim=4).eval()
         x1, x2 = torch.randn(1, 3, 8), torch.randn(1, 3, 8)
         with torch.no_grad():
-            out_t, out_s, m = layer(x1, x2, master=torch.randn(1, 1, 8))
+            out_t, _out_s, _m = layer(x1, x2, master=torch.randn(1, 1, 8))
         assert out_t.shape == (1, 3, 4)
 
     def test_htrg_gat_without_master(self):
@@ -326,7 +326,7 @@ class TestAASIST3Components:
             pool_ratios=[0.5, 0.5, 0.5, 0.5],
         ).eval()
         with torch.no_grad():
-            t, s, m = branch(torch.randn(1, 2, 8), torch.randn(1, 6, 8))
+            t, _s, m = branch(torch.randn(1, 2, 8), torch.randn(1, 6, 8))
         assert t.shape[-1] == 4
         assert m.shape[-1] == 4
 

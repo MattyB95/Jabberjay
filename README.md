@@ -224,7 +224,7 @@ if result.scores:
 
 #### Pre-loading audio
 
-Use `load()` when running multiple models on the same clip to avoid re-reading the file:
+Use `load()` when running multiple models on the same clip to avoid re-reading the file. Each model is also cached in memory after its first `detect()` call, so calling it again later in the process reuses the already-loaded weights instead of reloading them:
 
 ```python
 audio = jj.load("audio.wav")  # returns (samples, sample_rate)
@@ -315,7 +315,7 @@ If you use Jabberjay in your research, please cite it. GitHub's **"Cite this rep
   title   = {Jabberjay},
   year    = {2026},
   url     = {https://github.com/MattyB95/Jabberjay},
-  version = {0.0.13},
+  version = {0.0.14},
   doi     = {10.5281/zenodo.19056977},
 }
 ```

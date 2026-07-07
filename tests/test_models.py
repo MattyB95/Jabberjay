@@ -77,6 +77,18 @@ class TestWav2Vec2Predict:
 
         assert result[0]["score"] == 0.9
 
+    def test_pipeline_is_loaded_once_across_repeated_calls(self):
+        """run_pipeline() caches by (model_id, sampling_rate) — a second call
+        for the same model must not reload the underlying pipeline."""
+        from Jabberjay.Models.Wav2Vec2.run import predict
+
+        mock_factory = MagicMock(return_value=_mock_pipeline())
+        with patch(_PIPELINE_PATH, mock_factory):
+            predict(y=AUDIO[0], sr=AUDIO[1])
+            predict(y=AUDIO[0], sr=AUDIO[1])
+
+        mock_factory.assert_called_once()
+
 
 class TestWavLMPredict:
     def test_returns_normalised_scores(self):
@@ -129,41 +141,78 @@ class TestVITPredict:
         mock_image = MagicMock()
         mock_pipe = _mock_pipeline(raw_scores)
         mock_cqt = np.zeros((84, 32))
-        with patch(
-            "Jabberjay.Models.Transformer.VIT.ConstantQ.run.pipeline",
-            return_value=mock_pipe,
-        ):
-            with patch(
+        with (
+            patch(
+                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.pipeline",
+                return_value=mock_pipe,
+            ),
+            patch(
                 "Jabberjay.Models.Transformer.VIT.ConstantQ.run.get_image",
                 return_value=mock_image,
-            ):
-                with patch(
-                    "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.cqt",
-                    return_value=mock_cqt,
-                ):
-                    with patch(
-                        "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.amplitude_to_db",
-                        return_value=mock_cqt,
-                    ):
-                        return predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
+            ),
+            patch(
+                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.cqt",
+                return_value=mock_cqt,
+            ),
+            patch(
+                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.amplitude_to_db",
+                return_value=mock_cqt,
+            ),
+        ):
+            return predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
 
     def test_constantq_returns_normalised_scores(self):
         result = self._run_constantq()
         assert result[0]["label"] == "Bonafide"
+
+    def test_constantq_pipeline_is_loaded_once_across_repeated_calls(self):
+        """VIT's per-visualisation _load_pipeline() caches by model id — a
+        second call for the same dataset must not reload the pipeline."""
+        from Jabberjay.Models.Transformer.VIT.ConstantQ.run import predict
+
+        mock_image = MagicMock()
+        mock_pipe = _mock_pipeline()
+        mock_cqt = np.zeros((84, 32))
+        mock_factory = MagicMock(return_value=mock_pipe)
+        with (
+            patch(
+                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.pipeline",
+                mock_factory,
+            ),
+            patch(
+                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.get_image",
+                return_value=mock_image,
+            ),
+            patch(
+                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.cqt",
+                return_value=mock_cqt,
+            ),
+            patch(
+                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.amplitude_to_db",
+                return_value=mock_cqt,
+            ),
+        ):
+            predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
+            predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
+
+        mock_factory.assert_called_once()
 
     def test_mfcc_returns_normalised_scores(self):
         from Jabberjay.Models.Transformer.VIT.MFCC.run import predict
 
         mock_image = MagicMock()
         mock_pipe = _mock_pipeline()
-        with patch(
-            "Jabberjay.Models.Transformer.VIT.MFCC.run.pipeline", return_value=mock_pipe
-        ):
-            with patch(
+        with (
+            patch(
+                "Jabberjay.Models.Transformer.VIT.MFCC.run.pipeline",
+                return_value=mock_pipe,
+            ),
+            patch(
                 "Jabberjay.Models.Transformer.VIT.MFCC.run.get_image",
                 return_value=mock_image,
-            ):
-                result = predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
+            ),
+        ):
+            result = predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
 
         assert result[0]["label"] == "Bonafide"
 
@@ -172,15 +221,17 @@ class TestVITPredict:
 
         mock_image = MagicMock()
         mock_pipe = _mock_pipeline()
-        with patch(
-            "Jabberjay.Models.Transformer.VIT.MelSpectrogram.run.pipeline",
-            return_value=mock_pipe,
-        ):
-            with patch(
+        with (
+            patch(
+                "Jabberjay.Models.Transformer.VIT.MelSpectrogram.run.pipeline",
+                return_value=mock_pipe,
+            ),
+            patch(
                 "Jabberjay.Models.Transformer.VIT.MelSpectrogram.run.get_image",
                 return_value=mock_image,
-            ):
-                result = predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
+            ),
+        ):
+            result = predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
 
         assert result[0]["label"] == "Bonafide"
 
@@ -201,12 +252,14 @@ class TestGetImage:
             img = Image.new("RGB", (10, 10), color="white")
             img.save(buf, format="PNG")
 
-        with patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"):
-            with patch(
+        with (
+            patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"),
+            patch(
                 "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
                 side_effect=fake_savefig,
-            ):
-                result = get_image(data=np.zeros((128, 100)), sr=22050.0)
+            ),
+        ):
+            result = get_image(data=np.zeros((128, 100)), sr=22050.0)
 
         assert isinstance(result, Image.Image)
 
@@ -221,15 +274,15 @@ class TestGetImage:
             img = Image.new("RGB", (10, 10))
             img.save(buf, format="PNG")
 
-        with patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"):
-            with patch(
+        with (
+            patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"),
+            patch(
                 "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
                 side_effect=fake_savefig,
-            ):
-                with patch(
-                    "Jabberjay.Models.Transformer.VIT.utility.plt.close"
-                ) as mock_close:
-                    get_image(data=np.zeros((128, 100)), sr=22050.0)
+            ),
+            patch("Jabberjay.Models.Transformer.VIT.utility.plt.close") as mock_close,
+        ):
+            get_image(data=np.zeros((128, 100)), sr=22050.0)
 
         mock_close.assert_called_once()
 
@@ -239,16 +292,16 @@ class TestGetImage:
 
         from Jabberjay.Models.Transformer.VIT.utility import get_image
 
-        with patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"):
-            with patch(
+        with (
+            patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"),
+            patch(
                 "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
                 side_effect=RuntimeError("render error"),
-            ):
-                with patch(
-                    "Jabberjay.Models.Transformer.VIT.utility.plt.close"
-                ) as mock_close:
-                    with pytest.raises(RuntimeError):
-                        get_image(data=np.zeros((128, 100)), sr=22050.0)
+            ),
+            patch("Jabberjay.Models.Transformer.VIT.utility.plt.close") as mock_close,
+            pytest.raises(RuntimeError),
+        ):
+            get_image(data=np.zeros((128, 100)), sr=22050.0)
 
         mock_close.assert_called_once()
 
@@ -271,22 +324,23 @@ class TestGetImage:
         def fake_savefig(buf, **kwargs):
             real_image.save(buf, format="PNG")
 
-        with patch(
-            "Jabberjay.Models.Transformer.VIT.utility.io.BytesIO", return_value=mock_buf
+        with (
+            patch(
+                "Jabberjay.Models.Transformer.VIT.utility.io.BytesIO",
+                return_value=mock_buf,
+            ),
+            patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"),
+            patch(
+                "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
+                side_effect=fake_savefig,
+            ),
+            patch("Jabberjay.Models.Transformer.VIT.utility.plt.close"),
+            patch(
+                "Jabberjay.Models.Transformer.VIT.utility.Image.open",
+                return_value=real_image,
+            ),
         ):
-            with patch(
-                "Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"
-            ):
-                with patch(
-                    "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
-                    side_effect=fake_savefig,
-                ):
-                    with patch("Jabberjay.Models.Transformer.VIT.utility.plt.close"):
-                        with patch(
-                            "Jabberjay.Models.Transformer.VIT.utility.Image.open",
-                            return_value=real_image,
-                        ):
-                            get_image(data=np.zeros((128, 100)), sr=22050.0)
+            get_image(data=np.zeros((128, 100)), sr=22050.0)
 
         mock_buf.close.assert_called_once()
 
@@ -301,30 +355,28 @@ class TestGetImage:
         def fake_savefig(buf, **kwargs):
             pass
 
-        with patch(
-            "Jabberjay.Models.Transformer.VIT.utility.plt.subplots",
-            return_value=(MagicMock(), MagicMock()),
-        ):
-            with patch(
+        with (
+            patch(
+                "Jabberjay.Models.Transformer.VIT.utility.plt.subplots",
+                return_value=(MagicMock(), MagicMock()),
+            ),
+            patch(
                 "Jabberjay.Models.Transformer.VIT.utility.io.BytesIO",
                 return_value=mock_buf,
-            ):
-                with patch(
-                    "Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"
-                ):
-                    with patch(
-                        "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
-                        side_effect=fake_savefig,
-                    ):
-                        with patch(
-                            "Jabberjay.Models.Transformer.VIT.utility.plt.close"
-                        ):
-                            with patch(
-                                "Jabberjay.Models.Transformer.VIT.utility.Image.open",
-                                side_effect=RuntimeError("corrupt image"),
-                            ):
-                                with pytest.raises(RuntimeError):
-                                    get_image(data=np.zeros((128, 100)), sr=22050.0)
+            ),
+            patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"),
+            patch(
+                "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
+                side_effect=fake_savefig,
+            ),
+            patch("Jabberjay.Models.Transformer.VIT.utility.plt.close"),
+            patch(
+                "Jabberjay.Models.Transformer.VIT.utility.Image.open",
+                side_effect=RuntimeError("corrupt image"),
+            ),
+            pytest.raises(RuntimeError),
+        ):
+            get_image(data=np.zeros((128, 100)), sr=22050.0)
 
         mock_buf.close.assert_called_once()
 
@@ -389,6 +441,20 @@ class _SpectraModelTestBase:
             result = predict(y=AUDIO[0], sr=AUDIO[1])
         assert sum(r["score"] for r in result) == pytest.approx(1.0, abs=1e-5)
 
+    def test_model_is_loaded_once_across_repeated_calls(self):
+        """Spectra.shared.load_pretrained() caches by (class, model id, device)
+        — a second predict() call for the same model must not reload it."""
+        import importlib
+
+        predict = importlib.import_module(
+            f"Jabberjay.Models.{self.model_module}.run"
+        ).predict
+        mock_model = self._make_mock_model([0.2, 0.8])
+        with patch(self._patch_path(), return_value=mock_model) as mock_from_pretrained:
+            predict(y=AUDIO[0], sr=AUDIO[1])
+            predict(y=AUDIO[0], sr=AUDIO[1])
+        mock_from_pretrained.assert_called_once()
+
 
 class TestSpectra0Predict(_SpectraModelTestBase):
     model_module = "Spectra0"
@@ -418,16 +484,18 @@ class TestClassicalPredict:
         mock_clf.predict.return_value = [1]
         mock_clf.predict_proba.return_value = np.array([[0.1, 0.9]])
 
-        with patch(
-            "Jabberjay.Models.Classical.run.download_pretrained_model",
-            return_value="/fake/model.joblib",
+        with (
+            patch(
+                "Jabberjay.Models.Classical.run.download_pretrained_model",
+                return_value="/fake/model.joblib",
+            ),
+            patch("Jabberjay.Models.Classical.run.load", return_value=mock_clf),
+            patch(
+                "Jabberjay.Models.Classical.run.get_features",
+                return_value=MagicMock(),
+            ),
         ):
-            with patch("Jabberjay.Models.Classical.run.load", return_value=mock_clf):
-                with patch(
-                    "Jabberjay.Models.Classical.run.get_features",
-                    return_value=MagicMock(),
-                ):
-                    prediction, confidence = predict(audio=AUDIO)
+            prediction, confidence = predict(audio=AUDIO)
 
         assert prediction == 1
         assert confidence == pytest.approx(0.9)
@@ -439,19 +507,49 @@ class TestClassicalPredict:
         mock_clf.predict.return_value = [0]
         mock_clf.predict_proba.return_value = np.array([[0.8, 0.2]])
 
-        with patch(
-            "Jabberjay.Models.Classical.run.download_pretrained_model",
-            return_value="/fake/model.joblib",
+        with (
+            patch(
+                "Jabberjay.Models.Classical.run.download_pretrained_model",
+                return_value="/fake/model.joblib",
+            ),
+            patch("Jabberjay.Models.Classical.run.load", return_value=mock_clf),
+            patch(
+                "Jabberjay.Models.Classical.run.get_features",
+                return_value=MagicMock(),
+            ),
         ):
-            with patch("Jabberjay.Models.Classical.run.load", return_value=mock_clf):
-                with patch(
-                    "Jabberjay.Models.Classical.run.get_features",
-                    return_value=MagicMock(),
-                ):
-                    prediction, confidence = predict(audio=AUDIO)
+            prediction, confidence = predict(audio=AUDIO)
 
         assert prediction == 0
         assert confidence == pytest.approx(0.8)
+
+    def test_classifier_is_loaded_once_across_repeated_calls(self):
+        """_load_classifier() caches the downloaded joblib model — a second
+        predict() call must not re-download or re-deserialise it."""
+        from Jabberjay.Models.Classical.run import predict
+
+        mock_clf = MagicMock()
+        mock_clf.predict.return_value = [1]
+        mock_clf.predict_proba.return_value = np.array([[0.1, 0.9]])
+
+        with (
+            patch(
+                "Jabberjay.Models.Classical.run.download_pretrained_model",
+                return_value="/fake/model.joblib",
+            ) as mock_download,
+            patch(
+                "Jabberjay.Models.Classical.run.load", return_value=mock_clf
+            ) as mock_load,
+            patch(
+                "Jabberjay.Models.Classical.run.get_features",
+                return_value=MagicMock(),
+            ),
+        ):
+            predict(audio=AUDIO)
+            predict(audio=AUDIO)
+
+        mock_download.assert_called_once()
+        mock_load.assert_called_once()
 
 
 # ---------------------------------------------------------------------------
@@ -467,9 +565,11 @@ class TestRawNet2Config:
         original = rawnet2_run._CONFIG
         rawnet2_run._CONFIG = None  # reset cache so the open is attempted
         try:
-            with patch("builtins.open", side_effect=OSError("missing")):
-                with pytest.raises(RuntimeError, match="Failed to load RawNet2 config"):
-                    predict(y=AUDIO[0])
+            with (
+                patch("builtins.open", side_effect=OSError("missing")),
+                pytest.raises(RuntimeError, match="Failed to load RawNet2 config"),
+            ):
+                predict(y=AUDIO[0])
         finally:
             rawnet2_run._CONFIG = original
 
@@ -484,14 +584,14 @@ class TestRawNet2Config:
         try:
             with patch("builtins.open", mock_open := MagicMock()):
                 mock_open.return_value.__enter__.return_value = MagicMock()
-                with patch(
-                    "Jabberjay.Models.RawNet2.run.yaml.safe_load",
-                    side_effect=yaml.YAMLError("bad yaml"),
+                with (
+                    patch(
+                        "Jabberjay.Models.RawNet2.run.yaml.safe_load",
+                        side_effect=yaml.YAMLError("bad yaml"),
+                    ),
+                    pytest.raises(RuntimeError, match="Failed to load RawNet2 config"),
                 ):
-                    with pytest.raises(
-                        RuntimeError, match="Failed to load RawNet2 config"
-                    ):
-                        predict(y=AUDIO[0])
+                    predict(y=AUDIO[0])
         finally:
             rawnet2_run._CONFIG = original
 
@@ -516,14 +616,50 @@ class TestRawNet2Predict:
         mock_model = MagicMock()
         mock_model.return_value = mock_out
 
-        with patch("Jabberjay.Models.RawNet2.run.RawNet", return_value=mock_model):
-            with patch(
+        with (
+            patch("Jabberjay.Models.RawNet2.run.RawNet", return_value=mock_model),
+            patch(
                 "Jabberjay.Models.RawNet2.run.download_pretrained_model",
                 return_value="/fake/model.pth",
-            ):
-                with patch("torch.load", return_value={}):
-                    with patch("torch.no_grad"):
-                        prediction, confidence = predict(y=AUDIO[0])
+            ),
+            patch("torch.load", return_value={}),
+            patch("torch.no_grad"),
+        ):
+            prediction, confidence = predict(y=AUDIO[0])
 
         assert prediction is mock_predicted
         assert isinstance(confidence, float)
+
+    def test_model_is_loaded_once_across_repeated_calls(self):
+        """_load_model() caches the constructed RawNet + downloaded weights
+        — a second predict() call must not rebuild or re-download them."""
+        from Jabberjay.Models.RawNet2.run import predict
+
+        mock_predicted = MagicMock()
+        mock_predicted.item.return_value = 1
+        mock_inner = MagicMock()
+        mock_inner.__getitem__ = MagicMock(return_value=0.85)
+        mock_probs = MagicMock()
+        mock_probs.__getitem__ = MagicMock(return_value=mock_inner)
+        mock_out = MagicMock()
+        mock_out.exp.return_value = mock_probs
+        mock_out.max.return_value = (MagicMock(), mock_predicted)
+        mock_model = MagicMock()
+        mock_model.return_value = mock_out
+
+        with (
+            patch(
+                "Jabberjay.Models.RawNet2.run.RawNet", return_value=mock_model
+            ) as mock_rawnet,
+            patch(
+                "Jabberjay.Models.RawNet2.run.download_pretrained_model",
+                return_value="/fake/model.pth",
+            ) as mock_download,
+            patch("torch.load", return_value={}),
+            patch("torch.no_grad"),
+        ):
+            predict(y=AUDIO[0])
+            predict(y=AUDIO[0])
+
+        mock_rawnet.assert_called_once()
+        mock_download.assert_called_once()

@@ -2,10 +2,23 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torchaudio
+from loguru import logger
 from transformers import Wav2Vec2Model
+
+from Jabberjay.Utilities.model_cache import cached_loader
 
 _TARGET_SR: int = 16_000
 _MAX_LEN: int = 64600
+
+
+@cached_loader(maxsize=8)
+def load_pretrained(
+    model_cls: type[nn.Module], model_id: str, device: str
+) -> nn.Module:
+    """Load, cache, and move a HuggingFace-hosted Spectra model to device."""
+    logger.info(f"Loading model: {model_id}")
+    model = model_cls.from_pretrained(model_id)  # ty: ignore[unresolved-attribute]
+    return model.eval().to(device)
 
 
 def preprocess(y: np.ndarray, sr: float) -> torch.Tensor:

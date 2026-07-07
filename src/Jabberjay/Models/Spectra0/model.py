@@ -27,7 +27,7 @@ class Bottle2neck(nn.Module):
         self, inplanes, planes, kernel_size: int = 3, dilation: int = 1, scale=8
     ):
         super().__init__()
-        width = int(math.floor(planes / scale))
+        width = math.floor(planes / scale)
         self.conv1 = nn.Conv1d(inplanes, width * scale, kernel_size=1)
         self.bn1 = nn.BatchNorm1d(width * scale)
         self.nums = scale - 1
