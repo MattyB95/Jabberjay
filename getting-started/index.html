@@ -809,6 +809,7 @@
 <hr />
 <h2 id="pre-loading-audio">Pre-loading audio</h2>
 <p>If you want to run multiple models against the same clip, load the audio once with <code>jj.load()</code> and reuse the result. This avoids redundant disk reads.</p>
+<p>Each model is also cached in memory after its first <code>detect()</code> call, so calling the same model again later in the process (even with a different clip) reuses the already-loaded weights instead of reloading them.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Jabberjay</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">Jabberjay</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Visualisation</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">jj</span> <span class="o">=</span> <span class="n">Jabberjay</span><span class="p">()</span>

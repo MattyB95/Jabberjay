@@ -834,7 +834,7 @@
 
 
 <h1 id="models">Models</h1>
-<p>Jabberjay bundles ten model families. Each is downloaded from Hugging Face Hub on first use and cached locally.</p>
+<p>Jabberjay bundles ten model families. Each is downloaded from Hugging Face Hub on first use and cached locally, then kept in memory for the lifetime of the process so repeated <code>detect()</code> calls for the same model skip both the download and the reload.</p>
 <hr />
 <h2 id="choosing-a-model">Choosing a model</h2>
 <table>
