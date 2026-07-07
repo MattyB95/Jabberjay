@@ -77,6 +77,18 @@ class TestWav2Vec2Predict:
 
         assert result[0]["score"] == 0.9
 
+    def test_pipeline_is_loaded_once_across_repeated_calls(self):
+        """run_pipeline() caches by (model_id, sampling_rate) — a second call
+        for the same model must not reload the underlying pipeline."""
+        from Jabberjay.Models.Wav2Vec2.run import predict
+
+        mock_factory = MagicMock(return_value=_mock_pipeline())
+        with patch(_PIPELINE_PATH, mock_factory):
+            predict(y=AUDIO[0], sr=AUDIO[1])
+            predict(y=AUDIO[0], sr=AUDIO[1])
+
+        mock_factory.assert_called_once()
+
 
 class TestWavLMPredict:
     def test_returns_normalised_scores(self):
@@ -152,6 +164,38 @@ class TestVITPredict:
     def test_constantq_returns_normalised_scores(self):
         result = self._run_constantq()
         assert result[0]["label"] == "Bonafide"
+
+    def test_constantq_pipeline_is_loaded_once_across_repeated_calls(self):
+        """VIT's per-visualisation _load_pipeline() caches by model id — a
+        second call for the same dataset must not reload the pipeline."""
+        from Jabberjay.Models.Transformer.VIT.ConstantQ.run import predict
+
+        mock_image = MagicMock()
+        mock_pipe = _mock_pipeline()
+        mock_cqt = np.zeros((84, 32))
+        mock_factory = MagicMock(return_value=mock_pipe)
+        with (
+            patch(
+                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.pipeline",
+                mock_factory,
+            ),
+            patch(
+                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.get_image",
+                return_value=mock_image,
+            ),
+            patch(
+                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.cqt",
+                return_value=mock_cqt,
+            ),
+            patch(
+                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.amplitude_to_db",
+                return_value=mock_cqt,
+            ),
+        ):
+            predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
+            predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
+
+        mock_factory.assert_called_once()
 
     def test_mfcc_returns_normalised_scores(self):
         from Jabberjay.Models.Transformer.VIT.MFCC.run import predict
@@ -397,6 +441,20 @@ class _SpectraModelTestBase:
             result = predict(y=AUDIO[0], sr=AUDIO[1])
         assert sum(r["score"] for r in result) == pytest.approx(1.0, abs=1e-5)
 
+    def test_model_is_loaded_once_across_repeated_calls(self):
+        """Spectra.shared.load_pretrained() caches by (class, model id, device)
+        — a second predict() call for the same model must not reload it."""
+        import importlib
+
+        predict = importlib.import_module(
+            f"Jabberjay.Models.{self.model_module}.run"
+        ).predict
+        mock_model = self._make_mock_model([0.2, 0.8])
+        with patch(self._patch_path(), return_value=mock_model) as mock_from_pretrained:
+            predict(y=AUDIO[0], sr=AUDIO[1])
+            predict(y=AUDIO[0], sr=AUDIO[1])
+        mock_from_pretrained.assert_called_once()
+
 
 class TestSpectra0Predict(_SpectraModelTestBase):
     model_module = "Spectra0"
@@ -464,6 +522,34 @@ class TestClassicalPredict:
 
         assert prediction == 0
         assert confidence == pytest.approx(0.8)
+
+    def test_classifier_is_loaded_once_across_repeated_calls(self):
+        """_load_classifier() caches the downloaded joblib model — a second
+        predict() call must not re-download or re-deserialise it."""
+        from Jabberjay.Models.Classical.run import predict
+
+        mock_clf = MagicMock()
+        mock_clf.predict.return_value = [1]
+        mock_clf.predict_proba.return_value = np.array([[0.1, 0.9]])
+
+        with (
+            patch(
+                "Jabberjay.Models.Classical.run.download_pretrained_model",
+                return_value="/fake/model.joblib",
+            ) as mock_download,
+            patch(
+                "Jabberjay.Models.Classical.run.load", return_value=mock_clf
+            ) as mock_load,
+            patch(
+                "Jabberjay.Models.Classical.run.get_features",
+                return_value=MagicMock(),
+            ),
+        ):
+            predict(audio=AUDIO)
+            predict(audio=AUDIO)
+
+        mock_download.assert_called_once()
+        mock_load.assert_called_once()
 
 
 # ---------------------------------------------------------------------------
@@ -543,3 +629,37 @@ class TestRawNet2Predict:
 
         assert prediction is mock_predicted
         assert isinstance(confidence, float)
+
+    def test_model_is_loaded_once_across_repeated_calls(self):
+        """_load_model() caches the constructed RawNet + downloaded weights
+        — a second predict() call must not rebuild or re-download them."""
+        from Jabberjay.Models.RawNet2.run import predict
+
+        mock_predicted = MagicMock()
+        mock_predicted.item.return_value = 1
+        mock_inner = MagicMock()
+        mock_inner.__getitem__ = MagicMock(return_value=0.85)
+        mock_probs = MagicMock()
+        mock_probs.__getitem__ = MagicMock(return_value=mock_inner)
+        mock_out = MagicMock()
+        mock_out.exp.return_value = mock_probs
+        mock_out.max.return_value = (MagicMock(), mock_predicted)
+        mock_model = MagicMock()
+        mock_model.return_value = mock_out
+
+        with (
+            patch(
+                "Jabberjay.Models.RawNet2.run.RawNet", return_value=mock_model
+            ) as mock_rawnet,
+            patch(
+                "Jabberjay.Models.RawNet2.run.download_pretrained_model",
+                return_value="/fake/model.pth",
+            ) as mock_download,
+            patch("torch.load", return_value={}),
+            patch("torch.no_grad"),
+        ):
+            predict(y=AUDIO[0])
+            predict(y=AUDIO[0])
+
+        mock_rawnet.assert_called_once()
+        mock_download.assert_called_once()
