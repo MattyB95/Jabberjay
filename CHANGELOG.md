@@ -7,6 +7,23 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 
 ---
 
+## [Unreleased]
+
+### Changed
+- **Model/pipeline caching** — every model family (`HuBERT`, `Wav2Vec2`, `WavLM`,
+  `AST`, `VIT`, `Spectra0`, `SpectraAASIST`, `SpectraAASIST3`, `RawNet2`,
+  `Classical`) now caches its loaded weights in-process via a new
+  `Utilities/model_cache.py` helper, instead of reloading them from disk on
+  every `detect()` call. Bounded per-model (`maxsize=1`-`8`) so memory doesn't
+  grow unbounded across a long sweep like `examples/run_all.py`
+- **Ruff rule set expanded** — added `UP` (pyupgrade), `B` (bugbear), `SIM`
+  (simplify), and `RUF`, none of which conflict with black; fixed the
+  resulting findings across the first-party codebase (unused unpacked test
+  variables, missing exception chaining, nested `with` statements, ambiguous
+  unicode in comments/docstrings). `Models/RawNet2/model.py` is exempted from
+  the new categories via `per-file-ignores` since it's vendored third-party
+  code (see `coverage.omit`)
+
 ## [0.0.13] — 2026-05-31
 
 ### Changed

@@ -29,7 +29,7 @@ class DetectionResult:
     """True if the audio was classified as genuine."""
 
     confidence: float
-    """Confidence score for the top prediction (0.0–1.0)."""
+    """Confidence score for the top prediction (0.0-1.0)."""
 
     model: Model
     """The model used to produce this result."""
@@ -89,8 +89,8 @@ class Jabberjay:
         logger.debug(f"Loading audio file: {path}")
         try:
             y, sr = librosa.load(path)
-        except FileNotFoundError:
-            raise FileNotFoundError(f"Audio file not found: {path}")
+        except FileNotFoundError as exc:
+            raise FileNotFoundError(f"Audio file not found: {path}") from exc
         except (
             OSError,
             RuntimeError,

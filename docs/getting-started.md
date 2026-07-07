@@ -78,6 +78,8 @@ Pass a model name as a string, or use the `Model` enum for IDE autocomplete.
 
 If you want to run multiple models against the same clip, load the audio once with `jj.load()` and reuse the result. This avoids redundant disk reads.
 
+Each model is also cached in memory after its first `detect()` call, so calling the same model again later in the process (even with a different clip) reuses the already-loaded weights instead of reloading them.
+
 ```python
 from Jabberjay import Dataset, Jabberjay, Model, Visualisation
 

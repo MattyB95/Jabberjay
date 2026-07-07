@@ -86,26 +86,31 @@ class Model(Enum):
 
 **2. Create a `run.py`** in a new directory under `src/Jabberjay/Models/MyModel/`:
 
+If your model fits the standard `transformers` `audio-classification` pipeline, delegate to the shared `run_pipeline()` helper — it loads and caches the pipeline for you (see [`Utilities/pipeline.py`](src/Jabberjay/Utilities/pipeline.py)):
+
 ```python
 # src/Jabberjay/Models/MyModel/run.py
-from typing import cast
-
 import numpy as np
-from loguru import logger
-from transformers import pipeline
 
-from Jabberjay.Utilities.label_normalizer import normalize_pipeline_scores
+from Jabberjay.Utilities.pipeline import run_pipeline
 from Jabberjay.Utilities.types import PredictionScore
 
 _MODEL_ID = "author/model-id-on-huggingface"
 _TARGET_SR = 16_000
 
+
 def predict(y: np.ndarray, sr: float) -> list[PredictionScore]:
-    logger.info(f"Loading MyModel: {_MODEL_ID}")
-    pipe = pipeline("audio-classification", model=_MODEL_ID, sampling_rate=_TARGET_SR)
-    logger.debug(f"Running MyModel inference on {len(y)} samples at {int(sr)}Hz")
-    raw = cast(list[dict[str, object]], pipe({"raw": y, "sampling_rate": int(sr)}))
-    return normalize_pipeline_scores(raw)
+    return run_pipeline(_MODEL_ID, y, sr, "MyModel", sampling_rate=_TARGET_SR)
+```
+
+If your model needs custom loading (a `torch.nn.Module`, a non-pipeline HuggingFace class, a `.joblib`/`.pth` file, etc. — see the `Spectra*`, `RawNet2`, or `Classical` model families for examples), wrap the load in `Jabberjay.Utilities.model_cache.cached_loader` instead of calling `.from_pretrained()`/`load()` directly inside `predict()`. Every model in Jabberjay caches its loaded weights in-process so repeated `detect()` calls for the same model don't pay the reload cost — a new model that skips this would be the one exception and would noticeably slow down multi-call use (e.g. `examples/run_all.py`):
+
+```python
+from Jabberjay.Utilities.model_cache import cached_loader
+
+@cached_loader(maxsize=4)
+def _load_model(device: str) -> MyModelClass:
+    return MyModelClass.from_pretrained(_MODEL_ID).eval().to(device)
 ```
 
 If the model uses non-standard labels, `normalize_pipeline_scores()` calls `normalize_label()` internally — check `src/Jabberjay/Utilities/label_normalizer.py` and extend `_BONAFIDE_SUBSTR` / `_SPOOF_SUBSTR` (substring matching) or `_BONAFIDE_EXACT` / `_SPOOF_EXACT` (exact matching) if needed.

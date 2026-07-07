@@ -20,7 +20,7 @@ result = jj.detect(AUDIO, model="RawNet2")
 
 print("label      :", result.label)  # "Bonafide" or "Spoof"
 print("is_bonafide:", result.is_bonafide)  # True / False
-print("confidence :", result.confidence)  # 0.0 – 1.0
+print("confidence :", result.confidence)  # 0.0 - 1.0
 print("model      :", result.model)  # Model.RawNet2
 print("str        :", result)  # Bonafide ✔️ (92.3% confidence, model=RawNet2)
 print()

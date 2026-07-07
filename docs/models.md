@@ -1,6 +1,6 @@
 # Models
 
-Jabberjay bundles ten model families. Each is downloaded from Hugging Face Hub on first use and cached locally.
+Jabberjay bundles ten model families. Each is downloaded from Hugging Face Hub on first use and cached locally, then kept in memory for the lifetime of the process so repeated `detect()` calls for the same model skip both the download and the reload.
 
 ---
 

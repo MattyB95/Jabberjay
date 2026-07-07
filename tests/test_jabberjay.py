@@ -21,15 +21,17 @@ class TestLoad:
 
     def test_load_accepts_string_path(self):
         jj = Jabberjay()
-        y, sr = jj.load(str(RES_DIR / "spoof" / "spoof.flac"))
+        y, _sr = jj.load(str(RES_DIR / "spoof" / "spoof.flac"))
         assert isinstance(y, np.ndarray)
         assert len(y) > 0
 
     def test_load_missing_file_raises(self):
         jj = Jabberjay()
-        with patch("librosa.load", side_effect=FileNotFoundError("No such file")):
-            with pytest.raises(FileNotFoundError, match="not found"):
-                jj.load("nonexistent_file.wav")
+        with (
+            patch("librosa.load", side_effect=FileNotFoundError("No such file")),
+            pytest.raises(FileNotFoundError, match="not found"),
+        ):
+            jj.load("nonexistent_file.wav")
 
 
 class TestListMethods:
@@ -231,9 +233,11 @@ class TestResultFromScores:
 class TestLoadErrors:
     def test_load_raises_value_error_on_corrupt_file(self):
         jj = Jabberjay()
-        with patch("librosa.load", side_effect=RuntimeError("codec error")):
-            with pytest.raises(ValueError, match="Failed to load"):
-                jj.load("corrupt.wav")
+        with (
+            patch("librosa.load", side_effect=RuntimeError("codec error")),
+            pytest.raises(ValueError, match="Failed to load"),
+        ):
+            jj.load("corrupt.wav")
 
 
 class TestDetectHandlers:
@@ -297,14 +301,16 @@ class TestDetectHandlers:
         assert result.model == Model.VIT
 
     def test_vit_invalid_module_raises(self):
-        with patch(
-            "Jabberjay.jabberjay.importlib.import_module",
-            side_effect=ModuleNotFoundError,
+        with (
+            patch(
+                "Jabberjay.jabberjay.importlib.import_module",
+                side_effect=ModuleNotFoundError,
+            ),
+            pytest.raises(ValueError, match="No VIT module"),
         ):
-            with pytest.raises(ValueError, match="No VIT module"):
-                self.jj._vit_handler(
-                    self.audio, Visualisation.ConstantQ, Dataset.VoxCelebSpoof
-                )
+            self.jj._vit_handler(
+                self.audio, Visualisation.ConstantQ, Dataset.VoxCelebSpoof
+            )
 
     def test_spectra0_handler(self):
         with patch("Jabberjay.Models.Spectra0.run.predict", return_value=self.scores):
@@ -350,32 +356,40 @@ class TestCLI:
     )
 
     def test_main_prints_result(self, capsys):
-        with patch("sys.argv", ["jabberjay", "audio.flac"]):
-            with patch.object(Jabberjay, "detect", return_value=self._BONAFIDE):
-                main()
+        with (
+            patch("sys.argv", ["jabberjay", "audio.flac"]),
+            patch.object(Jabberjay, "detect", return_value=self._BONAFIDE),
+        ):
+            main()
         assert "Bonafide" in capsys.readouterr().out
 
     def test_main_classical_model(self, capsys):
-        with patch("sys.argv", ["jabberjay", "audio.flac", "-m", "Classical"]):
-            with patch.object(Jabberjay, "detect", return_value=self._SPOOF):
-                main()
+        with (
+            patch("sys.argv", ["jabberjay", "audio.flac", "-m", "Classical"]),
+            patch.object(Jabberjay, "detect", return_value=self._SPOOF),
+        ):
+            main()
         assert "Spoof" in capsys.readouterr().out
 
     def test_main_verbose_flag(self, capsys):
-        with patch("sys.argv", ["jabberjay", "audio.flac", "-v"]):
-            with patch.object(Jabberjay, "detect", return_value=self._BONAFIDE):
-                main()
+        with (
+            patch("sys.argv", ["jabberjay", "audio.flac", "-v"]),
+            patch.object(Jabberjay, "detect", return_value=self._BONAFIDE),
+        ):
+            main()
         assert "Bonafide" in capsys.readouterr().out
 
     def test_main_passes_dataset_and_visualisation(self):
-        with patch(
-            "sys.argv",
-            ["jabberjay", "audio.flac", "-d", "ASVspoof2019", "-vis", "MFCC"],
-        ):
-            with patch.object(
+        with (
+            patch(
+                "sys.argv",
+                ["jabberjay", "audio.flac", "-d", "ASVspoof2019", "-vis", "MFCC"],
+            ),
+            patch.object(
                 Jabberjay, "detect", return_value=self._BONAFIDE
-            ) as mock_detect:
-                main()
+            ) as mock_detect,
+        ):
+            main()
         mock_detect.assert_called_once()
         _, kwargs = mock_detect.call_args
         assert kwargs["dataset"] == Dataset.ASVspoof2019
