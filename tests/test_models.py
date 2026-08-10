@@ -143,7 +143,7 @@ class TestVITPredict:
         mock_cqt = np.zeros((84, 32))
         with (
             patch(
-                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.pipeline",
+                "Jabberjay.Models.Transformer.VIT.utility.pipeline",
                 return_value=mock_pipe,
             ),
             patch(
@@ -166,8 +166,8 @@ class TestVITPredict:
         assert result[0]["label"] == "Bonafide"
 
     def test_constantq_pipeline_is_loaded_once_across_repeated_calls(self):
-        """VIT's per-visualisation _load_pipeline() caches by model id — a
-        second call for the same dataset must not reload the pipeline."""
+        """VIT's shared load_pipeline() caches by model id — a second call
+        for the same dataset must not reload the pipeline."""
         from Jabberjay.Models.Transformer.VIT.ConstantQ.run import predict
 
         mock_image = MagicMock()
@@ -176,7 +176,7 @@ class TestVITPredict:
         mock_factory = MagicMock(return_value=mock_pipe)
         with (
             patch(
-                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.pipeline",
+                "Jabberjay.Models.Transformer.VIT.utility.pipeline",
                 mock_factory,
             ),
             patch(
@@ -204,7 +204,7 @@ class TestVITPredict:
         mock_pipe = _mock_pipeline()
         with (
             patch(
-                "Jabberjay.Models.Transformer.VIT.MFCC.run.pipeline",
+                "Jabberjay.Models.Transformer.VIT.utility.pipeline",
                 return_value=mock_pipe,
             ),
             patch(
@@ -223,7 +223,7 @@ class TestVITPredict:
         mock_pipe = _mock_pipeline()
         with (
             patch(
-                "Jabberjay.Models.Transformer.VIT.MelSpectrogram.run.pipeline",
+                "Jabberjay.Models.Transformer.VIT.utility.pipeline",
                 return_value=mock_pipe,
             ),
             patch(

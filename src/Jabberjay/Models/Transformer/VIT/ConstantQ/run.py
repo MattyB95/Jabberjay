@@ -1,25 +1,17 @@
 import librosa
 import numpy as np
 from loguru import logger
-from transformers import Pipeline, pipeline
 
-from Jabberjay.Models.Transformer.VIT.utility import get_image
+from Jabberjay.Models.Transformer.VIT.utility import get_image, load_pipeline
 from Jabberjay.Utilities.enum_handler import Dataset
 from Jabberjay.Utilities.label_normalizer import normalize_pipeline_scores
-from Jabberjay.Utilities.model_cache import cached_loader
 from Jabberjay.Utilities.types import PredictionScore
-
-
-@cached_loader(maxsize=4)
-def _load_pipeline(model_id: str) -> Pipeline:
-    logger.info(f"Loading VIT model: {model_id}")
-    return pipeline(task="image-classification", model=model_id)
 
 
 def predict(audio: tuple[np.ndarray, float], dataset: Dataset) -> list[PredictionScore]:
     y, sr = audio
     model = f"MattyB95/VIT-{dataset.value}-ConstantQ-Synthetic-Voice-Detection"
-    pipe = _load_pipeline(model)
+    pipe = load_pipeline(model)
     logger.debug("Computing Constant-Q Transform")
     CQT = np.abs(librosa.cqt(y=y, sr=sr))
     S_db = librosa.amplitude_to_db(S=CQT, ref=np.max)
