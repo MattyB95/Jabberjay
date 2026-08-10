@@ -9,7 +9,7 @@ repos:
         always_run: true
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -22,12 +22,12 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/psf/black
-    rev: 26.3.1
+    rev: 26.5.1
     hooks:
       - id: black
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.10
+    rev: v0.16.2
     hooks:
       - id: ruff-check
         args: [ --fix ]
