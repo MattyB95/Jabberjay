@@ -8,6 +8,7 @@ from loguru import logger
 from torch import Tensor
 
 from Jabberjay.Models.RawNet2.model import RawNet
+from Jabberjay.Utilities.device import get_device
 from Jabberjay.Utilities.hugging_face import download_pretrained_model
 from Jabberjay.Utilities.model_cache import cached_loader
 
@@ -43,8 +44,7 @@ def _load_model(device: str) -> RawNet:
 
 
 def predict(y: np.ndarray, sr: float) -> tuple[Tensor, float]:
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    logger.debug(f"Using device: {device}")
+    device = get_device()
     model = _load_model(device)
     assert _CONFIG is not None  # set by _load_model()
     max_len = _CONFIG["model"]["nb_samp"]
