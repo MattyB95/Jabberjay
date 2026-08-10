@@ -7,6 +7,67 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 
 ---
 
+## [0.0.15] — 2026-08-10
+
+### Security
+- **`torch` floor raised to `>=2.13.0`** — closes [CVE-2025-3000](https://github.com/advisories/GHSA-rrmf-rvhw-rf47)
+  (memory corruption via `torch.jit.script`). The lockfile had already
+  resolved past the vulnerable range, but the published dependency floor
+  hadn't, so a fresh install could still land on `torch` 2.12.1
+- **`setuptools` locked to 84.0.0** — closes
+  [GHSA-h35f-9h28-mq5c](https://github.com/advisories/GHSA-h35f-9h28-mq5c),
+  a MANIFEST.in exclusion bypass via NFC/NFD Unicode normalization
+  collisions on macOS APFS/HFS+
+
+### Fixed
+- **RawNet2 missing resample/pad** — `predict()` fed audio straight into
+  the model with no resampling and no length normalization. RawNet2's
+  `SincConv` filters are hardcoded to 16kHz and the model was trained on
+  fixed 64600-sample windows, but `Jabberjay.load()` produces 22050Hz
+  audio by default — every other torch backend (the Spectra family)
+  already resampled and padded correctly; RawNet2 was the outlier,
+  silently miscalibrating scores with no error
+- **Spectra0 / SpectraAASIST decision threshold** — `predict()` derived
+  the Bonafide/Spoof verdict via softmax + argmax (equivalent to
+  thresholding the bonafide logit at 0), rather than lab260's own
+  EER-tuned calibrated threshold (`-1.0625009` for Spectra0, `-1.140625`
+  for SpectraAASIST, both documented on their model cards). Argmax could
+  silently disagree with the intended verdict on borderline samples.
+  `SpectraAASIST3` is intentionally left unchanged — its `classify()`
+  default is undocumented and identical to Spectra0's value in both
+  Jabberjay's and lab260's own upstream code, almost certainly a stale
+  copy-paste rather than a real calibration
+- **AST pipeline missing `sampling_rate`** — HuBERT, Wav2Vec2, and WavLM
+  all pass `sampling_rate=16000` to the shared pipeline helper; AST was
+  the one backend omitting it
+- **`EnumAction` fallthrough** — `__call__` relied entirely on
+  `parser.error()` raising `SystemExit`; it now returns explicitly on the
+  invalid-choice path instead of falling through to an unassigned value
+
+### Changed
+- **Dependencies refreshed** to latest compatible versions
+  (`huggingface-hub` 1.22→1.27, `transformers` 5.13→5.15, `matplotlib`,
+  `ruff`, `ty`, `mkdocs-material`, `mkdocstrings`, `pre-commit`, and
+  ~15 transitive packages)
+- **Pre-commit hook pins bumped** (`black`, `ruff-pre-commit`,
+  `pre-commit-hooks`) and the `astral-sh/setup-uv` GitHub Action bumped
+  from major `v7` to `v9` — the floating major tag had been stuck two
+  versions behind since it doesn't cross major-version boundaries
+- **VIT pipeline loader consolidated** — the identical
+  `@cached_loader`-wrapped `pipeline(task="image-classification", ...)`
+  loader duplicated across `ConstantQ`, `MFCC`, and `MelSpectrogram`
+  moved into `Transformer/VIT/utility.py` as `load_pipeline()`, sharing
+  one cache across the full dataset × visualisation matrix instead of
+  three separate small caches
+- **Device selection deduplicated** — `"cuda" if torch.cuda.is_available()
+  else "cpu"` plus its debug log, previously repeated independently in
+  `RawNet2`, `Spectra0`, `SpectraAASIST`, and `SpectraAASIST3`, now lives
+  in `Utilities/device.get_device()`
+- **Removed a redundant canvas draw** in VIT's `get_image()` —
+  `plt.savefig()` already redraws the canvas internally
+
+---
+
 ## [0.0.14] — 2026-07-07
 
 ### Added
@@ -397,6 +458,7 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
+[0.0.15]: https://github.com/MattyB95/Jabberjay/compare/v0.0.14...v0.0.15
 [0.0.14]: https://github.com/MattyB95/Jabberjay/compare/v0.0.13...v0.0.14
 [0.0.13]: https://github.com/MattyB95/Jabberjay/compare/v0.0.12...v0.0.13
 [0.0.12]: https://github.com/MattyB95/Jabberjay/compare/v0.0.11...v0.0.12
