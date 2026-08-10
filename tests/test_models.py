@@ -460,10 +460,36 @@ class TestSpectra0Predict(_SpectraModelTestBase):
     model_module = "Spectra0"
     model_class = "Spectra0Model"
 
+    def test_uses_calibrated_threshold_not_naive_argmax(self):
+        """bonafide_logit=-0.5 is below spoof_logit=0.5 (naive argmax would
+        say Spoof) but above the model's -1.0625009 calibrated threshold,
+        so the verdict must be Bonafide."""
+        from Jabberjay.Models.Spectra0.run import predict
+
+        mock_model = self._make_mock_model([0.5, -0.5])
+        with patch(self._patch_path(), return_value=mock_model):
+            result = predict(y=AUDIO[0], sr=AUDIO[1])
+        bonafide = next(r for r in result if r["label"] == "Bonafide")
+        spoof = next(r for r in result if r["label"] == "Spoof")
+        assert bonafide["score"] > spoof["score"]
+
 
 class TestSpectraAASISTPredict(_SpectraModelTestBase):
     model_module = "SpectraAASIST"
     model_class = "SpectraAASIST"
+
+    def test_uses_calibrated_threshold_not_naive_argmax(self):
+        """bonafide_logit=-0.5 is below spoof_logit=0.5 (naive argmax would
+        say Spoof) but above the model's -1.140625 calibrated threshold,
+        so the verdict must be Bonafide."""
+        from Jabberjay.Models.SpectraAASIST.run import predict
+
+        mock_model = self._make_mock_model([0.5, -0.5])
+        with patch(self._patch_path(), return_value=mock_model):
+            result = predict(y=AUDIO[0], sr=AUDIO[1])
+        bonafide = next(r for r in result if r["label"] == "Bonafide")
+        spoof = next(r for r in result if r["label"] == "Spoof")
+        assert bonafide["score"] > spoof["score"]
 
 
 class TestSpectraAASIST3Predict(_SpectraModelTestBase):
