@@ -23,7 +23,6 @@ def get_image(data: ndarray, sr: float) -> Image.Image:
     buf = io.BytesIO()
     try:
         librosa.display.specshow(data=data, sr=sr, ax=ax)
-        fig.canvas.draw()
         plt.savefig(buf, bbox_inches="tight", pad_inches=0)
         buf.seek(0)
         img = Image.open(buf)
