@@ -46,15 +46,19 @@ def _load_model(device: str) -> RawNet:
 def predict(y: np.ndarray, sr: float) -> tuple[Tensor, float]:
     device = get_device()
     model = _load_model(device)
-    if _CONFIG is None:
-        raise RuntimeError("Model configuration was not loaded; _load_model() must set _CONFIG.")
+    if _CONFIG is None:  # pragma: no cover — invariant guaranteed by _load_model()
+        raise RuntimeError(
+            "Model configuration was not loaded; _load_model() must set _CONFIG."
+        )
     max_len = _CONFIG["model"]["nb_samp"]
     audio = torch.from_numpy(y).float()
     if sr != _TARGET_SR:
         audio = torchaudio.functional.resample(audio, int(sr), _TARGET_SR)
     audio_len = audio.shape[0]
     if audio_len == 0:
-        raise ValueError("Input audio array is empty; cannot run inference on zero samples.")
+        raise ValueError(
+            "Input audio array is empty; cannot run inference on zero samples."
+        )
     if audio_len >= max_len:
         audio = audio[:max_len]
     else:

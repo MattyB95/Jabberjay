@@ -623,6 +623,20 @@ class TestRawNet2Config:
 
 
 class TestRawNet2Predict:
+    def test_empty_audio_raises_value_error(self):
+        from Jabberjay.Models.RawNet2.run import predict
+
+        with (
+            patch("Jabberjay.Models.RawNet2.run.RawNet", return_value=MagicMock()),
+            patch(
+                "Jabberjay.Models.RawNet2.run.download_pretrained_model",
+                return_value="/fake/model.pth",
+            ),
+            patch("torch.load", return_value={}),
+            pytest.raises(ValueError, match="Input audio array is empty"),
+        ):
+            predict(y=np.zeros(0, dtype=np.float32), sr=16000.0)
+
     def test_returns_prediction_and_confidence(self):
         from Jabberjay.Models.RawNet2.run import predict
 
