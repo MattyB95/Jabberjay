@@ -46,4 +46,5 @@ class EnumAction(argparse.Action):
         except KeyError:
             choices = ", ".join(e.name for e in self._enum)
             parser.error(f"invalid choice '{values}' — choose from: {choices}")
+            return  # pragma: no cover — parser.error() always raises SystemExit
         setattr(namespace, self.dest, value)

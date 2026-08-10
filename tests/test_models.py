@@ -143,7 +143,7 @@ class TestVITPredict:
         mock_cqt = np.zeros((84, 32))
         with (
             patch(
-                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.pipeline",
+                "Jabberjay.Models.Transformer.VIT.utility.pipeline",
                 return_value=mock_pipe,
             ),
             patch(
@@ -166,8 +166,8 @@ class TestVITPredict:
         assert result[0]["label"] == "Bonafide"
 
     def test_constantq_pipeline_is_loaded_once_across_repeated_calls(self):
-        """VIT's per-visualisation _load_pipeline() caches by model id — a
-        second call for the same dataset must not reload the pipeline."""
+        """VIT's shared load_pipeline() caches by model id — a second call
+        for the same dataset must not reload the pipeline."""
         from Jabberjay.Models.Transformer.VIT.ConstantQ.run import predict
 
         mock_image = MagicMock()
@@ -176,7 +176,7 @@ class TestVITPredict:
         mock_factory = MagicMock(return_value=mock_pipe)
         with (
             patch(
-                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.pipeline",
+                "Jabberjay.Models.Transformer.VIT.utility.pipeline",
                 mock_factory,
             ),
             patch(
@@ -204,7 +204,7 @@ class TestVITPredict:
         mock_pipe = _mock_pipeline()
         with (
             patch(
-                "Jabberjay.Models.Transformer.VIT.MFCC.run.pipeline",
+                "Jabberjay.Models.Transformer.VIT.utility.pipeline",
                 return_value=mock_pipe,
             ),
             patch(
@@ -223,7 +223,7 @@ class TestVITPredict:
         mock_pipe = _mock_pipeline()
         with (
             patch(
-                "Jabberjay.Models.Transformer.VIT.MelSpectrogram.run.pipeline",
+                "Jabberjay.Models.Transformer.VIT.utility.pipeline",
                 return_value=mock_pipe,
             ),
             patch(
@@ -460,10 +460,36 @@ class TestSpectra0Predict(_SpectraModelTestBase):
     model_module = "Spectra0"
     model_class = "Spectra0Model"
 
+    def test_uses_calibrated_threshold_not_naive_argmax(self):
+        """bonafide_logit=-0.5 is below spoof_logit=0.5 (naive argmax would
+        say Spoof) but above the model's -1.0625009 calibrated threshold,
+        so the verdict must be Bonafide."""
+        from Jabberjay.Models.Spectra0.run import predict
+
+        mock_model = self._make_mock_model([0.5, -0.5])
+        with patch(self._patch_path(), return_value=mock_model):
+            result = predict(y=AUDIO[0], sr=AUDIO[1])
+        bonafide = next(r for r in result if r["label"] == "Bonafide")
+        spoof = next(r for r in result if r["label"] == "Spoof")
+        assert bonafide["score"] > spoof["score"]
+
 
 class TestSpectraAASISTPredict(_SpectraModelTestBase):
     model_module = "SpectraAASIST"
     model_class = "SpectraAASIST"
+
+    def test_uses_calibrated_threshold_not_naive_argmax(self):
+        """bonafide_logit=-0.5 is below spoof_logit=0.5 (naive argmax would
+        say Spoof) but above the model's -1.140625 calibrated threshold,
+        so the verdict must be Bonafide."""
+        from Jabberjay.Models.SpectraAASIST.run import predict
+
+        mock_model = self._make_mock_model([0.5, -0.5])
+        with patch(self._patch_path(), return_value=mock_model):
+            result = predict(y=AUDIO[0], sr=AUDIO[1])
+        bonafide = next(r for r in result if r["label"] == "Bonafide")
+        spoof = next(r for r in result if r["label"] == "Spoof")
+        assert bonafide["score"] > spoof["score"]
 
 
 class TestSpectraAASIST3Predict(_SpectraModelTestBase):
@@ -569,7 +595,7 @@ class TestRawNet2Config:
                 patch("builtins.open", side_effect=OSError("missing")),
                 pytest.raises(RuntimeError, match="Failed to load RawNet2 config"),
             ):
-                predict(y=AUDIO[0])
+                predict(y=AUDIO[0], sr=AUDIO[1])
         finally:
             rawnet2_run._CONFIG = original
 
@@ -591,12 +617,26 @@ class TestRawNet2Config:
                     ),
                     pytest.raises(RuntimeError, match="Failed to load RawNet2 config"),
                 ):
-                    predict(y=AUDIO[0])
+                    predict(y=AUDIO[0], sr=AUDIO[1])
         finally:
             rawnet2_run._CONFIG = original
 
 
 class TestRawNet2Predict:
+    def test_empty_audio_raises_value_error(self):
+        from Jabberjay.Models.RawNet2.run import predict
+
+        with (
+            patch("Jabberjay.Models.RawNet2.run.RawNet", return_value=MagicMock()),
+            patch(
+                "Jabberjay.Models.RawNet2.run.download_pretrained_model",
+                return_value="/fake/model.pth",
+            ),
+            patch("torch.load", return_value={}),
+            pytest.raises(ValueError, match="Input audio array is empty"),
+        ):
+            predict(y=np.zeros(0, dtype=np.float32), sr=16000.0)
+
     def test_returns_prediction_and_confidence(self):
         from Jabberjay.Models.RawNet2.run import predict
 
@@ -625,7 +665,69 @@ class TestRawNet2Predict:
             patch("torch.load", return_value={}),
             patch("torch.no_grad"),
         ):
-            prediction, confidence = predict(y=AUDIO[0])
+            prediction, confidence = predict(y=AUDIO[0], sr=AUDIO[1])
+
+        assert prediction is mock_predicted
+        assert isinstance(confidence, float)
+
+    def test_resamples_when_sr_differs_from_target(self):
+        """22050Hz input must be resampled to the model's 16kHz target rate."""
+        from Jabberjay.Models.RawNet2.run import predict
+
+        mock_predicted = MagicMock()
+        mock_predicted.item.return_value = 1
+        mock_inner = MagicMock()
+        mock_inner.__getitem__ = MagicMock(return_value=0.85)
+        mock_probs = MagicMock()
+        mock_probs.__getitem__ = MagicMock(return_value=mock_inner)
+        mock_out = MagicMock()
+        mock_out.exp.return_value = mock_probs
+        mock_out.max.return_value = (MagicMock(), mock_predicted)
+        mock_model = MagicMock()
+        mock_model.return_value = mock_out
+
+        y = np.zeros(22050, dtype=np.float32)
+        with (
+            patch("Jabberjay.Models.RawNet2.run.RawNet", return_value=mock_model),
+            patch(
+                "Jabberjay.Models.RawNet2.run.download_pretrained_model",
+                return_value="/fake/model.pth",
+            ),
+            patch("torch.load", return_value={}),
+            patch("torch.no_grad"),
+        ):
+            prediction, confidence = predict(y=y, sr=22050.0)
+
+        assert prediction is mock_predicted
+        assert isinstance(confidence, float)
+
+    def test_trims_audio_longer_than_max_len(self):
+        """Audio already at/above nb_samp must be trimmed, not repeat-padded."""
+        from Jabberjay.Models.RawNet2.run import predict
+
+        mock_predicted = MagicMock()
+        mock_predicted.item.return_value = 1
+        mock_inner = MagicMock()
+        mock_inner.__getitem__ = MagicMock(return_value=0.85)
+        mock_probs = MagicMock()
+        mock_probs.__getitem__ = MagicMock(return_value=mock_inner)
+        mock_out = MagicMock()
+        mock_out.exp.return_value = mock_probs
+        mock_out.max.return_value = (MagicMock(), mock_predicted)
+        mock_model = MagicMock()
+        mock_model.return_value = mock_out
+
+        y = np.zeros(70_000, dtype=np.float32)  # longer than nb_samp=64600
+        with (
+            patch("Jabberjay.Models.RawNet2.run.RawNet", return_value=mock_model),
+            patch(
+                "Jabberjay.Models.RawNet2.run.download_pretrained_model",
+                return_value="/fake/model.pth",
+            ),
+            patch("torch.load", return_value={}),
+            patch("torch.no_grad"),
+        ):
+            prediction, confidence = predict(y=y, sr=16000.0)
 
         assert prediction is mock_predicted
         assert isinstance(confidence, float)
@@ -658,8 +760,8 @@ class TestRawNet2Predict:
             patch("torch.load", return_value={}),
             patch("torch.no_grad"),
         ):
-            predict(y=AUDIO[0])
-            predict(y=AUDIO[0])
+            predict(y=AUDIO[0], sr=AUDIO[1])
+            predict(y=AUDIO[0], sr=AUDIO[1])
 
         mock_rawnet.assert_called_once()
         mock_download.assert_called_once()
