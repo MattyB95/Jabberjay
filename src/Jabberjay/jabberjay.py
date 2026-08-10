@@ -165,7 +165,7 @@ class Jabberjay:
             case Model.HuBERT:
                 return self._hubert_handler(y=y, sr=sr)
             case Model.RawNet2:
-                return self._rawnet2_handler(y=y)
+                return self._rawnet2_handler(y=y, sr=sr)
             case Model.VIT:
                 if visualisation is None:
                     raise ValueError("Visualisation is required for the VIT model.")
@@ -228,10 +228,10 @@ class Jabberjay:
         )
 
     @staticmethod
-    def _rawnet2_handler(y: np.ndarray) -> DetectionResult:
+    def _rawnet2_handler(y: np.ndarray, sr: float) -> DetectionResult:
         import Jabberjay.Models.RawNet2.run as RawNet2
 
-        prediction, confidence = RawNet2.predict(y=y)
+        prediction, confidence = RawNet2.predict(y=y, sr=sr)
         is_bonafide = bool(prediction.item())
         logger.debug(f"RawNet2 prediction: {is_bonafide} (confidence={confidence:.3f})")
         return DetectionResult(

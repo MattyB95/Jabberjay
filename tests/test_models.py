@@ -569,7 +569,7 @@ class TestRawNet2Config:
                 patch("builtins.open", side_effect=OSError("missing")),
                 pytest.raises(RuntimeError, match="Failed to load RawNet2 config"),
             ):
-                predict(y=AUDIO[0])
+                predict(y=AUDIO[0], sr=AUDIO[1])
         finally:
             rawnet2_run._CONFIG = original
 
@@ -591,7 +591,7 @@ class TestRawNet2Config:
                     ),
                     pytest.raises(RuntimeError, match="Failed to load RawNet2 config"),
                 ):
-                    predict(y=AUDIO[0])
+                    predict(y=AUDIO[0], sr=AUDIO[1])
         finally:
             rawnet2_run._CONFIG = original
 
@@ -625,7 +625,69 @@ class TestRawNet2Predict:
             patch("torch.load", return_value={}),
             patch("torch.no_grad"),
         ):
-            prediction, confidence = predict(y=AUDIO[0])
+            prediction, confidence = predict(y=AUDIO[0], sr=AUDIO[1])
+
+        assert prediction is mock_predicted
+        assert isinstance(confidence, float)
+
+    def test_resamples_when_sr_differs_from_target(self):
+        """22050Hz input must be resampled to the model's 16kHz target rate."""
+        from Jabberjay.Models.RawNet2.run import predict
+
+        mock_predicted = MagicMock()
+        mock_predicted.item.return_value = 1
+        mock_inner = MagicMock()
+        mock_inner.__getitem__ = MagicMock(return_value=0.85)
+        mock_probs = MagicMock()
+        mock_probs.__getitem__ = MagicMock(return_value=mock_inner)
+        mock_out = MagicMock()
+        mock_out.exp.return_value = mock_probs
+        mock_out.max.return_value = (MagicMock(), mock_predicted)
+        mock_model = MagicMock()
+        mock_model.return_value = mock_out
+
+        y = np.zeros(22050, dtype=np.float32)
+        with (
+            patch("Jabberjay.Models.RawNet2.run.RawNet", return_value=mock_model),
+            patch(
+                "Jabberjay.Models.RawNet2.run.download_pretrained_model",
+                return_value="/fake/model.pth",
+            ),
+            patch("torch.load", return_value={}),
+            patch("torch.no_grad"),
+        ):
+            prediction, confidence = predict(y=y, sr=22050.0)
+
+        assert prediction is mock_predicted
+        assert isinstance(confidence, float)
+
+    def test_trims_audio_longer_than_max_len(self):
+        """Audio already at/above nb_samp must be trimmed, not repeat-padded."""
+        from Jabberjay.Models.RawNet2.run import predict
+
+        mock_predicted = MagicMock()
+        mock_predicted.item.return_value = 1
+        mock_inner = MagicMock()
+        mock_inner.__getitem__ = MagicMock(return_value=0.85)
+        mock_probs = MagicMock()
+        mock_probs.__getitem__ = MagicMock(return_value=mock_inner)
+        mock_out = MagicMock()
+        mock_out.exp.return_value = mock_probs
+        mock_out.max.return_value = (MagicMock(), mock_predicted)
+        mock_model = MagicMock()
+        mock_model.return_value = mock_out
+
+        y = np.zeros(70_000, dtype=np.float32)  # longer than nb_samp=64600
+        with (
+            patch("Jabberjay.Models.RawNet2.run.RawNet", return_value=mock_model),
+            patch(
+                "Jabberjay.Models.RawNet2.run.download_pretrained_model",
+                return_value="/fake/model.pth",
+            ),
+            patch("torch.load", return_value={}),
+            patch("torch.no_grad"),
+        ):
+            prediction, confidence = predict(y=y, sr=16000.0)
 
         assert prediction is mock_predicted
         assert isinstance(confidence, float)
@@ -658,8 +720,8 @@ class TestRawNet2Predict:
             patch("torch.load", return_value={}),
             patch("torch.no_grad"),
         ):
-            predict(y=AUDIO[0])
-            predict(y=AUDIO[0])
+            predict(y=AUDIO[0], sr=AUDIO[1])
+            predict(y=AUDIO[0], sr=AUDIO[1])
 
         mock_rawnet.assert_called_once()
         mock_download.assert_called_once()

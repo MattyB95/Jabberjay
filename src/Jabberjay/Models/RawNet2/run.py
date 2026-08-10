@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 import torch
+import torchaudio
 import yaml
 from loguru import logger
 from torch import Tensor
@@ -13,6 +14,7 @@ from Jabberjay.Utilities.model_cache import cached_loader
 _DIR = os.path.dirname(os.path.abspath(__file__))
 _CONFIG_PATH = os.path.join(_DIR, "model_config_RawNet.yaml")
 _CONFIG: dict | None = None
+_TARGET_SR = 16_000
 
 
 @cached_loader(maxsize=4)
@@ -40,12 +42,24 @@ def _load_model(device: str) -> RawNet:
     return model
 
 
-def predict(y: np.ndarray) -> tuple[Tensor, float]:
+def predict(y: np.ndarray, sr: float) -> tuple[Tensor, float]:
     device = "cuda" if torch.cuda.is_available() else "cpu"
     logger.debug(f"Using device: {device}")
     model = _load_model(device)
-    logger.debug(f"Running RawNet2 inference on {len(y)} samples")
-    audio_tensor = Tensor(y).unsqueeze(0).to(device)
+    assert _CONFIG is not None  # set by _load_model()
+    max_len = _CONFIG["model"]["nb_samp"]
+    audio = torch.from_numpy(y).float()
+    if sr != _TARGET_SR:
+        audio = torchaudio.functional.resample(audio, int(sr), _TARGET_SR)
+    audio_len = audio.shape[0]
+    if audio_len >= max_len:
+        audio = audio[:max_len]
+    else:
+        audio = audio.repeat(int(max_len / audio_len) + 1)[:max_len]
+    logger.debug(
+        f"Running RawNet2 inference on {audio.shape[0]} samples at {_TARGET_SR}Hz"
+    )
+    audio_tensor = audio.unsqueeze(0).to(device)
     with torch.no_grad():
         out = model(audio_tensor)
         probs = out.exp()  # log_softmax → probabilities
