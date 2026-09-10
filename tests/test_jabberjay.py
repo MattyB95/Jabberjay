@@ -27,10 +27,7 @@ class TestLoad:
 
     def test_load_missing_file_raises(self):
         jj = Jabberjay()
-        with (
-            patch("librosa.load", side_effect=FileNotFoundError("No such file")),
-            pytest.raises(FileNotFoundError, match="not found"),
-        ):
+        with pytest.raises(FileNotFoundError, match="not found"):
             jj.load("nonexistent_file.wav")
 
 
@@ -157,11 +154,18 @@ class TestDetectPathInput:
         self.audio_path = RES_DIR / "bonafide" / "bonafide.flac"
 
     def test_detect_accepts_str_path(self):
-        result = self.jj.detect(str(self.audio_path), model=Model.Classical)
+        with patch(
+            "Jabberjay.Models.Classical.run.predict", return_value=(1, 0.9)
+        ) as mock_predict:
+            result = self.jj.detect(str(self.audio_path), model=Model.Classical)
         assert isinstance(result, DetectionResult)
+        # detect() loaded the file and passed a real (samples, sr) tuple through
+        samples, sr = mock_predict.call_args.kwargs["audio"]
+        assert isinstance(samples, np.ndarray) and len(samples) > 0 and sr > 0
 
     def test_detect_accepts_path_object(self):
-        result = self.jj.detect(self.audio_path, model=Model.Classical)
+        with patch("Jabberjay.Models.Classical.run.predict", return_value=(1, 0.9)):
+            result = self.jj.detect(self.audio_path, model=Model.Classical)
         assert isinstance(result, DetectionResult)
 
 
@@ -237,7 +241,7 @@ class TestLoadErrors:
             patch("librosa.load", side_effect=RuntimeError("codec error")),
             pytest.raises(ValueError, match="Failed to load"),
         ):
-            jj.load("corrupt.wav")
+            jj.load(RES_DIR / "bonafide" / "bonafide.flac")
 
 
 class TestDetectHandlers:
@@ -264,6 +268,16 @@ class TestDetectHandlers:
             result = self.jj.detect(self.audio, model=Model.HuBERT)
         assert isinstance(result, DetectionResult)
         assert result.model == Model.HuBERT
+
+    def test_classical_handler(self):
+        with patch("Jabberjay.Models.Classical.run.predict", return_value=(0, 0.77)):
+            result = self.jj.detect(self.audio, model=Model.Classical)
+        assert isinstance(result, DetectionResult)
+        assert result.model == Model.Classical
+        assert result.label == "Spoof"
+        assert result.is_bonafide is False
+        assert result.confidence == 0.77
+        assert result.scores is None
 
     def test_rawnet2_handler_bonafide(self):
         mock_pred = MagicMock()
@@ -398,6 +412,28 @@ class TestCLI:
         ):
             main()
         assert "Bonafide" in capsys.readouterr().out
+
+    def test_main_reports_missing_file_without_traceback(self, capsys):
+        # No mock on detect() — exercises the real load() -> main() error path.
+        with (
+            patch("sys.argv", ["jabberjay", "/no/such/file.flac"]),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            main()
+        assert exc_info.value.code == 1
+        assert "Error: Audio file not found" in capsys.readouterr().err
+
+    def test_main_reports_value_error_without_traceback(self, capsys):
+        with (
+            patch("sys.argv", ["jabberjay", "audio.flac"]),
+            patch.object(
+                Jabberjay, "detect", side_effect=ValueError("Audio array is empty")
+            ),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            main()
+        assert exc_info.value.code == 1
+        assert "Error: Audio array is empty" in capsys.readouterr().err
 
     def test_main_passes_dataset_and_visualisation(self):
         with (
