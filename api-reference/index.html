@@ -1152,6 +1152,18 @@
 
 
 
+        <p>Unified entry point for every synthetic voice detection model.</p>
+<p>Construct once and call <code>detect()</code> with an audio file path or a
+pre-loaded <code>(samples, sample_rate)</code> tuple. Model weights are downloaded
+from Hugging Face Hub on first use and cached in memory for the lifetime
+of the process, so repeated calls for the same model skip both the
+download and the reload.</p>
+<p>Example::</p>
+<div class="highlight"><pre><span></span><code>jj = Jabberjay()
+result = jj.detect("audio.wav")            # default VIT model
+result = jj.detect("audio.wav", model="HuBERT")
+</code></pre></div>
+
 
 
 
@@ -1344,7 +1356,7 @@ SpectraAASIST3, HuBERT, Wav2Vec2, WavLM) ignore both.</p>
 
 
 <h4 id="Jabberjay.jabberjay.Jabberjay.enable_logging" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">enable_logging</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">enable_logging</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="s1">'DEBUG'</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
@@ -1392,7 +1404,7 @@ Subsequent calls with a different level are silently ignored.</p>
     </table>
         <p>Example::</p>
 <div class="highlight"><pre><span></span><code>Jabberjay.enable_logging()          # all messages
-Jabberjay.enable_logging(&quot;INFO&quot;)    # skip debug messages
+Jabberjay.enable_logging("INFO")    # skip debug messages
 </code></pre></div>
 
 

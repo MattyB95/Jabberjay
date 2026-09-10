@@ -950,9 +950,9 @@
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;VIT&quot;</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;VoxCelebSpoof&quot;</span><span class="p">,</span> <span class="n">visualisation</span><span class="o">=</span><span class="s2">&quot;ConstantQ&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;VIT&quot;</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;ASVspoof2019&quot;</span><span class="p">,</span> <span class="n">visualisation</span><span class="o">=</span><span class="s2">&quot;MFCC&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;VIT&quot;</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;ASVspoof5&quot;</span><span class="p">,</span> <span class="n">visualisation</span><span class="o">=</span><span class="s2">&quot;MelSpectrogram&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"VIT"</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">"VoxCelebSpoof"</span><span class="p">,</span> <span class="n">visualisation</span><span class="o">=</span><span class="s2">"ConstantQ"</span><span class="p">)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"VIT"</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">"ASVspoof2019"</span><span class="p">,</span> <span class="n">visualisation</span><span class="o">=</span><span class="s2">"MFCC"</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"VIT"</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">"ASVspoof5"</span><span class="p">,</span> <span class="n">visualisation</span><span class="o">=</span><span class="s2">"MelSpectrogram"</span><span class="p">)</span>
 </code></pre></div>
 <p><strong>Visualisations:</strong></p>
 <ul>
@@ -964,9 +964,9 @@
 <h2 id="ast">AST</h2>
 <p>Audio Spectrogram Transformer. Applies a transformer directly to a patch-based spectrogram without a CNN backbone.</p>
 <p>Available for <strong>ASVspoof2019</strong>, <strong>ASVspoof5</strong>, and <strong>VoxCelebSpoof</strong> datasets.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;AST&quot;</span><span class="p">)</span>  <span class="c1"># defaults to VoxCelebSpoof</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;AST&quot;</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;VoxCelebSpoof&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;AST&quot;</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;ASVspoof2019&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"AST"</span><span class="p">)</span>  <span class="c1"># defaults to VoxCelebSpoof</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"AST"</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">"VoxCelebSpoof"</span><span class="p">)</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"AST"</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">"ASVspoof2019"</span><span class="p">)</span>
 </code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1010,7 +1010,7 @@
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;Spectra0&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"Spectra0"</span><span class="p">)</span>
 </code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1054,7 +1054,7 @@
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;SpectraAASIST&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"SpectraAASIST"</span><span class="p">)</span>
 </code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1098,7 +1098,7 @@
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;SpectraAASIST3&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"SpectraAASIST3"</span><span class="p">)</span>
 </code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1108,24 +1108,24 @@
 <h2 id="wav2vec2">Wav2Vec2</h2>
 <p><code>Gustking/wav2vec2-large-xlsr-deepfake-audio-classification</code></p>
 <p>Wav2Vec2-XLSR-300M fine-tuned on <strong>ASVspoof2019</strong>. EER 4.01%.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;Wav2Vec2&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"Wav2Vec2"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="hubert">HuBERT</h2>
 <p><code>abhishtagatya/hubert-base-960h-itw-deepfake</code></p>
 <p>HuBERT-base fine-tuned on the <strong>In-The-Wild</strong> dataset. EER 1.43%.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;HuBERT&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"HuBERT"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="wavlm">WavLM</h2>
 <p><code>DavidCombei/wavLM-base-Deepfake_V2</code></p>
 <p>WavLM-base fine-tuned on a <strong>mixed deepfake dataset</strong>.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;WavLM&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"WavLM"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="rawnet2">RawNet2</h2>
 <p>End-to-end anti-spoofing network via <a href="https://github.com/eurecom-asp/rawnet2-antispoofing">rawnet2-antispoofing</a>, with weights from <strong>ASVspoof 2021</strong>. Operates directly on raw waveforms — no feature extraction step.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;RawNet2&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"RawNet2"</span><span class="p">)</span>
 </code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1134,7 +1134,7 @@
 <hr />
 <h2 id="classical">Classical</h2>
 <p>Feature-based KNN classifier trained on <strong>ASVspoof2019</strong>. Extracts hand-crafted audio features (MFCCs, spectral features) and classifies with k-nearest neighbours. Fast and dependency-light compared to the transformer models.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;Classical&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"Classical"</span><span class="p">)</span>
 </code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>

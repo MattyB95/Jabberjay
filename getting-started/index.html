@@ -533,6 +533,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#hardware-acceleration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hardware acceleration
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -725,6 +736,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#hardware-acceleration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hardware acceleration
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -749,17 +771,17 @@
 <h2 id="installation">Installation</h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>jabberjay
 </code></pre></div>
-<p>Requires <strong>Python ≥ 3.11</strong>. Models are downloaded from Hugging Face Hub on first use and cached locally — no manual setup required.</p>
+<p>Requires <strong>Python ≥ 3.12</strong>. Models are downloaded from Hugging Face Hub on first use and cached locally — no manual setup required.</p>
 <hr />
 <h2 id="your-first-detection">Your first detection</h2>
 <p>Pass a file path directly. The default model is VIT with the ConstantQ visualisation on the VoxCelebSpoof dataset.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Jabberjay</span><span class="w"> </span><span class="kn">import</span> <span class="n">Jabberjay</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">jj</span> <span class="o">=</span> <span class="n">Jabberjay</span><span class="p">()</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;interview.wav&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">result</span> <span class="o">=</span> <span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"interview.wav"</span><span class="p">)</span>
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>            <span class="c1"># Bonafide ✔️ (94.1% confidence, model=VIT)</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>      <span class="c1"># &quot;Bonafide&quot; or &quot;Spoof&quot;</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>      <span class="c1"># "Bonafide" or "Spoof"</span>
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">is_bonafide</span><span class="p">)</span>  <span class="c1"># True / False</span>
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">confidence</span><span class="p">)</span> <span class="c1"># 0.0 – 1.0</span>
 </code></pre></div>
@@ -774,21 +796,21 @@
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">jj</span> <span class="o">=</span> <span class="n">Jabberjay</span><span class="p">()</span>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Self-contained models — no extra arguments needed</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;Classical&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;RawNet2&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;Spectra0&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;SpectraAASIST&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;SpectraAASIST3&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;Wav2Vec2&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;HuBERT&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;WavLM&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"Classical"</span><span class="p">)</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"RawNet2"</span><span class="p">)</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"Spectra0"</span><span class="p">)</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"SpectraAASIST"</span><span class="p">)</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"SpectraAASIST3"</span><span class="p">)</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"Wav2Vec2"</span><span class="p">)</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"HuBERT"</span><span class="p">)</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"WavLM"</span><span class="p">)</span>
 <a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
 <a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="c1"># AST — uses a dataset (defaults to VoxCelebSpoof if not specified)</span>
-<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;AST&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;AST&quot;</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;VoxCelebSpoof&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"AST"</span><span class="p">)</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"AST"</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">"VoxCelebSpoof"</span><span class="p">)</span>
 <a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>
 <a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="c1"># VIT — requires a dataset and a visualisation</span>
-<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;VIT&quot;</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;VoxCelebSpoof&quot;</span><span class="p">,</span> <span class="n">visualisation</span><span class="o">=</span><span class="s2">&quot;ConstantQ&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"VIT"</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">"VoxCelebSpoof"</span><span class="p">,</span> <span class="n">visualisation</span><span class="o">=</span><span class="s2">"ConstantQ"</span><span class="p">)</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
@@ -797,7 +819,7 @@
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">jj</span> <span class="o">=</span> <span class="n">Jabberjay</span><span class="p">()</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">result</span> <span class="o">=</span> <span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="s2">"audio.wav"</span><span class="p">,</span>
 <a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">model</span><span class="o">=</span><span class="n">Model</span><span class="o">.</span><span class="n">VIT</span><span class="p">,</span>
 <a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">dataset</span><span class="o">=</span><span class="n">Dataset</span><span class="o">.</span><span class="n">VoxCelebSpoof</span><span class="p">,</span>
 <a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">visualisation</span><span class="o">=</span><span class="n">Visualisation</span><span class="o">.</span><span class="n">ConstantQ</span><span class="p">,</span>
@@ -815,7 +837,7 @@
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">jj</span> <span class="o">=</span> <span class="n">Jabberjay</span><span class="p">()</span>
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
 <a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1"># Load once …</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="n">audio</span> <span class="o">=</span> <span class="n">jj</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;interview.wav&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="n">audio</span> <span class="o">=</span> <span class="n">jj</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"interview.wav"</span><span class="p">)</span>
 <a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
 <a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="c1"># … run as many models as you like</span>
 <a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="n">results</span> <span class="o">=</span> <span class="p">[</span>
@@ -832,34 +854,34 @@
 <a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>              <span class="n">visualisation</span><span class="o">=</span><span class="n">Visualisation</span><span class="o">.</span><span class="n">ConstantQ</span><span class="p">),</span>
 <a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="p">]</span>
 <a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>
-<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;Model&#39;</span><span class="si">:</span><span class="s2">&lt;12</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;Label&#39;</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;Confidence&#39;</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">38</span><span class="p">)</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'Model'</span><span class="si">:</span><span class="s2">&lt;12</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">'Label'</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">'Confidence'</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="nb">print</span><span class="p">(</span><span class="s2">"-"</span> <span class="o">*</span> <span class="mi">38</span><span class="p">)</span>
 <a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
-<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s2">&lt;12</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">label</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">confidence</span><span class="si">:</span><span class="s2">&gt;10.1%</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">value</span><span class="si">:</span><span class="s2">&lt;12</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">label</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">confidence</span><span class="si">:</span><span class="s2">&gt;10.1%</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="working-with-results">Working with results</h2>
 <p>Every <code>detect()</code> call returns a <a href="../api-reference/"><code>DetectionResult</code></a> with the same fields regardless of model.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">&quot;audio.wav&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;WavLM&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"WavLM"</span><span class="p">)</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># Branch on the verdict</span>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">is_bonafide</span><span class="p">:</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Genuine voice (</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2"> confidence)&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Genuine voice (</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2"> confidence)"</span><span class="p">)</span>
 <a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="k">else</span><span class="p">:</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Synthetic voice detected (</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2"> confidence)&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Synthetic voice detected (</span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.1%</span><span class="si">}</span><span class="s2"> confidence)"</span><span class="p">)</span>
 <a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
 <a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="c1"># Full score breakdown — available for transformer models (VIT, AST, Spectra0, SpectraAASIST, SpectraAASIST3, Wav2Vec2, HuBERT, WavLM)</span>
 <a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="c1"># None for Classical and RawNet2</span>
 <a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">scores</span><span class="p">:</span>
 <a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">scores</span><span class="p">:</span>
-<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>        <span class="n">bar</span> <span class="o">=</span> <span class="s2">&quot;█&quot;</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="s2">&quot;score&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">30</span><span class="p">)</span>
-<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">entry</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">entry</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">bar</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>        <span class="n">bar</span> <span class="o">=</span> <span class="s2">"█"</span> <span class="o">*</span> <span class="nb">int</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="s2">"score"</span><span class="p">]</span> <span class="o">*</span> <span class="mi">30</span><span class="p">)</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">entry</span><span class="p">[</span><span class="s1">'label'</span><span class="p">]</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">entry</span><span class="p">[</span><span class="s1">'score'</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">bar</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="enabling-logging">Enabling logging</h2>
 <p>Jabberjay is silent by default. Call <code>enable_logging()</code> to see model load and inference messages.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">Jabberjay</span><span class="o">.</span><span class="n">enable_logging</span><span class="p">()</span>          <span class="c1"># DEBUG and above</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">Jabberjay</span><span class="o">.</span><span class="n">enable_logging</span><span class="p">(</span><span class="s2">&quot;INFO&quot;</span><span class="p">)</span>    <span class="c1"># INFO and above only</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">Jabberjay</span><span class="o">.</span><span class="n">enable_logging</span><span class="p">(</span><span class="s2">"INFO"</span><span class="p">)</span>    <span class="c1"># INFO and above only</span>
 </code></pre></div>
 <hr />
 <h2 id="discovering-available-options">Discovering available options</h2>
@@ -867,6 +889,13 @@
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">jj</span><span class="o">.</span><span class="n">list_datasets</span><span class="p">()</span>       <span class="c1"># returns all Dataset enum values</span>
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">jj</span><span class="o">.</span><span class="n">list_visualisations</span><span class="p">()</span> <span class="c1"># returns all Visualisation enum values</span>
 </code></pre></div>
+<hr />
+<h2 id="hardware-acceleration">Hardware acceleration</h2>
+<p>Models run on the best available device automatically: CUDA if present, then
+Apple Silicon (<code>mps</code>), otherwise CPU. No configuration is needed.</p>
+<p>If a model hits an operation the MPS backend does not implement yet, set
+<code>PYTORCH_ENABLE_MPS_FALLBACK=1</code> in your environment to fall back to CPU for
+those ops.</p>
 
 
 

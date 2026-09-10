@@ -565,6 +565,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#exit-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exit codes
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -681,6 +692,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#exit-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exit codes
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -704,7 +726,7 @@
 <h1 id="cli-reference">CLI Reference</h1>
 <p>Jabberjay ships a command-line interface installed as <code>jabberjay</code>.</p>
 <h2 id="usage">Usage</h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>jabberjay &lt;audio&gt; [-m MODEL] [-d DATASET] [-vis VISUALISATION] [-v]
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>jabberjay [-h] [-m MODEL] [-d DATASET] [-vis VISUALISATION] [-v] audio
 </code></pre></div>
 <h2 id="arguments">Arguments</h2>
 <table>
@@ -723,28 +745,28 @@
 </tr>
 <tr>
 <td><code>-m</code>, <code>--model</code></td>
-<td>Model to use</td>
+<td>Detection model to use</td>
 <td><code>VIT</code></td>
 </tr>
 <tr>
 <td><code>-d</code>, <code>--dataset</code></td>
-<td>Dataset the model was trained on</td>
+<td>Training dataset for the VIT and AST models</td>
 <td><code>VoxCelebSpoof</code></td>
 </tr>
 <tr>
 <td><code>-vis</code>, <code>--visualisation</code></td>
-<td>Visualisation type (VIT only)</td>
+<td>Spectrogram type for the VIT model</td>
 <td><code>ConstantQ</code></td>
 </tr>
 <tr>
 <td><code>-v</code>, <code>--verbose</code></td>
-<td>Enable debug logging to stderr</td>
+<td>Print model load and inference progress to stderr</td>
 <td>off</td>
 </tr>
 </tbody>
 </table>
 <h2 id="valid-values">Valid values</h2>
-<p><strong>Models:</strong> <code>VIT</code>, <code>AST</code>, <code>Spectra0</code>, <code>SpectraAASIST</code>, <code>SpectraAASIST3</code>, <code>Wav2Vec2</code>, <code>HuBERT</code>, <code>WavLM</code>, <code>RawNet2</code>, <code>Classical</code></p>
+<p><strong>Models:</strong> <code>AST</code>, <code>Classical</code>, <code>HuBERT</code>, <code>RawNet2</code>, <code>Spectra0</code>, <code>SpectraAASIST</code>, <code>SpectraAASIST3</code>, <code>VIT</code>, <code>Wav2Vec2</code>, <code>WavLM</code></p>
 <p><strong>Datasets:</strong> <code>ASVspoof2019</code>, <code>ASVspoof5</code>, <code>VoxCelebSpoof</code></p>
 <p><strong>Visualisations:</strong> <code>ConstantQ</code>, <code>MelSpectrogram</code>, <code>MFCC</code></p>
 <h2 id="examples">Examples</h2>
@@ -772,6 +794,29 @@
 <p>or</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Spoof ❌ (97.8% confidence, model=HuBERT)
 </code></pre></div>
+<h2 id="exit-codes">Exit codes</h2>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code></td>
+<td>Detection succeeded — the verdict is printed to stdout</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>Expected error (file not found, unreadable audio, invalid options) — a one-line <code>Error: …</code> message is printed to stderr</td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td>Invalid command-line arguments (unknown model/dataset/visualisation)</td>
+</tr>
+</tbody>
+</table>
 
 
 
