@@ -8,13 +8,15 @@ from numpy import ndarray
 from PIL import Image
 from transformers import Pipeline, pipeline
 
+from Jabberjay.Utilities.device import get_device
 from Jabberjay.Utilities.model_cache import cached_loader
 
 
 @cached_loader(maxsize=8)
 def load_pipeline(model_id: str) -> Pipeline:
-    logger.info(f"Loading VIT model: {model_id}")
-    return pipeline(task="image-classification", model=model_id)
+    device = get_device()
+    logger.info(f"Loading VIT model: {model_id} on {device}")
+    return pipeline(task="image-classification", model=model_id, device=device)
 
 
 def get_image(data: ndarray, sr: float) -> Image.Image:
