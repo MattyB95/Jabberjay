@@ -2,6 +2,7 @@ import io
 
 import librosa
 import librosa.display
+import torch
 from loguru import logger
 from matplotlib import pyplot as plt
 from numpy import ndarray
@@ -16,7 +17,11 @@ from Jabberjay.Utilities.model_cache import cached_loader
 def load_pipeline(model_id: str) -> Pipeline:
     device = get_device()
     logger.info(f"Loading VIT model: {model_id} on {device}")
-    return pipeline(task="image-classification", model=model_id, device=device)
+    return pipeline(
+        task="image-classification",
+        model=model_id,
+        device=torch.device(device),
+    )
 
 
 def get_image(data: ndarray, sr: float) -> Image.Image:

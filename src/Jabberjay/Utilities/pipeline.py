@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 from loguru import logger
 from transformers import Pipeline, pipeline
 
@@ -14,7 +15,12 @@ def _load_pipeline(model_id: str, sampling_rate: int | None) -> Pipeline:
     device = get_device()
     logger.info(f"Loading model: {model_id} on {device}")
     kwargs: dict = {"sampling_rate": sampling_rate} if sampling_rate is not None else {}
-    return pipeline("audio-classification", model=model_id, device=device, **kwargs)
+    return pipeline(
+        "audio-classification",
+        model=model_id,
+        device=torch.device(device),
+        **kwargs,
+    )
 
 
 def run_pipeline(

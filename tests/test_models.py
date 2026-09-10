@@ -69,7 +69,7 @@ class TestHuBERTPredict:
         ):
             predict(y=AUDIO[0], sr=AUDIO[1])
 
-        assert mock_factory.call_args.kwargs["device"] == "cuda"
+        assert str(mock_factory.call_args.kwargs["device"]) == "cuda"
 
 
 class TestWav2Vec2Predict:
@@ -203,7 +203,7 @@ class TestVITPredict:
         ):
             predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
 
-        assert mock_factory.call_args.kwargs["device"] == "mps"
+        assert mock_factory.call_args.kwargs["device"].type == "mps"
 
     def test_constantq_pipeline_is_loaded_once_across_repeated_calls(self):
         """VIT's shared load_pipeline() caches by model id — a second call
