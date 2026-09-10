@@ -7,6 +7,59 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 
 ---
 
+## [Unreleased]
+
+_Nothing yet._
+
+---
+
+## [0.1.0] — 2026-09-10
+
+### Removed
+- **Python 3.11 support** — `requires-python` is now `>=3.12`, matching
+  librosa 1.0's own floor. CI matrix, trove classifiers, and `black` targets
+  updated to match
+- **`audioread` dependency** — librosa 1.0 no longer uses it; the
+  `import audioread.exceptions` handling in `Jabberjay.load()` and the
+  `audioread` pytest warning filter are gone
+
+### Added
+- **GPU acceleration for the transformer models** — the `transformers` pipeline
+  backends (AST, VIT, HuBERT, Wav2Vec2, WavLM) now load onto the best available
+  device instead of always running on CPU, and `get_device()` detects Apple
+  Silicon (`mps`) in addition to CUDA
+- **CLI `--help` text** — every argument now carries a description, and the
+  README / docs document the exit codes
+- **Integration workflow** — a weekly / manually-dispatched job runs the full
+  model sweep (`examples/run_all.py`) end-to-end against real weights, catching
+  upstream API breaks that the fully-mocked unit suite cannot
+
+### Changed
+- **`librosa` floor raised to `>=1.0.0`** — librosa 1.0 drops the `audioread`
+  decode backend entirely (soundfile-only), so `pip install Jabberjay` on a
+  fresh machine no longer pulled in `audioread` and `import Jabberjay` failed
+  with `ModuleNotFoundError` ([#33](https://github.com/MattyB95/Jabberjay/issues/33))
+- **Dependency floors raised to current releases** — `huggingface-hub>=1.31.0`,
+  `joblib>=1.6.0`, `numpy>=2.5.3`, `torch>=2.14.0`, `transformers>=5.17.0`,
+  and the dev tools `pre-commit`, `ruff`, `ty`
+- **CI enforces the lockfile** — `uv sync --locked` in the CI and docs
+  workflows so `pyproject.toml` / `uv.lock` drift fails the build
+- **Dependabot** switched from the `pip` ecosystem to `uv` so lockfile updates
+  are proposed alongside `pyproject.toml` changes
+
+### Fixed
+- **`Jabberjay.load()` error messages** — a missing path raises a clear
+  `FileNotFoundError`; a path that exists but is not decodable audio (a
+  directory, a non-audio file) now reports the real cause as `ValueError`
+  rather than a misleading "not found"
+- **CLI error handling** — expected failures (missing file, invalid argument
+  combination) print a one-line `Error: …` message and exit 1 instead of
+  dumping a traceback
+- **Spectra preprocessing** — `preprocess()` raises a clear `ValueError` on
+  empty input instead of a `ZeroDivisionError`, matching RawNet2's behaviour
+
+---
+
 ## [0.0.15] — 2026-08-10
 
 ### Security
@@ -458,6 +511,8 @@ Jabberjay follows [PEP 440](https://peps.python.org/pep-0440/) versioning, aimin
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
+[Unreleased]: https://github.com/MattyB95/Jabberjay/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/MattyB95/Jabberjay/compare/v0.0.15...v0.1.0
 [0.0.15]: https://github.com/MattyB95/Jabberjay/compare/v0.0.14...v0.0.15
 [0.0.14]: https://github.com/MattyB95/Jabberjay/compare/v0.0.13...v0.0.14
 [0.0.13]: https://github.com/MattyB95/Jabberjay/compare/v0.0.12...v0.0.13

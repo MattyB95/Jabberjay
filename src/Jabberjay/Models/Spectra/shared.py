@@ -28,6 +28,10 @@ def preprocess(y: np.ndarray, sr: float) -> torch.Tensor:
         audio = torchaudio.functional.resample(audio, int(sr), _TARGET_SR)
     audio = torchaudio.functional.preemphasis(audio.unsqueeze(0)).squeeze(0)
     x_len = audio.shape[0]
+    if x_len == 0:
+        raise ValueError(
+            "Input audio array is empty; cannot run inference on zero samples."
+        )
     if x_len >= _MAX_LEN:
         audio = audio[:_MAX_LEN]
     else:

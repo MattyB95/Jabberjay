@@ -59,6 +59,18 @@ class TestHuBERTPredict:
 
         assert result[0]["score"] == 0.9
 
+    def test_pipeline_loaded_onto_selected_device(self):
+        from Jabberjay.Models.HuBERT.run import predict
+
+        mock_factory = MagicMock(return_value=_mock_pipeline())
+        with (
+            patch(_PIPELINE_PATH, mock_factory),
+            patch("Jabberjay.Utilities.pipeline.get_device", return_value="cuda"),
+        ):
+            predict(y=AUDIO[0], sr=AUDIO[1])
+
+        assert str(mock_factory.call_args.kwargs["device"]) == "cuda"
+
 
 class TestWav2Vec2Predict:
     def test_returns_normalised_scores(self):
@@ -164,6 +176,34 @@ class TestVITPredict:
     def test_constantq_returns_normalised_scores(self):
         result = self._run_constantq()
         assert result[0]["label"] == "Bonafide"
+
+    def test_pipeline_loaded_onto_selected_device(self):
+        from Jabberjay.Models.Transformer.VIT.ConstantQ.run import predict
+
+        mock_factory = MagicMock(return_value=_mock_pipeline())
+        mock_cqt = np.zeros((84, 32))
+        with (
+            patch("Jabberjay.Models.Transformer.VIT.utility.pipeline", mock_factory),
+            patch(
+                "Jabberjay.Models.Transformer.VIT.utility.get_device",
+                return_value="mps",
+            ),
+            patch(
+                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.get_image",
+                return_value=MagicMock(),
+            ),
+            patch(
+                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.cqt",
+                return_value=mock_cqt,
+            ),
+            patch(
+                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.amplitude_to_db",
+                return_value=mock_cqt,
+            ),
+        ):
+            predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
+
+        assert mock_factory.call_args.kwargs["device"].type == "mps"
 
     def test_constantq_pipeline_is_loaded_once_across_repeated_calls(self):
         """VIT's shared load_pipeline() caches by model id — a second call
@@ -384,6 +424,34 @@ class TestGetImage:
 # ---------------------------------------------------------------------------
 # Spectra0
 # ---------------------------------------------------------------------------
+
+
+class TestSpectraPreprocess:
+    def test_rejects_empty_audio(self):
+        import pytest
+
+        from Jabberjay.Models.Spectra.shared import preprocess
+
+        with pytest.raises(ValueError, match="empty"):
+            preprocess(np.array([], dtype=np.float32), sr=16000.0)
+
+    def test_pads_short_audio_to_max_len(self):
+        from Jabberjay.Models.Spectra.shared import _MAX_LEN, preprocess
+
+        out = preprocess(np.ones(1000, dtype=np.float32), sr=16000.0)
+        assert out.shape == (1, _MAX_LEN)
+
+    def test_truncates_long_audio_to_max_len(self):
+        from Jabberjay.Models.Spectra.shared import _MAX_LEN, preprocess
+
+        out = preprocess(np.ones(_MAX_LEN * 2, dtype=np.float32), sr=16000.0)
+        assert out.shape == (1, _MAX_LEN)
+
+    def test_resamples_when_sample_rate_differs(self):
+        from Jabberjay.Models.Spectra.shared import _MAX_LEN, preprocess
+
+        out = preprocess(np.ones(8000, dtype=np.float32), sr=8000.0)
+        assert out.shape == (1, _MAX_LEN)
 
 
 class _SpectraModelTestBase:

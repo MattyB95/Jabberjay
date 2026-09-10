@@ -1,7 +1,9 @@
 import numpy as np
+import torch
 from loguru import logger
 from transformers import Pipeline, pipeline
 
+from Jabberjay.Utilities.device import get_device
 from Jabberjay.Utilities.label_normalizer import normalize_pipeline_scores
 from Jabberjay.Utilities.model_cache import cached_loader
 from Jabberjay.Utilities.types import PredictionScore
@@ -10,9 +12,15 @@ from Jabberjay.Utilities.types import PredictionScore
 @cached_loader(maxsize=8)
 def _load_pipeline(model_id: str, sampling_rate: int | None) -> Pipeline:
     """Load and cache a transformers audio-classification pipeline by model id."""
-    logger.info(f"Loading model: {model_id}")
+    device = get_device()
+    logger.info(f"Loading model: {model_id} on {device}")
     kwargs: dict = {"sampling_rate": sampling_rate} if sampling_rate is not None else {}
-    return pipeline("audio-classification", model=model_id, **kwargs)
+    return pipeline(
+        "audio-classification",
+        model=model_id,
+        device=torch.device(device),
+        **kwargs,
+    )
 
 
 def run_pipeline(

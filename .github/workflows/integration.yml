@@ -1,0 +1,45 @@
+# Integration smoke test
+#
+# Runs the full model sweep (examples/run_all.py) end-to-end against a real
+# audio clip, downloading every model from HuggingFace Hub. The unit test
+# suite mocks all model loading, so this is the only check that catches a
+# genuine upstream API break (torch, transformers, librosa, torchaudio).
+#
+# Not part of the PR gate — it is slow and depends on external services.
+# Runs weekly and on manual dispatch.
+
+name: Integration
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'  # every Monday at 06:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Full model sweep
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Cache HuggingFace Hub downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-hub-${{ hashFiles('src/Jabberjay/**/run.py') }}
+          restore-keys: hf-hub-
+
+      - name: Install dependencies
+        run: uv sync --locked --group dev
+
+      - name: Run full model sweep
+        run: uv run python examples/run_all.py

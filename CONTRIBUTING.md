@@ -38,7 +38,7 @@ just install
 # 3. Install pre-commit hooks (runs lint + format automatically on every commit)
 uv run pre-commit install
 
-# 3. Verify everything works
+# 4. Verify everything works
 just check   # lint + format check + type check
 just test    # run the test suite
 ```
@@ -130,11 +130,16 @@ def _mymodel_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
     return self._result_from_scores(scores, Model.MyModel)
 ```
 
-**4. Update tests** — add the new enum value to `TestEnums.test_model_members` in `tests/test_jabberjay.py`.
+**4. Update tests:**
+
+- add the new enum value to `TestEnums.test_model_members` in `tests/test_enums.py`
+- add a `predict()` unit test in `tests/test_models.py` (mock all model loading — the suite runs offline)
+- add a handler test to `TestDetectHandlers` in `tests/test_jabberjay.py`
 
 **5. Update `CHANGELOG.md`** under `[Unreleased]` with the model name, HuggingFace link, and dataset.
 
-**6. Update `README.md`** — add a row to the relevant models table.
+**6. Update the docs** — add a row to the models table in `README.md` and a
+section in `docs/models.md` (and `docs/cli.md` if it changes the CLI choices).
 
 **7. Verify everything passes:**
 

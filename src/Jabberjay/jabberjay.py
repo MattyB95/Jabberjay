@@ -4,7 +4,6 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import audioread.exceptions
 import librosa
 import numpy as np
 from loguru import logger
@@ -43,6 +42,21 @@ class DetectionResult:
 
 
 class Jabberjay:
+    """Unified entry point for every synthetic voice detection model.
+
+    Construct once and call ``detect()`` with an audio file path or a
+    pre-loaded ``(samples, sample_rate)`` tuple. Model weights are downloaded
+    from Hugging Face Hub on first use and cached in memory for the lifetime
+    of the process, so repeated calls for the same model skip both the
+    download and the reload.
+
+    Example::
+
+        jj = Jabberjay()
+        result = jj.detect("audio.wav")            # default VIT model
+        result = jj.detect("audio.wav", model="HuBERT")
+    """
+
     _logging_enabled: bool = False
 
     @classmethod
@@ -87,16 +101,16 @@ class Jabberjay:
         """Load an audio file and return (samples, sample_rate)."""
         path = str(path)
         logger.debug(f"Loading audio file: {path}")
+        # librosa 1.0 decodes via soundfile only, which raises an opaque
+        # LibsndfileError ("System error") for a missing path — catch that
+        # here so callers still get a clear FileNotFoundError. A path that
+        # exists but isn't a readable audio file (a directory, a non-audio
+        # file) falls through to librosa and surfaces as ValueError below.
+        if not Path(path).exists():
+            raise FileNotFoundError(f"Audio file not found: {path}")
         try:
             y, sr = librosa.load(path)
-        except FileNotFoundError as exc:
-            raise FileNotFoundError(f"Audio file not found: {path}") from exc
-        except (
-            OSError,
-            RuntimeError,
-            EOFError,
-            audioread.exceptions.NoBackendError,
-        ) as exc:
+        except (OSError, RuntimeError, EOFError) as exc:
             raise ValueError(f"Failed to load audio from '{path}': {exc}") from exc
         logger.info(f"Loaded {len(y) / sr:.2f}s of audio at {int(sr)}Hz")
         return y, sr
@@ -318,9 +332,14 @@ def main():
         epilog="May The Odds Be Ever In Your Favor.",
     )
 
-    parser.add_argument("audio", type=str)
+    parser.add_argument("audio", type=str, help="path to the audio file to analyse")
     parser.add_argument(
-        "-m", "--model", type=Model, action=EnumAction, default=Model.VIT
+        "-m",
+        "--model",
+        type=Model,
+        action=EnumAction,
+        default=Model.VIT,
+        help="detection model to use (default: VIT)",
     )
     parser.add_argument(
         "-d",
@@ -328,6 +347,7 @@ def main():
         type=Dataset,
         action=EnumAction,
         default=Dataset.VoxCelebSpoof,
+        help="training dataset for the VIT and AST models (default: VoxCelebSpoof)",
     )
     parser.add_argument(
         "-vis",
@@ -335,8 +355,14 @@ def main():
         type=Visualisation,
         action=EnumAction,
         default=Visualisation.ConstantQ,
+        help="spectrogram type for the VIT model (default: ConstantQ)",
     )
-    parser.add_argument("-v", "--verbose", action="store_true")
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="print model load and inference progress to stderr",
+    )
 
     args = parser.parse_args()
 
@@ -355,12 +381,18 @@ def main():
     logger.debug(f"visualisation={args.visualisation}")
 
     jabberjay = Jabberjay()
-    result = jabberjay.detect(
-        audio=args.audio,
-        model=args.model,
-        visualisation=args.visualisation,
-        dataset=args.dataset,
-    )
+    try:
+        result = jabberjay.detect(
+            audio=args.audio,
+            model=args.model,
+            visualisation=args.visualisation,
+            dataset=args.dataset,
+        )
+    except (FileNotFoundError, ValueError) as exc:
+        # Expected user-facing errors (missing/unreadable file, bad argument
+        # combination) — show a clean message instead of a traceback.
+        print(f"Error: {exc}", file=sys.stderr)
+        raise SystemExit(1) from exc
     print(result)
 
 

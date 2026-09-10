@@ -6,7 +6,7 @@
 pip install jabberjay
 ```
 
-Requires **Python ≥ 3.11**. Models are downloaded from Hugging Face Hub on first use and cached locally — no manual setup required.
+Requires **Python ≥ 3.12**. Models are downloaded from Hugging Face Hub on first use and cached locally — no manual setup required.
 
 ---
 
@@ -152,3 +152,14 @@ jj.list_models()         # returns all Model enum values
 jj.list_datasets()       # returns all Dataset enum values
 jj.list_visualisations() # returns all Visualisation enum values
 ```
+
+---
+
+## Hardware acceleration
+
+Models run on the best available device automatically: CUDA if present, then
+Apple Silicon (`mps`), otherwise CPU. No configuration is needed.
+
+If a model hits an operation the MPS backend does not implement yet, set
+`PYTORCH_ENABLE_MPS_FALLBACK=1` in your environment to fall back to CPU for
+those ops.

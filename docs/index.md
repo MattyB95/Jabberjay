@@ -24,6 +24,8 @@ Synthetic voice detection is a fragmented landscape — state-of-the-art models 
 pip install jabberjay
 ```
 
+Requires Python ≥ 3.12.
+
 ```python
 from Jabberjay import Jabberjay
 
