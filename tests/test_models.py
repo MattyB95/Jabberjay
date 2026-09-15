@@ -709,7 +709,10 @@ class TestRawNet2Predict:
         mock_out.max.return_value = (MagicMock(), torch.tensor([1]))
         mock_model.return_value = mock_out
 
-        state_dict = {"Sinc_conv.filters": torch.tensor([1.0]), "foo": torch.tensor(1.0)}
+        state_dict = {
+            "Sinc_conv.filters": torch.tensor([1.0]),
+            "foo": torch.tensor(1.0),
+        }
 
         with (
             patch("Jabberjay.Models.RawNet2.run.RawNet", return_value=mock_model),
