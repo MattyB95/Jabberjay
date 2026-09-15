@@ -13,6 +13,20 @@ _Nothing yet._
 
 ---
 
+## [0.1.1] — 2026-09-15
+
+### Fixed
+- **RawNet2 pretrained weights failed to load** — `RuntimeError: Missing
+  key(s) in state_dict: "Sinc_conv.filters"`. A prior refactor turned
+  `SincConv.filters` into a persistent buffer, requiring it in the
+  checkpoint's state dict, but the pretrained weights on Hugging Face were
+  saved before that change and never contained the key. `filters` is
+  deterministically derived from the Sinc/Mel formula at init time rather
+  than learned, so the buffer is now registered as non-persistent
+  (`persistent=False`), excluding it from the state dict on save and load.
+
+---
+
 ## [0.1.0] — 2026-09-10
 
 ### Removed
@@ -511,7 +525,8 @@ _Nothing yet._
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
-[Unreleased]: https://github.com/MattyB95/Jabberjay/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/MattyB95/Jabberjay/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/MattyB95/Jabberjay/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/MattyB95/Jabberjay/compare/v0.0.15...v0.1.0
 [0.0.15]: https://github.com/MattyB95/Jabberjay/compare/v0.0.14...v0.0.15
 [0.0.14]: https://github.com/MattyB95/Jabberjay/compare/v0.0.13...v0.0.14

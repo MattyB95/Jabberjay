@@ -691,6 +691,44 @@ class TestRawNet2Config:
 
 
 class TestRawNet2Predict:
+    def test_sincconv_filters_buffer_is_not_persisted_in_state_dict(self):
+        from Jabberjay.Models.RawNet2.model import SincConv
+
+        sinc_conv = SincConv(device="cpu", out_channels=2, kernel_size=31)
+
+        assert "filters" not in sinc_conv.state_dict()
+
+    def test_ignores_legacy_sinc_filters_state_dict_key(self):
+        import torch
+
+        from Jabberjay.Models.RawNet2.run import predict
+
+        mock_model = MagicMock()
+        mock_out = MagicMock()
+        mock_out.exp.return_value = torch.tensor([[0.1, 0.9]])
+        mock_out.max.return_value = (MagicMock(), torch.tensor([1]))
+        mock_model.return_value = mock_out
+
+        state_dict = {
+            "Sinc_conv.filters": torch.tensor([1.0]),
+            "foo": torch.tensor(1.0),
+        }
+
+        with (
+            patch("Jabberjay.Models.RawNet2.run.RawNet", return_value=mock_model),
+            patch(
+                "Jabberjay.Models.RawNet2.run.download_pretrained_model",
+                return_value="/fake/model.pth",
+            ),
+            patch("torch.load", return_value=state_dict),
+            patch("torch.no_grad"),
+        ):
+            predict(y=AUDIO[0], sr=AUDIO[1])
+
+        loaded_state_dict = mock_model.load_state_dict.call_args.args[0]
+        assert "Sinc_conv.filters" not in loaded_state_dict
+        assert loaded_state_dict["foo"] is state_dict["foo"]
+
     def test_empty_audio_raises_value_error(self):
         from Jabberjay.Models.RawNet2.run import predict
 

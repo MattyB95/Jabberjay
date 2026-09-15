@@ -36,9 +36,11 @@ def _load_model(device: str) -> RawNet:
     model_file = download_pretrained_model(
         repo_id=repo_id, filename="pre_trained_DF_RawNet2.pth"
     )
-    model.load_state_dict(
-        torch.load(model_file, map_location=torch.device(device), weights_only=True)
+    state_dict = torch.load(
+        model_file, map_location=torch.device(device), weights_only=True
     )
+    state_dict.pop("Sinc_conv.filters", None)
+    model.load_state_dict(state_dict)
     model.eval()
     return model
 

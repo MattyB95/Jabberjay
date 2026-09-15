@@ -86,7 +86,9 @@ class SincConv(nn.Module):
             )
             band_pass[i, :] = hamming * (hHigh - hLow)
         self.register_buffer(
-            "filters", band_pass.view(self.out_channels, 1, self.kernel_size)
+            "filters",
+            band_pass.view(self.out_channels, 1, self.kernel_size),
+            persistent=False,
         )
 
     def forward(self, x):
