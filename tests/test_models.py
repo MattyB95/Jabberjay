@@ -691,6 +691,13 @@ class TestRawNet2Config:
 
 
 class TestRawNet2Predict:
+    def test_sincconv_filters_buffer_is_not_persisted_in_state_dict(self):
+        from Jabberjay.Models.RawNet2.model import SincConv
+
+        sinc_conv = SincConv(device="cpu", out_channels=2, kernel_size=31)
+
+        assert "filters" not in sinc_conv.state_dict()
+
     def test_ignores_legacy_sinc_filters_state_dict_key(self):
         import torch
 
