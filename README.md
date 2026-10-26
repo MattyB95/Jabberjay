@@ -15,6 +15,7 @@
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.19056977-blue)](https://doi.org/10.5281/zenodo.19056977)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/MattyB95?label=Sponsor&logo=GitHub&color=EA4AAA)](https://github.com/sponsors/MattyB95)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/mattyb95)
+[![thanks.dev](https://img.shields.io/badge/thanks.dev-Support-00A98F)](https://thanks.dev/u/gh/MattyB95)
 
 </div>
 
