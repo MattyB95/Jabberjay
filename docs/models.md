@@ -91,7 +91,7 @@ jj.detect("audio.wav", model="Spectra0")
 ```
 
 !!! note
-    On first run, Spectra0 downloads both its own weights and the `facebook/wav2vec2-xls-r-300m` SSL encoder (~1.2 GB total). Both are cached by HuggingFace Hub after the first download.
+    On first run, Spectra0 downloads its weights (~1.3 GB, including its fine-tuned Wav2Vec2-XLS-R-300M encoder), cached by HuggingFace Hub after the first download.
 
 ---
 
@@ -115,7 +115,7 @@ jj.detect("audio.wav", model="SpectraAASIST")
 ```
 
 !!! note
-    Downloads `facebook/wav2vec2-xls-r-300m` on first run (~1.2 GB total, cached by HuggingFace Hub).
+    Downloads ~1.3 GB of weights on first run (including its fine-tuned Wav2Vec2-XLS-R-300M encoder), cached by HuggingFace Hub.
 
 ---
 
@@ -139,7 +139,7 @@ jj.detect("audio.wav", model="SpectraAASIST3")
 ```
 
 !!! note
-    Downloads `facebook/wav2vec2-xls-r-300m` on first run (~1.2 GB total, cached by HuggingFace Hub).
+    Downloads ~1.3 GB of weights on first run (including its fine-tuned Wav2Vec2-XLS-R-300M encoder), cached by HuggingFace Hub.
 
 ---
 

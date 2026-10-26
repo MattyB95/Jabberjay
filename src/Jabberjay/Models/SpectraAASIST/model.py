@@ -163,9 +163,15 @@ class Encoder(nn.Module):
         self.first_bn = nn.BatchNorm2d(1)
         self.first_bn1 = nn.BatchNorm2d(64)
         self.selu = nn.SELU(inplace=True)
+        # Each block sits inside its own single-item Sequential to match the
+        # upstream checkpoint keys (enc.enc.N.0.*) — flattening it leaves the
+        # whole encoder randomly initialised under from_pretrained(strict=False)
+        nb_filts = [filts[1], filts[2], filts[3], filts[4], filts[4], filts[4]]
         self.enc = nn.Sequential(
-            *[ResidualBlock(nb_filts=filts[i], first=(i == 1)) for i in range(1, 5)]
-            + [ResidualBlock(nb_filts=filts[4]), ResidualBlock(nb_filts=filts[4])]
+            *[
+                nn.Sequential(ResidualBlock(nb_filts=f, first=(i == 0)))
+                for i, f in enumerate(nb_filts)
+            ]
         )
 
     def forward(self, x):
