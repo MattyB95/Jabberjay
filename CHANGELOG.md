@@ -566,7 +566,8 @@ _Nothing yet._
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
-[Unreleased]: https://github.com/MattyB95/Jabberjay/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/MattyB95/Jabberjay/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/MattyB95/Jabberjay/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/MattyB95/Jabberjay/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/MattyB95/Jabberjay/compare/v0.0.15...v0.1.0
 [0.0.15]: https://github.com/MattyB95/Jabberjay/compare/v0.0.14...v0.0.15
