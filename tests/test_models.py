@@ -295,7 +295,7 @@ class TestGetImage:
         with (
             patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"),
             patch(
-                "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
+                "Jabberjay.Models.Transformer.VIT.utility.Figure.savefig",
                 side_effect=fake_savefig,
             ),
         ):
@@ -303,47 +303,35 @@ class TestGetImage:
 
         assert isinstance(result, Image.Image)
 
-    def test_figure_closed_after_call(self):
-        """Ensure plt.close is called even on success (no figure leak)."""
+    def test_does_not_touch_pyplot(self):
+        """Rendering must bypass pyplot entirely — no GUI backend start-up and
+        no figures left registered in pyplot's global state."""
+        from matplotlib import pyplot as plt
+
+        from Jabberjay.Models.Transformer.VIT.utility import get_image
+
+        plt.close("all")
+        with patch("matplotlib.pyplot.figure") as mock_plt_figure:
+            get_image(data=np.zeros((128, 100)), sr=22050.0)
+        mock_plt_figure.assert_not_called()
+        assert plt.get_fignums() == []
+
+    def test_renders_off_the_main_thread(self):
+        import threading
 
         from PIL import Image
 
         from Jabberjay.Models.Transformer.VIT.utility import get_image
 
-        def fake_savefig(buf, **kwargs):
-            img = Image.new("RGB", (10, 10))
-            img.save(buf, format="PNG")
+        result = {}
 
-        with (
-            patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
-                side_effect=fake_savefig,
-            ),
-            patch("Jabberjay.Models.Transformer.VIT.utility.plt.close") as mock_close,
-        ):
-            get_image(data=np.zeros((128, 100)), sr=22050.0)
+        def render():
+            result["img"] = get_image(data=np.zeros((128, 100)), sr=22050.0)
 
-        mock_close.assert_called_once()
-
-    def test_figure_closed_on_error(self):
-        """Ensure plt.close is called even when rendering raises (no figure leak)."""
-        import pytest
-
-        from Jabberjay.Models.Transformer.VIT.utility import get_image
-
-        with (
-            patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
-                side_effect=RuntimeError("render error"),
-            ),
-            patch("Jabberjay.Models.Transformer.VIT.utility.plt.close") as mock_close,
-            pytest.raises(RuntimeError),
-        ):
-            get_image(data=np.zeros((128, 100)), sr=22050.0)
-
-        mock_close.assert_called_once()
+        thread = threading.Thread(target=render)
+        thread.start()
+        thread.join()
+        assert isinstance(result["img"], Image.Image)
 
     def test_buffer_closed_on_success(self):
         """Ensure the BytesIO buffer is closed after a successful call."""
@@ -371,10 +359,9 @@ class TestGetImage:
             ),
             patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"),
             patch(
-                "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
+                "Jabberjay.Models.Transformer.VIT.utility.Figure.savefig",
                 side_effect=fake_savefig,
             ),
-            patch("Jabberjay.Models.Transformer.VIT.utility.plt.close"),
             patch(
                 "Jabberjay.Models.Transformer.VIT.utility.Image.open",
                 return_value=real_image,
@@ -396,20 +383,16 @@ class TestGetImage:
             pass
 
         with (
-            patch(
-                "Jabberjay.Models.Transformer.VIT.utility.plt.subplots",
-                return_value=(MagicMock(), MagicMock()),
-            ),
+            patch("Jabberjay.Models.Transformer.VIT.utility.Figure"),
             patch(
                 "Jabberjay.Models.Transformer.VIT.utility.io.BytesIO",
                 return_value=mock_buf,
             ),
             patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"),
             patch(
-                "Jabberjay.Models.Transformer.VIT.utility.plt.savefig",
+                "Jabberjay.Models.Transformer.VIT.utility.Figure.savefig",
                 side_effect=fake_savefig,
             ),
-            patch("Jabberjay.Models.Transformer.VIT.utility.plt.close"),
             patch(
                 "Jabberjay.Models.Transformer.VIT.utility.Image.open",
                 side_effect=RuntimeError("corrupt image"),
@@ -522,6 +505,19 @@ class _SpectraModelTestBase:
             predict(y=AUDIO[0], sr=AUDIO[1])
             predict(y=AUDIO[0], sr=AUDIO[1])
         mock_from_pretrained.assert_called_once()
+
+    def test_weights_are_loaded_strictly(self):
+        """A checkpoint/architecture key mismatch must raise, not silently
+        leave layers randomly initialised (PyTorchModelHubMixin's default)."""
+        import importlib
+
+        predict = importlib.import_module(
+            f"Jabberjay.Models.{self.model_module}.run"
+        ).predict
+        mock_model = self._make_mock_model([0.2, 0.8])
+        with patch(self._patch_path(), return_value=mock_model) as mock_from_pretrained:
+            predict(y=AUDIO[0], sr=AUDIO[1])
+        assert mock_from_pretrained.call_args.kwargs["strict"] is True
 
 
 class TestSpectra0Predict(_SpectraModelTestBase):

@@ -4,7 +4,7 @@ import librosa
 import librosa.display
 import torch
 from loguru import logger
-from matplotlib import pyplot as plt
+from matplotlib.figure import Figure
 from numpy import ndarray
 from PIL import Image
 from transformers import Pipeline, pipeline
@@ -26,15 +26,18 @@ def load_pipeline(model_id: str) -> Pipeline:
 
 def get_image(data: ndarray, sr: float) -> Image.Image:
     logger.debug("Rendering spectrogram image")
-    fig, ax = plt.subplots()
+    # A bare Figure rather than pyplot: it renders straight to Agg, so there is
+    # no GUI backend to start (which fails off the main thread, or on Pythons
+    # built without Tk) and no global figure registry to leak into or close
+    fig = Figure()
+    ax = fig.subplots()
     buf = io.BytesIO()
     try:
         librosa.display.specshow(data=data, sr=sr, ax=ax)
-        plt.savefig(buf, bbox_inches="tight", pad_inches=0)
+        fig.savefig(buf, bbox_inches="tight", pad_inches=0)
         buf.seek(0)
         img = Image.open(buf)
         img.load()  # read all pixel data into memory so the buffer can be released
         return img
     finally:
-        plt.close(fig)
         buf.close()

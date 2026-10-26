@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torchaudio
 from loguru import logger
-from transformers import Wav2Vec2Model
+from transformers import Wav2Vec2Config, Wav2Vec2Model
 
 from Jabberjay.Utilities.model_cache import cached_loader
 
@@ -17,7 +17,12 @@ def load_pretrained(
 ) -> nn.Module:
     """Load, cache, and move a HuggingFace-hosted Spectra model to device."""
     logger.info(f"Loading model: {model_id}")
-    model = model_cls.from_pretrained(model_id)  # ty: ignore[unresolved-attribute]
+    # strict=True: PyTorchModelHubMixin defaults to strict=False, which would
+    # silently leave any layer whose keys drift from the checkpoint randomly
+    # initialised instead of failing loudly
+    model = model_cls.from_pretrained(  # ty: ignore[unresolved-attribute]
+        model_id, strict=True
+    )
     return model.eval().to(device)
 
 
@@ -42,10 +47,13 @@ def preprocess(y: np.ndarray, sr: float) -> torch.Tensor:
 class Wav2Vec2Encoder(nn.Module):
     def __init__(self, model_name_or_path: str = "facebook/wav2vec2-xls-r-300m"):
         super().__init__()
-        self.model = Wav2Vec2Model.from_pretrained(
-            model_name_or_path, gradient_checkpointing=False
-        )
-        self.model.config.apply_spec_augment = False
+        # Build from config only: every Spectra checkpoint ships its own
+        # fine-tuned copy of these weights (enforced by strict loading in
+        # load_pretrained), so fetching the 1.27 GB base checkpoint here would
+        # be downloaded and loaded only to be overwritten immediately
+        config = Wav2Vec2Config.from_pretrained(model_name_or_path)
+        config.apply_spec_augment = False
+        self.model = Wav2Vec2Model(config)
         self.model.masked_spec_embed = None  # type: ignore
 
     def forward(self, x):

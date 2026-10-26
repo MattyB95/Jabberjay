@@ -13,6 +13,47 @@ _Nothing yet._
 
 ---
 
+## [0.1.2] — 2026-10-25
+
+### Fixed
+- **SpectraAASIST and SpectraAASIST3 predictions were effectively random** —
+  lab260's checkpoints nest each AASIST encoder residual block one level
+  deeper (`aasist.enc.enc.N.0.*`) than our port (`aasist.enc.enc.N.*`).
+  `PyTorchModelHubMixin.from_pretrained()` defaults to `strict=False`, so the
+  mismatch was silent and the entire six-block encoder stayed randomly
+  initialised — scores changed from process to process and the bundled
+  sample clips were misclassified. Each block is now wrapped in its own
+  `nn.Sequential` to match upstream, and logits are verified bit-identical
+  to lab260's reference `model.py` for all three Spectra models
+
+### Changed
+- **Spectra models now load strictly** — `load_pretrained()` passes
+  `strict=True`, so any future checkpoint/architecture drift raises instead
+  of silently leaving layers uninitialised
+- **Spectra first-run download halved** — the Wav2Vec2-XLS-R-300M encoder is
+  now built from its config alone instead of downloading the 1.27 GB
+  `facebook/wav2vec2-xls-r-300m` weights, which every Spectra checkpoint
+  overwrites with its own fine-tuned copy anyway. Also removes the
+  `Wav2Vec2Model LOAD REPORT` noise printed on every Spectra load
+- **VIT spectrograms render without pyplot** — `get_image()` draws onto a
+  bare `matplotlib.figure.Figure`, so no GUI backend is started. Output is
+  pixel-identical, but `detect()` with VIT now works off the main thread and
+  on Python builds without Tk
+- **ty `invalid-mutable-override` ignored under `Models/`** — ty 0.0.89
+  flags every idiomatic `nn.Module.forward()` override because torch types
+  `forward` as a mutable `Callable` attribute
+
+### Dependencies
+- `huggingface-hub` 1.31.0 → 2.2.0, `transformers` 5.17.0 → 5.20.1,
+  `torch` 2.14.0 → 2.14.1, `pillow` 12.3.0 → 13.0.0, `numpy` 2.5.3 → 2.5.4,
+  `scikit-learn` 1.9.0 → 1.9.1, `matplotlib` 3.11.1 → 3.11.2 (lockfile;
+  verified with the full model sweep — every non-Spectra result is
+  identical to v0.1.1)
+- Dev: `black` 26.10.1, `ruff` 0.17.1, `ty` 0.0.89, `pre-commit` 4.7.0
+  (pre-commit hook revs bumped to match); `astral-sh/setup-uv` 10.3.0
+
+---
+
 ## [0.1.1] — 2026-09-15
 
 ### Fixed

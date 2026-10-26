@@ -39,13 +39,33 @@ class TestMLPBridge:
 class TestWav2Vec2Encoder:
     @staticmethod
     def _make_encoder():
-        with patch("Jabberjay.Models.Spectra.shared.Wav2Vec2Model") as mock_cls:
+        with (
+            patch("Jabberjay.Models.Spectra.shared.Wav2Vec2Config"),
+            patch("Jabberjay.Models.Spectra.shared.Wav2Vec2Model") as mock_cls,
+        ):
             mock_model = MagicMock()
             mock_model.return_value.last_hidden_state = torch.randn(1, 10, 1024)
-            mock_cls.from_pretrained.return_value = mock_model
+            mock_cls.return_value = mock_model
             from Jabberjay.Models.Spectra.shared import Wav2Vec2Encoder
 
-            return Wav2Vec2Encoder(), mock_model
+            return Wav2Vec2Encoder(), mock_cls
+
+    def test_builds_from_config_without_downloading_base_weights(self):
+        """The base checkpoint is overwritten by each Spectra checkpoint, so
+        only its config should be fetched — never its 1.27 GB weights."""
+        _encoder, mock_cls = self._make_encoder()
+        mock_cls.from_pretrained.assert_not_called()
+        mock_cls.assert_called_once()
+
+    def test_spec_augment_disabled(self):
+        with (
+            patch("Jabberjay.Models.Spectra.shared.Wav2Vec2Config") as mock_cfg_cls,
+            patch("Jabberjay.Models.Spectra.shared.Wav2Vec2Model"),
+        ):
+            from Jabberjay.Models.Spectra.shared import Wav2Vec2Encoder
+
+            Wav2Vec2Encoder()
+        assert mock_cfg_cls.from_pretrained.return_value.apply_spec_augment is False
 
     def test_forward_2d_input(self):
         encoder, _mock_model = self._make_encoder()
@@ -187,6 +207,15 @@ class TestAASISTComponents:
             out = enc(torch.randn(1, 12, 128))
         assert out.shape[1] == 64  # 64 output channels
 
+    def test_encoder_state_dict_keys_match_checkpoint_layout(self):
+        """lab260's checkpoint stores each residual block one level deeper
+        (enc.N.0.*) — a flat layout leaves the encoder unloaded."""
+        from Jabberjay.Models.SpectraAASIST.model import Encoder
+
+        keys = Encoder(filts=_AASIST_D_ARGS["filts"]).state_dict().keys()
+        assert {f"enc.{i}.0.conv1.weight" for i in range(6)} <= keys
+        assert not any(k.startswith("enc.0.conv1") for k in keys)
+
     def test_hsgal_branch_output_shapes(self):
         from Jabberjay.Models.SpectraAASIST.model import HSGALBranch_v1
 
@@ -316,6 +345,15 @@ class TestAASIST3Components:
         with torch.no_grad():
             out = enc(torch.randn(1, 12, 128))
         assert out.shape[1] == 64
+
+    def test_encoder_state_dict_keys_match_checkpoint_layout(self):
+        """lab260's checkpoint stores each residual block one level deeper
+        (enc.N.0.*) — a flat layout leaves the encoder unloaded."""
+        from Jabberjay.Models.SpectraAASIST3.model import Encoder
+
+        keys = Encoder(filts=_AASIST_D_ARGS["filts"]).state_dict().keys()
+        assert {f"enc.{i}.0.conv1.weight" for i in range(6)} <= keys
+        assert not any(k.startswith("enc.0.conv1") for k in keys)
 
     def test_hsgal_branch_output_shapes(self):
         from Jabberjay.Models.SpectraAASIST3.model import HSGALBranch_v1
