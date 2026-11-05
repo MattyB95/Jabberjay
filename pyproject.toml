@@ -84,7 +84,11 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--cov=src/Jabberjay --cov-report=term-missing --cov-report=xml"
+# Integration tests load real multi-GB weights; opt in with `-m integration`
+addopts = "--cov=src/Jabberjay --cov-report=term-missing --cov-report=xml -m 'not integration'"
+markers = [
+    "integration: loads real model weights from the HuggingFace cache (opt-in)",
+]
 filterwarnings = [
     # Classical model .joblib was pickled with sklearn 1.3.0; loads and runs
     # correctly on 1.9.1 — KNeighborsClassifier is stable across this range

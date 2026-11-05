@@ -1,7 +1,8 @@
 # Integration smoke test
 #
 # Runs the full model sweep (examples/run_all.py) end-to-end against a real
-# audio clip, downloading every model from HuggingFace Hub. The unit test
+# audio clip, downloading every model from HuggingFace Hub, then the
+# `pytest -m integration` tests against those cached weights. The unit test
 # suite mocks all model loading, so this is the only check that catches a
 # genuine upstream API break (torch, transformers, librosa, torchaudio).
 #
@@ -43,3 +44,9 @@ jobs:
 
       - name: Run full model sweep
         run: uv run python examples/run_all.py
+
+      # After the sweep, so every checkpoint is already cached
+      - name: Run integration tests
+        env:
+          JABBERJAY_REQUIRE_WEIGHTS: "1"
+        run: uv run pytest -m integration --no-cov -rs

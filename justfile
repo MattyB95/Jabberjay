@@ -15,6 +15,10 @@ test:
 test-verbose:
     uv run pytest -v
 
+# Run the opt-in integration tests (real weights; skips any not yet cached)
+test-integration:
+    uv run pytest -m integration --no-cov -rs
+
 # Run tests and open the HTML coverage report
 [unix]
 coverage:
