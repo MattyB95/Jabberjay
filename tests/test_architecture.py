@@ -466,6 +466,33 @@ class TestDFArena1BModel:
             out = model(torch.randn(2, 4000))
         assert out.shape == (2, 2)
 
+    def test_layer_fusion_matches_upstream_per_layer_loop(self):
+        """The vectorised fusion must equal upstream's per-layer pooling loop.
+
+        The reference is transcribed from backbone.py in
+        Speech-Arena-2025/DF_Arena_1B_V_1@fb6ce85, so a wrong softmax, pooling,
+        or gating axis in our port shows up as a numerical mismatch.
+        """
+        torch.manual_seed(0)
+        model = self._model()
+        x = torch.randn(2, 4000)
+        captured = {}
+        model.conformer.register_forward_pre_hook(
+            lambda _module, args: captured.setdefault("fused", args[0])
+        )
+        with torch.no_grad():
+            model(x)
+            pooled, full = [], []
+            for layer in model.ssl_model(x).hidden_states:  # (B, T, D)
+                weights = torch.softmax(model.attn_scores(layer), dim=1)
+                pooled.append(torch.sum(weights * layer, dim=1, keepdim=True))
+                full.append(layer.unsqueeze(1))
+            gate = torch.sigmoid(model.fc0(torch.cat(pooled, dim=1)))
+            gate = gate.view(gate.shape[0], gate.shape[1], gate.shape[2], -1)
+            fused = torch.sum(torch.cat(full, dim=1) * gate, 1).unsqueeze(dim=1)
+            expected = model.selu(model.first_bn(fused)).squeeze(1)
+        torch.testing.assert_close(captured["fused"], expected)
+
     def test_state_dict_keys_match_upstream_layout(self):
         """Key names must mirror the upstream checkpoint for strict loading."""
         keys = set(self._model().state_dict())
