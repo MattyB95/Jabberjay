@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -31,10 +31,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -517,6 +517,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#dfarena1b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DFArena1B
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#spectra0" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -726,6 +737,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#dfarena1b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DFArena1B
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#spectra0" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -834,7 +856,7 @@
 
 
 <h1 id="models">Models</h1>
-<p>Jabberjay bundles ten model families. Each is downloaded from Hugging Face Hub on first use and cached locally, then kept in memory for the lifetime of the process so repeated <code>detect()</code> calls for the same model skip both the download and the reload.</p>
+<p>Jabberjay bundles eleven model families. Each is downloaded from Hugging Face Hub on first use and cached locally, then kept in memory for the lifetime of the process so repeated <code>detect()</code> calls for the same model skip both the download and the reload.</p>
 <hr />
 <h2 id="choosing-a-model">Choosing a model</h2>
 <table>
@@ -858,6 +880,12 @@
 <td>Audio Spectrogram Transformer</td>
 <td>ASVspoof2019, ASVspoof5, VoxCelebSpoof</td>
 <td><code>dataset</code></td>
+</tr>
+<tr>
+<td><a href="#dfarena1b">DFArena1B</a></td>
+<td>Wav2Vec2-1B + Conformer</td>
+<td>ASVspoof19/24, Codecfake, MLAAD, +5</td>
+<td>—</td>
 </tr>
 <tr>
 <td><a href="#spectra0">Spectra0</a></td>
@@ -911,7 +939,7 @@
 </table>
 <p><strong>Simple rule of thumb:</strong></p>
 <ul>
-<li>For the lowest error rate on In-the-Wild audio — use <strong>SpectraAASIST3</strong> (EER 0.961%)</li>
+<li>For the lowest error rate on In-the-Wild audio — use <strong>DFArena1B</strong> (EER 0.91%), or <strong>SpectraAASIST3</strong> (EER 0.961%) for a quarter of the download and a permissive license</li>
 <li>For a quick, general-purpose result — use <strong>WavLM</strong> or <strong>HuBERT</strong></li>
 <li>For a lightweight baseline with no deep learning — use <strong>Classical</strong></li>
 <li>To sweep all models and compare — use <code>jj.load()</code> once, then call <code>jj.detect()</code> for each</li>
@@ -973,6 +1001,54 @@
 <p><code>dataset</code> is optional for AST and defaults to <code>VoxCelebSpoof</code> if not specified.</p>
 </div>
 <hr />
+<h2 id="dfarena1b">DFArena1B</h2>
+<p><code>Speech-Arena-2025/DF_Arena_1B_V_1</code></p>
+<p>SSL encoder (Wav2Vec2-XLS-R-1B) → attention-pooled, sigmoid-gated fusion of every encoder layer → Conformer classifier with a class token. Released by the <a href="https://huggingface.co/spaces/Speech-Arena-2025/Speech-DF-Arena">Speech DF Arena</a> team (<a href="https://arxiv.org/abs/2603.06164">Kulkarni et al., 2026</a>) and trained on the widest data mix in Jabberjay: ASVspoof 2019 and 2024, Codecfake, LibriSeVoc, DFADD, CTRSVDD, SpoofCeleb, MLAAD, and EnvSDD.</p>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>EER (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ASVspoof19 LA</td>
+<td>1.14</td>
+</tr>
+<tr>
+<td>ASVspoof21 LA</td>
+<td>4.66</td>
+</tr>
+<tr>
+<td>ASVspoof21 DF</td>
+<td>1.75</td>
+</tr>
+<tr>
+<td>ASVspoof5</td>
+<td>17.25</td>
+</tr>
+<tr>
+<td>ADD2022 Track 1</td>
+<td>22.21</td>
+</tr>
+<tr>
+<td>In-the-Wild</td>
+<td>0.91</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"DFArena1B"</span><span class="p">)</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Non-commercial license</p>
+<p>The DF Arena weights are released under a <strong>non-commercial</strong> license (research, teaching, and personal use only) — see the <a href="https://huggingface.co/Speech-Arena-2025/DF_Arena_1B_V_1/blob/main/LICENSE.txt">model's LICENSE</a>. Jabberjay's own code remains MIT; commercial use of this model requires a separate license from Idiap.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Downloads ~4.6 GB of weights on first run, by far the largest model in Jabberjay, and needs roughly 5 GB of memory to run. The checkpoint is pinned to a reviewed revision and loaded with <code>weights_only=True</code>; no remote code is executed.</p>
+</div>
+<hr />
 <h2 id="spectra0">Spectra0</h2>
 <p><code>lab260/spectra_0</code></p>
 <p>SSL encoder (Wav2Vec2-XLS-R-300M) → MLP projection → ECAPA-TDNN binary classifier, trained across multiple anti-spoofing benchmarks.</p>
@@ -1010,7 +1086,7 @@
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"Spectra0"</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"Spectra0"</span><span class="p">)</span>
 </code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1054,7 +1130,7 @@
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"SpectraAASIST"</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"SpectraAASIST"</span><span class="p">)</span>
 </code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1098,7 +1174,7 @@
 </tr>
 </tbody>
 </table>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"SpectraAASIST3"</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"SpectraAASIST3"</span><span class="p">)</span>
 </code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1108,24 +1184,24 @@
 <h2 id="wav2vec2">Wav2Vec2</h2>
 <p><code>Gustking/wav2vec2-large-xlsr-deepfake-audio-classification</code></p>
 <p>Wav2Vec2-XLSR-300M fine-tuned on <strong>ASVspoof2019</strong>. EER 4.01%.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"Wav2Vec2"</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"Wav2Vec2"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="hubert">HuBERT</h2>
 <p><code>abhishtagatya/hubert-base-960h-itw-deepfake</code></p>
 <p>HuBERT-base fine-tuned on the <strong>In-The-Wild</strong> dataset. EER 1.43%.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"HuBERT"</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"HuBERT"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="wavlm">WavLM</h2>
 <p><code>DavidCombei/wavLM-base-Deepfake_V2</code></p>
 <p>WavLM-base fine-tuned on a <strong>mixed deepfake dataset</strong>.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"WavLM"</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"WavLM"</span><span class="p">)</span>
 </code></pre></div>
 <hr />
 <h2 id="rawnet2">RawNet2</h2>
 <p>End-to-end anti-spoofing network via <a href="https://github.com/eurecom-asp/rawnet2-antispoofing">rawnet2-antispoofing</a>, with weights from <strong>ASVspoof 2021</strong>. Operates directly on raw waveforms — no feature extraction step.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"RawNet2"</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"RawNet2"</span><span class="p">)</span>
 </code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1134,7 +1210,7 @@
 <hr />
 <h2 id="classical">Classical</h2>
 <p>Feature-based KNN classifier trained on <strong>ASVspoof2019</strong>. Extracts hand-crafted audio features (MFCCs, spectral features) and classifies with k-nearest neighbours. Fast and dependency-light compared to the transformer models.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"Classical"</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"Classical"</span><span class="p">)</span>
 </code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1199,10 +1275,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
       
     
   </body>
