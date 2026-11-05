@@ -402,3 +402,115 @@ class TestSpectraAASIST3Model:
             mock_enc_cls.return_value = MagicMock(return_value=torch.randn(1, 12, 1024))
             model = SpectraAASIST3().eval()
         assert isinstance(model.classify(torch.randn(1, 16000)), float)
+
+
+# ── DF Arena 1B architecture (attention-gated SSL layers + Conformer) ────────
+
+
+def _tiny_wav2vec2_config():
+    from transformers import Wav2Vec2Config
+
+    return Wav2Vec2Config(
+        hidden_size=16,
+        num_hidden_layers=2,
+        num_attention_heads=2,
+        intermediate_size=32,
+        conv_dim=(8, 8),
+        conv_stride=(5, 2),
+        conv_kernel=(10, 3),
+        num_conv_pos_embeddings=16,
+        num_conv_pos_embedding_groups=2,
+    )
+
+
+class TestDFArenaComponents:
+    def test_depthwise_conv_preserves_length_for_odd_and_even_kernels(self):
+        from Jabberjay.Models.DFArena.model import DepthWiseConv1d
+
+        for kernel_size in (31, 16):
+            out = DepthWiseConv1d(channels=4, kernel_size=kernel_size)(
+                torch.randn(2, 4, 50)
+            )
+            assert out.shape == (2, 4, 50)
+
+    def test_head_token_attention_preserves_shape(self):
+        from Jabberjay.Models.DFArena.model import HeadTokenAttention
+
+        attn = HeadTokenAttention(dim=16, heads=4, dim_head=4).eval()
+        with torch.no_grad():
+            out = attn(torch.randn(2, 9, 16))
+        assert out.shape == (2, 9, 16)
+
+    def test_conformer_classifier_output_shape(self):
+        from Jabberjay.Models.DFArena.model import ConformerClassifier
+
+        head = ConformerClassifier(emb_size=16, n_encoders=2, max_len=64).eval()
+        with torch.no_grad():
+            out = head(torch.randn(2, 20, 16))
+        assert out.shape == (2, 2)
+
+
+class TestDFArena1BModel:
+    def _model(self):
+        from Jabberjay.Models.DFArena.model import DFArena1B
+
+        with patch(
+            "Jabberjay.Models.DFArena.model.Wav2Vec2Config.from_pretrained",
+            return_value=_tiny_wav2vec2_config(),
+        ):
+            return DFArena1B().eval()
+
+    def test_forward_output_shape(self):
+        model = self._model()
+        with torch.no_grad():
+            out = model(torch.randn(2, 4000))
+        assert out.shape == (2, 2)
+
+    def test_layer_fusion_matches_upstream_per_layer_loop(self):
+        """The vectorised fusion must equal upstream's per-layer pooling loop.
+
+        The reference is transcribed from backbone.py in
+        Speech-Arena-2025/DF_Arena_1B_V_1@fb6ce85, so a wrong softmax, pooling,
+        or gating axis in our port shows up as a numerical mismatch.
+        """
+        torch.manual_seed(0)
+        model = self._model()
+        x = torch.randn(2, 4000)
+        captured = {}
+        model.conformer.register_forward_pre_hook(
+            lambda _module, args: captured.setdefault("fused", args[0])
+        )
+        with torch.no_grad():
+            model(x)
+            pooled, full = [], []
+            for layer in model.ssl_model(x).hidden_states:  # (B, T, D)
+                weights = torch.softmax(model.attn_scores(layer), dim=1)
+                pooled.append(torch.sum(weights * layer, dim=1, keepdim=True))
+                full.append(layer.unsqueeze(1))
+            gate = torch.sigmoid(model.fc0(torch.cat(pooled, dim=1)))
+            gate = gate.view(gate.shape[0], gate.shape[1], gate.shape[2], -1)
+            fused = torch.sum(torch.cat(full, dim=1) * gate, 1).unsqueeze(dim=1)
+            expected = model.selu(model.first_bn(fused)).squeeze(1)
+        torch.testing.assert_close(captured["fused"], expected)
+
+    def test_state_dict_keys_match_upstream_layout(self):
+        """Key names must mirror the upstream checkpoint for strict loading."""
+        keys = set(self._model().state_dict())
+        for key in (
+            "attn_scores.weight",
+            "fc0.weight",
+            "first_bn.running_mean",
+            "conformer.positional_emb",
+            "conformer.class_token",
+            "conformer.fc5.weight",
+            "conformer.encoder_blocks.0.ff1.fn.fn.net.3.weight",
+            "conformer.encoder_blocks.0.attn.fn.ht_proj.weight",
+            "conformer.encoder_blocks.0.attn.fn.pos_embed",
+            "conformer.encoder_blocks.0.conv.net.2.weight",
+            "conformer.encoder_blocks.0.conv.net.4.conv.weight",
+            "conformer.encoder_blocks.0.conv.net.5.running_var",
+            "conformer.encoder_blocks.0.conv.net.7.weight",
+            "conformer.encoder_blocks.3.post_norm.weight",
+        ):
+            assert key in keys, key
+        assert any(k.startswith("ssl_model.encoder.layers.") for k in keys)

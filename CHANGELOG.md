@@ -13,6 +13,100 @@ _Nothing yet._
 
 ---
 
+## [0.1.3] — 2026-11-05
+
+### Added
+- **DF Arena 1B model** (`Model.DFArena1B`) — Idiap's
+  [Speech-Arena-2025/DF_Arena_1B_V_1](https://huggingface.co/Speech-Arena-2025/DF_Arena_1B_V_1)
+  (RAPTOR, [arXiv:2603.06164](https://arxiv.org/abs/2603.06164)): a
+  Wav2Vec2-XLS-R-1B encoder with attention-gated layer fusion and a
+  Conformer head, the strongest open-weights system on the
+  [Speech DF Arena](https://huggingface.co/spaces/Speech-Arena-2025/Speech-DF-Arena)
+  leaderboard (pooled EER 9.52%; 0.91% on In-the-Wild). Implemented natively
+  rather than via `trust_remote_code`: the checkpoint is pinned to a
+  reviewed revision, loaded with `weights_only=True` and `strict=True`, and
+  built on the meta device so the 1B parameters aren't randomly initialised
+  first. **The weights are licensed for non-commercial use only**; ~4.6 GB
+  download
+- **`download_pretrained_model(..., revision=)`** — optional commit pin
+- **`preprocess(..., preemphasis=)`** in `Models/Spectra/shared.py` — DF
+  Arena shares Spectra's resample + 64600-sample pad/crop but not its
+  preemphasis
+- **Opt-in integration tests** (`pytest -m integration`) — run DF Arena 1B
+  against its real pinned checkpoint on the bonafide/spoof reference clips,
+  proving the native port loads with `strict=True` and reads the logits in
+  the right order. Deselected by default and skipped unless the weights are
+  already cached, so a plain `pytest` never triggers the ~4.6 GB download;
+  the weekly integration workflow runs them after the model sweep with
+  `JABBERJAY_REQUIRE_WEIGHTS=1`, which turns a missing checkpoint into a
+  failure rather than a silent skip
+- **Python 3.15 support** — added to the CI test matrix, the PyPI
+  classifiers, and black's `target-version`. Verified locally on 3.15.2: the
+  unit suite passes and the full model sweep gives results identical to 3.14.
+  PyYAML has no 3.15 wheels yet, so it builds from source on install (pure
+  Python, without the optional libyaml C extension). 3.15 is also now the
+  default development version: `.python-version`, `ty`'s target, the lint
+  and docs CI jobs, the weekly integration sweep, and the uploaded coverage
+  report all use it. 3.12–3.14 remain fully supported and tested
+- **`just test-integration`** — runs the opt-in integration tests
+
+### Fixed
+- **README links on PyPI** — the social preview image, the example-script
+  links, and the `CONTRIBUTING.md` link were relative paths, which break on
+  the PyPI project page; they now point at GitHub
+- **Stale model lists** — the `CITATION.cff` and `.zenodo.json` abstracts
+  listed only the original seven model families (now including the Spectra
+  family and DF Arena 1B), and the README / getting-started / CLI examples
+  and `examples/choosing_a_model.py` were missing DF Arena 1B
+- **Docs accuracy** — the score breakdown was described as "transformer
+  models" only (it covers every model except Classical and RawNet2), the
+  README's sample CLI output didn't match the real output, and the
+  getting-started comparison table truncated longer model names
+
+### Security
+- **`msgpack` floor added at `>=1.2.4`** — closes
+  [CVE-2026-114613](https://github.com/advisories/GHSA-j586-36cw-2gc2)
+  (high), an unbounded memory leak in the msgpack C extension on
+  `strict_map_key` validation failure. `msgpack` is a transitive
+  dependency (via `librosa`), so it is now declared directly: the lockfile
+  moving to 1.2.4 alone left existing environments free to keep the
+  vulnerable 1.2.2
+
+### Changed
+- **Dependency floors raised to current releases** — `huggingface-hub>=2.4.0`
+  (previously `>=1.31.0`, still admitting the untested 1.x line),
+  `matplotlib>=3.11.2`, `numpy>=2.5.4`, `pillow>=13.0.0`,
+  `scikit-learn>=1.9.1`, `torch>=2.15.0`, `torchaudio>=2.11.1`,
+  `transformers>=5.22.1`, so every install resolves to the versions the
+  full model sweep was verified against
+- **Model licence policy** — models no longer have to be Apache 2.0 or MIT:
+  other licences, including non-commercial, are accepted when the licence
+  is flagged in the README and docs (as DF Arena 1B's is).
+  `CONTRIBUTING.md` and the model-request issue template are updated to
+  match, and the contributor guide now covers safe weight loading and every
+  place a new model must be listed
+- **`ty` now type-checks the whole repository** (tests, examples, scripts),
+  not just `src/`, in CI, pre-commit, and `just type-check`; the six test
+  diagnostics this surfaced are fixed
+- **Smaller sdist** — `social_preview.png` is no longer packaged (580 KB →
+  436 KB)
+
+### Dependencies
+- `torch` 2.14.1 → 2.15.0, `torchaudio` 2.11.0 → 2.11.1, `transformers`
+  5.20.1 → 5.22.1, `huggingface-hub` 2.2.0 → 2.4.0 (lockfile; verified with
+  the full model sweep — every result is identical to v0.1.2), plus the
+  CUDA 13.0 → 13.2 runtime wheels and `triton` 3.9.0 that `torch` 2.15
+  pulls in on Linux
+- Lockfile refreshed to the latest compatible release of every package
+  (~50 transitive updates, including `python-dateutil` 2.9 → 4.0 via
+  `matplotlib`, `numba` 0.68.1, `contourpy` 1.4.0)
+- Dev: `ruff` 0.17.3, `ty` 0.0.97, `pytest` 9.2.0, `mkdocs-material` 9.8.0,
+  `mkdocstrings` 1.0.8 (`pymdown-extensions` 12.3, `watchdog` 7.1.0);
+  `astral-sh/setup-uv` 10.3.3. Dev dependency floors raised to these
+  versions and the `ruff-pre-commit` hook rev bumped to v0.17.3 to match
+
+---
+
 ## [0.1.2] — 2026-10-25
 
 ### Fixed
@@ -566,7 +660,8 @@ _Nothing yet._
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
-[Unreleased]: https://github.com/MattyB95/Jabberjay/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/MattyB95/Jabberjay/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/MattyB95/Jabberjay/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/MattyB95/Jabberjay/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/MattyB95/Jabberjay/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/MattyB95/Jabberjay/compare/v0.0.15...v0.1.0

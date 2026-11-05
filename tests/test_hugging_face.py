@@ -13,4 +13,13 @@ def test_forwards_repo_and_filename_and_returns_path():
         path = download_pretrained_model("owner/repo", "model.pth")
 
     assert path == "/cache/model.pth"
-    mock_dl.assert_called_once_with(repo_id="owner/repo", filename="model.pth")
+    mock_dl.assert_called_once_with(
+        repo_id="owner/repo", filename="model.pth", revision=None
+    )
+
+
+def test_forwards_pinned_revision():
+    with patch("Jabberjay.Utilities.hugging_face.hf_hub_download") as mock_dl:
+        download_pretrained_model("owner/repo", "model.pth", revision="abc123")
+
+    assert mock_dl.call_args.kwargs["revision"] == "abc123"

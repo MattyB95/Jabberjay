@@ -21,9 +21,9 @@
 
 ## For new models
 
-- [ ] Licence confirmed as Apache 2.0 or MIT
+- [ ] Licence checked — Apache 2.0 / MIT, or any other licence flagged in `README.md` and `docs/models.md`
 - [ ] Model added to `Model` enum in `enum_handler.py`
 - [ ] `run.py` created under `src/Jabberjay/Models/<Name>/`
 - [ ] Handler and match case added to `jabberjay.py`
-- [ ] `test_model_members` updated in `tests/test_jabberjay.py`
-- [ ] Model card link added to README models table
+- [ ] `test_model_members` updated in `tests/test_enums.py`
+- [ ] Model card link added to README models table, and every other model list updated (see CONTRIBUTING.md, step 6)

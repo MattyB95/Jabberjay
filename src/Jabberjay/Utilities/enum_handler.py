@@ -5,6 +5,7 @@ from enum import Enum
 class Model(Enum):
     AST = "AST"
     Classical = "Classical"
+    DFArena1B = "DFArena1B"
     HuBERT = "HuBERT"
     RawNet2 = "RawNet2"
     Spectra0 = "Spectra0"

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "Jabberjay"
-version = "0.1.2"
+version = "0.1.3"
 description = "🦜 Synthetic Voice Detection"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -35,6 +35,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Intended Audience :: Science/Research",
@@ -45,19 +46,21 @@ classifiers = [
     "Topic :: Security",
 ]
 dependencies = [
-    "huggingface-hub>=1.31.0",
+    "huggingface-hub>=2.4.0",
     "joblib>=1.6.0",
     "loguru>=0.7.3",
     "librosa>=1.0.0",
-    "matplotlib>=3.11.1",
-    "numpy>=2.5.3,<3",
-    "pillow>=12.3.0",
+    "matplotlib>=3.11.2",
+    # Transitive (via librosa); floor closes GHSA-j586-36cw-2gc2
+    "msgpack>=1.2.4",
+    "numpy>=2.5.4,<3",
+    "pillow>=13.0.0",
     "PyYAML>=6.0.3",
-    "scikit-learn>=1.9.0",
+    "scikit-learn>=1.9.1",
     "soundfile>=0.14.0",
-    "torch>=2.14.0,<3",
-    "torchaudio>=2.11.0,<3",
-    "transformers>=5.17.0",
+    "torch>=2.15.0,<3",
+    "torchaudio>=2.11.1,<3",
+    "transformers>=5.22.1",
 ]
 
 [project.urls]
@@ -71,21 +74,25 @@ jabberjay = "Jabberjay.jabberjay:main"
 
 [dependency-groups]
 dev = [
-    "black>=26.5.1",
-    "mkdocs-material>=9.7.7",
-    "mkdocstrings[python]>=1.0.6",
-    "pre-commit>=4.6.2",
-    "pytest>=9.1.1",
+    "black>=26.10.1",
+    "mkdocs-material>=9.8.0",
+    "mkdocstrings[python]>=1.0.8",
+    "pre-commit>=4.7.0",
+    "pytest>=9.2.0",
     "pytest-cov>=7.1.0",
-    "ruff>=0.16.6",
-    "ty>=0.0.80",
+    "ruff>=0.17.3",
+    "ty>=0.0.97",
 ]
 
 [tool.pytest.ini_options]
-addopts = "--cov=src/Jabberjay --cov-report=term-missing --cov-report=xml"
+# Integration tests load real multi-GB weights; opt in with `-m integration`
+addopts = "--cov=src/Jabberjay --cov-report=term-missing --cov-report=xml -m 'not integration'"
+markers = [
+    "integration: loads real model weights from the HuggingFace cache (opt-in)",
+]
 filterwarnings = [
     # Classical model .joblib was pickled with sklearn 1.3.0; loads and runs
-    # correctly on 1.9.0 — KNeighborsClassifier is stable across this range
+    # correctly on 1.9.1 — KNeighborsClassifier is stable across this range
     "ignore::sklearn.exceptions.InconsistentVersionWarning",
 ]
 
@@ -104,7 +111,7 @@ exclude_lines = [
 
 [tool.black]
 line-length = 88
-target-version = ["py312", "py313", "py314"]
+target-version = ["py312", "py313", "py314", "py315"]
 
 [tool.ruff]
 line-length = 88
@@ -121,7 +128,7 @@ select = ["E4", "E7", "E9", "F", "I", "UP", "B", "SIM", "RUF"]
 "src/Jabberjay/Models/RawNet2/model.py" = ["UP", "SIM", "RUF"]
 
 [tool.ty.environment]
-python-version = "3.14"
+python-version = "3.15"
 
 [[tool.ty.overrides]]
 # torch declares nn.Module.forward as a mutable Callable attribute rather than
@@ -134,3 +141,7 @@ invalid-mutable-override = "ignore"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/Jabberjay"]
+
+[tool.hatch.build.targets.sdist]
+# The README links the social preview by URL, so it isn't needed to build
+exclude = ["social_preview.png"]

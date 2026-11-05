@@ -69,10 +69,12 @@ New models are the most valuable contribution. The bar for inclusion is:
 
 | Requirement      | Detail                                                 |
 |------------------|--------------------------------------------------------|
-| **Licence**      | Apache 2.0 or MIT only                                 |
+| **Licence**      | Apache 2.0 or MIT preferred; others (e.g. non-commercial) accepted if flagged — see below |
 | **Task**         | Binary bonafide / spoof classification                 |
 | **Availability** | Publicly available weights (HuggingFace Hub preferred) |
 | **Input**        | Raw audio waveform (not pre-extracted features)        |
+
+Jabberjay's own code is MIT and never redistributes weights — they are downloaded from the model's own repository on first use. A model under a more restrictive licence (for example DF Arena 1B, which is non-commercial) can still be included, but its licence must be flagged next to it in `README.md` and with a warning admonition in `docs/models.md`.
 
 ### Step-by-step
 
@@ -110,8 +112,14 @@ from Jabberjay.Utilities.model_cache import cached_loader
 
 @cached_loader(maxsize=4)
 def _load_model(device: str) -> MyModelClass:
-    return MyModelClass.from_pretrained(_MODEL_ID).eval().to(device)
+    return MyModelClass.from_pretrained(_MODEL_ID, strict=True).eval().to(device)
 ```
+
+When loading weights yourself:
+
+- load with `strict=True`, so a checkpoint that doesn't match your architecture fails loudly instead of leaving layers randomly initialised
+- load pickled checkpoints (`.bin`, `.pth`) with `torch.load(..., weights_only=True)`, and never use `trust_remote_code=True` — port the architecture instead (see `Models/DFArena/`)
+- if the checkpoint is pickled and the repository isn't Jabberjay's own, pin a reviewed commit with `download_pretrained_model(..., revision=<commit hash>)`
 
 If the model uses non-standard labels, `normalize_pipeline_scores()` calls `normalize_label()` internally — check `src/Jabberjay/Utilities/label_normalizer.py` and extend `_BONAFIDE_SUBSTR` / `_SPOOF_SUBSTR` (substring matching) or `_BONAFIDE_EXACT` / `_SPOOF_EXACT` (exact matching) if needed.
 
@@ -135,11 +143,17 @@ def _mymodel_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
 - add the new enum value to `TestEnums.test_model_members` in `tests/test_enums.py`
 - add a `predict()` unit test in `tests/test_models.py` (mock all model loading — the suite runs offline)
 - add a handler test to `TestDetectHandlers` in `tests/test_jabberjay.py`
+- for a custom architecture, add shape and state-dict layout tests in `tests/test_architecture.py`, and an opt-in real-weights test in `tests/test_integration.py` (run with `just test-integration`)
 
 **5. Update `CHANGELOG.md`** under `[Unreleased]` with the model name, HuggingFace link, and dataset.
 
-**6. Update the docs** — add a row to the models table in `README.md` and a
-section in `docs/models.md` (and `docs/cli.md` if it changes the CLI choices).
+**6. Update the docs and examples** — the model is listed in several places, so search for an existing model name (e.g. `SpectraAASIST3`) to find them all:
+
+- `README.md` — the model-family count and list, the models table, the CLI usage line and examples, the "Choosing a model" snippet, and the `scores` row
+- `docs/models.md` — the overview table, a full section, and the rule of thumb if it changes the recommendation
+- `docs/index.md`, `docs/getting-started.md`, and `docs/cli.md`
+- `examples/choosing_a_model.py`, `examples/exploring_results.py`, and `examples/run_all.py`
+- the abstracts in `CITATION.cff` and `.zenodo.json`
 
 **7. Verify everything passes:**
 

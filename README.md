@@ -2,7 +2,7 @@
 
 > One API. Every state-of-the-art synthetic voice detector.
 
-![Jabberjay social preview](social_preview.png)
+![Jabberjay social preview](https://raw.githubusercontent.com/MattyB95/Jabberjay/main/social_preview.png)
 
 <div align="center">
 
@@ -25,17 +25,17 @@
 
 Synthetic voice detection is a fragmented landscape — state-of-the-art models are scattered across research repositories, each with its own dependencies, input formats, and output conventions. Jabberjay brings them all under one consistent Python API and CLI so you can detect AI-generated speech without wrestling with model internals.
 
-- **Ten model families** — ViT, AST, Spectra0, SpectraAASIST, SpectraAASIST3, Wav2Vec2, HuBERT, WavLM, RawNet2, and a classical baseline
+- **Eleven model families** — ViT, AST, DFArena1B, Spectra0, SpectraAASIST, SpectraAASIST3, Wav2Vec2, HuBERT, WavLM, RawNet2, and a classical baseline
 - **Unified output** — every model returns the same `DetectionResult` with `label`, `confidence`, and `scores`
 - **Zero boilerplate** — pass a file path, get a verdict; models are downloaded and cached automatically
 - **Flexible** — use strings for quick experiments, enums for IDE autocomplete, or pre-load audio to run multiple models on the same clip
 
 ```
 $ jabberjay interview.wav
-Bonafide ✔️  (94.1% confidence, model=VIT)
+Bonafide ✔️ (94.1% confidence, model=VIT)
 
 $ jabberjay suspicious.wav -m HuBERT
-Spoof ❌  (97.8% confidence, model=HuBERT)
+Spoof ❌ (97.8% confidence, model=HuBERT)
 ```
 
 ---
@@ -116,6 +116,14 @@ print(result.confidence)   # 0.941
 | [lab260/Spectra-AASIST](https://huggingface.co/lab260/Spectra-AASIST)             | Wav2Vec2-XLS-R-300M + AASIST     |
 | [lab260/Spectra-AASIST3](https://huggingface.co/lab260/Spectra-AASIST3)           | Wav2Vec2-XLS-R-300M + KAN-AASIST |
 
+### DF Arena (Idiap)
+
+| **Model**                                                                                     | **Architecture**                | **License**     |
+|-----------------------------------------------------------------------------------------------|---------------------------------|-----------------|
+| [Speech-Arena-2025/DF_Arena_1B_V_1](https://huggingface.co/Speech-Arena-2025/DF_Arena_1B_V_1) | Wav2Vec2-XLS-R-1B + Conformer   | Non-commercial  |
+
+> **Note:** the DF Arena weights are licensed for research and non-commercial use only. Jabberjay's own code remains MIT.
+
 ### Other
 
 | **Model** | **Paper**                                                                   | **Codebase**                                                                |
@@ -130,7 +138,7 @@ print(result.confidence)   # 0.941
 ### Command Line Interface
 
 ```
-usage: jabberjay [-h] [-m {AST,Classical,HuBERT,RawNet2,Spectra0,SpectraAASIST,SpectraAASIST3,VIT,Wav2Vec2,WavLM}]
+usage: jabberjay [-h] [-m {AST,Classical,DFArena1B,HuBERT,RawNet2,Spectra0,SpectraAASIST,SpectraAASIST3,VIT,Wav2Vec2,WavLM}]
                  [-d {ASVspoof2019,ASVspoof5,VoxCelebSpoof}]
                  [-vis {ConstantQ,MelSpectrogram,MFCC}] [-v]
                  audio
@@ -141,6 +149,7 @@ usage: jabberjay [-h] [-m {AST,Classical,HuBERT,RawNet2,Spectra0,SpectraAASIST,S
 jabberjay audio.wav
 
 # Self-contained models (no dataset or visualisation required)
+jabberjay audio.wav -m DFArena1B
 jabberjay audio.wav -m Spectra0
 jabberjay audio.wav -m SpectraAASIST
 jabberjay audio.wav -m SpectraAASIST3
@@ -175,6 +184,7 @@ String names and enum values are both accepted:
 jj = Jabberjay()
 
 # Self-contained models — no extra arguments needed
+result = jj.detect("audio.wav", model="DFArena1B")
 result = jj.detect("audio.wav", model="Spectra0")
 result = jj.detect("audio.wav", model="SpectraAASIST")
 result = jj.detect("audio.wav", model="SpectraAASIST3")
@@ -209,7 +219,7 @@ Every call to `detect()` returns a `DetectionResult` regardless of the model use
 | `is_bonafide` | `bool`               | `True` if the audio is classified as genuine                                                                                  |
 | `confidence`  | `float`              | Confidence score for the top prediction (0.0–1.0)                                                                             |
 | `model`       | `Model`              | The model that produced this result                                                                                           |
-| `scores`      | `list[dict] \| None` | Full label/score breakdown for VIT, AST, Spectra0, SpectraAASIST, SpectraAASIST3, Wav2Vec2, HuBERT, and WavLM (sorted highest-first); `None` for Classical and RawNet2 |
+| `scores`      | `list[dict] \| None` | Full label/score breakdown for VIT, AST, DFArena1B, Spectra0, SpectraAASIST, SpectraAASIST3, Wav2Vec2, HuBERT, and WavLM (sorted highest-first); `None` for Classical and RawNet2 |
 
 ```python
 if result.is_bonafide:
@@ -253,11 +263,11 @@ The `examples/` directory contains focused, runnable scripts:
 
 | Script                                                  | What it shows                                    |
 |---------------------------------------------------------|--------------------------------------------------|
-| [`quickstart.py`](examples/quickstart.py)               | Minimum viable usage                             |
-| [`choosing_a_model.py`](examples/choosing_a_model.py)   | Every model family, string and enum APIs         |
-| [`preloading_audio.py`](examples/preloading_audio.py)   | Efficient multi-model runs with `jj.load()`      |
-| [`exploring_results.py`](examples/exploring_results.py) | All `DetectionResult` fields and score breakdown |
-| [`run_all.py`](examples/run_all.py)                     | Exhaustive sweep across every model combination  |
+| [`quickstart.py`](https://github.com/MattyB95/Jabberjay/blob/main/examples/quickstart.py)               | Minimum viable usage                             |
+| [`choosing_a_model.py`](https://github.com/MattyB95/Jabberjay/blob/main/examples/choosing_a_model.py)   | Every model family, string and enum APIs         |
+| [`preloading_audio.py`](https://github.com/MattyB95/Jabberjay/blob/main/examples/preloading_audio.py)   | Efficient multi-model runs with `jj.load()`      |
+| [`exploring_results.py`](https://github.com/MattyB95/Jabberjay/blob/main/examples/exploring_results.py) | All `DetectionResult` fields and score breakdown |
+| [`run_all.py`](https://github.com/MattyB95/Jabberjay/blob/main/examples/run_all.py)                     | Exhaustive sweep across every model combination  |
 
 ```bash
 just example                           # run quickstart
@@ -291,7 +301,7 @@ See `just --list` for all available commands.
 
 ## Contributing
 
-Contributions are welcome — especially new models! See [CONTRIBUTING.md](CONTRIBUTING.md) for a full guide.
+Contributions are welcome — especially new models! See [CONTRIBUTING.md](https://github.com/MattyB95/Jabberjay/blob/main/CONTRIBUTING.md) for a full guide.
 
 The quickest way to make an impact is to open a [model request issue](https://github.com/MattyB95/Jabberjay/issues/new?template=model_request.yml) with a HuggingFace link and licence details.
 
@@ -316,7 +326,7 @@ If you use Jabberjay in your research, please cite it. GitHub's **"Cite this rep
   title   = {Jabberjay},
   year    = {2026},
   url     = {https://github.com/MattyB95/Jabberjay},
-  version = {0.1.2},
+  version = {0.1.3},
   doi     = {10.5281/zenodo.19056977},
 }
 ```

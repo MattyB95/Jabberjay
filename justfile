@@ -15,6 +15,10 @@ test:
 test-verbose:
     uv run pytest -v
 
+# Run the opt-in integration tests (real weights; skips any not yet cached)
+test-integration:
+    uv run pytest -m integration --no-cov -rs
+
 # Run tests and open the HTML coverage report
 [unix]
 coverage:
@@ -40,7 +44,7 @@ format-check:
 
 # Type check with ty
 type-check:
-    uv run ty check src/
+    uv run ty check
 
 # Run lint, format, and type checks (used in CI)
 check: lint format-check type-check
@@ -77,13 +81,13 @@ docs-build:
 # Remove build artifacts
 [unix]
 clean:
-    rm -rf dist/ .pytest_cache/ htmlcov/ .coverage coverage.xml
+    rm -rf dist/ site/ .pytest_cache/ htmlcov/ .coverage coverage.xml
     find . -type d -name "__pycache__" -exec rm -rf {} +
     find . -type f -name "*.pyc" -delete
 
 [windows]
 clean:
-    Remove-Item -Recurse -Force dist, .pytest_cache, htmlcov, .coverage, coverage.xml -ErrorAction SilentlyContinue
+    Remove-Item -Recurse -Force dist, site, .pytest_cache, htmlcov, .coverage, coverage.xml -ErrorAction SilentlyContinue
     Get-ChildItem -Path . -Recurse -Filter "*.pyc" | Remove-Item -Force -ErrorAction SilentlyContinue
 
 # Run the CLI against a file (usage: just detect path/to/audio.wav)

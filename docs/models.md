@@ -1,6 +1,6 @@
 # Models
 
-Jabberjay bundles ten model families. Each is downloaded from Hugging Face Hub on first use and cached locally, then kept in memory for the lifetime of the process so repeated `detect()` calls for the same model skip both the download and the reload.
+Jabberjay bundles eleven model families. Each is downloaded from Hugging Face Hub on first use and cached locally, then kept in memory for the lifetime of the process so repeated `detect()` calls for the same model skip both the download and the reload.
 
 ---
 
@@ -10,6 +10,7 @@ Jabberjay bundles ten model families. Each is downloaded from Hugging Face Hub o
 |---------------------------|-------------------------------|----------------------------------------|----------------------------|
 | [VIT](#vit)               | Vision Transformer            | ASVspoof2019, ASVspoof5, VoxCelebSpoof | `dataset`, `visualisation` |
 | [AST](#ast)               | Audio Spectrogram Transformer | ASVspoof2019, ASVspoof5, VoxCelebSpoof | `dataset`                  |
+| [DFArena1B](#dfarena1b)       | Wav2Vec2-1B + Conformer       | ASVspoof19/24, Codecfake, MLAAD, +5    | —                          |
 | [Spectra0](#spectra0)         | Wav2Vec2 + ECAPA-TDNN         | ASVspoof19/21, ASVspoof5, In-the-Wild  | —                          |
 | [SpectraAASIST](#spectraaasist)   | Wav2Vec2 + AASIST             | ASVspoof19/21, ASVspoof5, In-the-Wild  | —                          |
 | [SpectraAASIST3](#spectraaasist3) | Wav2Vec2 + KAN-AASIST         | ASVspoof19/21, ASVspoof5, In-the-Wild  | —                          |
@@ -21,7 +22,7 @@ Jabberjay bundles ten model families. Each is downloaded from Hugging Face Hub o
 
 **Simple rule of thumb:**
 
-- For the lowest error rate on In-the-Wild audio — use **SpectraAASIST3** (EER 0.961%)
+- For the lowest error rate on In-the-Wild audio — use **DFArena1B** (EER 0.91%), or **SpectraAASIST3** (EER 0.961%) for a quarter of the download and a permissive license
 - For a quick, general-purpose result — use **WavLM** or **HuBERT**
 - For a lightweight baseline with no deep learning — use **Classical**
 - To sweep all models and compare — use `jj.load()` once, then call `jj.detect()` for each
@@ -68,6 +69,33 @@ jj.detect("audio.wav", model="AST", dataset="ASVspoof2019")
 
 !!! note
     `dataset` is optional for AST and defaults to `VoxCelebSpoof` if not specified.
+
+---
+
+## DFArena1B
+
+`Speech-Arena-2025/DF_Arena_1B_V_1`
+
+SSL encoder (Wav2Vec2-XLS-R-1B) → attention-pooled, sigmoid-gated fusion of every encoder layer → Conformer classifier with a class token. Released by the [Speech DF Arena](https://huggingface.co/spaces/Speech-Arena-2025/Speech-DF-Arena) team ([Kulkarni et al., 2026](https://arxiv.org/abs/2603.06164)) and trained on the widest data mix in Jabberjay: ASVspoof 2019 and 2024, Codecfake, LibriSeVoc, DFADD, CTRSVDD, SpoofCeleb, MLAAD, and EnvSDD.
+
+| Benchmark       | EER (%) |
+|-----------------|---------|
+| ASVspoof19 LA   | 1.14    |
+| ASVspoof21 LA   | 4.66    |
+| ASVspoof21 DF   | 1.75    |
+| ASVspoof5       | 17.25   |
+| ADD2022 Track 1 | 22.21   |
+| In-the-Wild     | 0.91    |
+
+```python
+jj.detect("audio.wav", model="DFArena1B")
+```
+
+!!! warning "Non-commercial license"
+    The DF Arena weights are released under a **non-commercial** license (research, teaching, and personal use only) — see the [model's LICENSE](https://huggingface.co/Speech-Arena-2025/DF_Arena_1B_V_1/blob/main/LICENSE.txt). Jabberjay's own code remains MIT; commercial use of this model requires a separate license from Idiap.
+
+!!! note
+    Downloads ~4.6 GB of weights on first run, by far the largest model in Jabberjay, and needs roughly 5 GB of memory to run. The checkpoint is pinned to a reviewed revision and loaded with `weights_only=True`; no remote code is executed.
 
 ---
 

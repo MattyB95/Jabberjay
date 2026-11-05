@@ -1,7 +1,7 @@
 """
 choosing_a_model.py — how to select different models.
 
-Jabberjay bundles ten model families. This file shows how to use each
+Jabberjay bundles eleven model families. This file shows how to use each
 one, using both plain strings (convenient) and enums (autocomplete-friendly).
 
 Run:
@@ -19,6 +19,7 @@ AUDIO = "res/bonafide/bonafide.flac"
 # Self-contained models (no dataset or visualisation required)
 print(jj.detect(AUDIO, model="Classical"))
 print(jj.detect(AUDIO, model="RawNet2"))
+print(jj.detect(AUDIO, model="DFArena1B"))
 print(jj.detect(AUDIO, model="Spectra0"))
 print(jj.detect(AUDIO, model="SpectraAASIST"))
 print(jj.detect(AUDIO, model="SpectraAASIST3"))

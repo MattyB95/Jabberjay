@@ -97,11 +97,12 @@ class TestEnableLogging:
     def test_enable_logging_only_adds_one_handler(self):
         from loguru import logger as _logger
 
-        before = len(_logger._core.handlers)
+        # loguru exposes no public handler count, so read its private core
+        before = len(_logger._core.handlers)  # ty: ignore[unresolved-attribute]
         Jabberjay.enable_logging()
         Jabberjay.enable_logging()
         Jabberjay.enable_logging()
-        after = len(_logger._core.handlers)
+        after = len(_logger._core.handlers)  # ty: ignore[unresolved-attribute]
         assert after - before == 1
 
 
@@ -222,6 +223,7 @@ class TestResultFromScores:
             {"label": "Spoof", "score": 0.9},
         ]
         result = Jabberjay._result_from_scores(scores, Model.AST)
+        assert result.scores is not None
         assert result.scores[0]["score"] == 0.9
         assert result.scores[1]["score"] == 0.1
 
@@ -231,6 +233,7 @@ class TestResultFromScores:
             {"label": "Spoof", "score": 0.4},
         ]
         result = Jabberjay._result_from_scores(scores, Model.HuBERT)
+        assert result.scores is not None
         assert len(result.scores) == 2
 
 
@@ -347,6 +350,12 @@ class TestDetectHandlers:
             result = self.jj.detect(self.audio, model=Model.SpectraAASIST3)
         assert isinstance(result, DetectionResult)
         assert result.model == Model.SpectraAASIST3
+
+    def test_df_arena_1b_handler(self):
+        with patch("Jabberjay.Models.DFArena.run.predict", return_value=self.scores):
+            result = self.jj.detect(self.audio, model=Model.DFArena1B)
+        assert isinstance(result, DetectionResult)
+        assert result.model == Model.DFArena1B
 
     def test_wav2vec2_handler(self):
         with patch("Jabberjay.Models.Wav2Vec2.run.predict", return_value=self.scores):

@@ -6,6 +6,7 @@ class TestEnums:
         assert {m.value for m in Model} == {
             "AST",
             "Classical",
+            "DFArena1B",
             "HuBERT",
             "RawNet2",
             "Spectra0",

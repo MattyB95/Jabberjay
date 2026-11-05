@@ -26,12 +26,13 @@ def load_pretrained(
     return model.eval().to(device)
 
 
-def preprocess(y: np.ndarray, sr: float) -> torch.Tensor:
-    """Resample, apply preemphasis, and pad/trim to _MAX_LEN samples."""
+def preprocess(y: np.ndarray, sr: float, preemphasis: bool = True) -> torch.Tensor:
+    """Resample, optionally apply preemphasis, and pad/trim to _MAX_LEN samples."""
     audio = torch.from_numpy(y).float()
     if sr != _TARGET_SR:
         audio = torchaudio.functional.resample(audio, int(sr), _TARGET_SR)
-    audio = torchaudio.functional.preemphasis(audio.unsqueeze(0)).squeeze(0)
+    if preemphasis:
+        audio = torchaudio.functional.preemphasis(audio.unsqueeze(0)).squeeze(0)
     x_len = audio.shape[0]
     if x_len == 0:
         raise ValueError(
