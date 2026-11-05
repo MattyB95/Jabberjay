@@ -16,6 +16,7 @@ class TestEnumAction:
 
     def test_init_sets_choices_from_enum_names(self):
         action = EnumAction(option_strings=["--model"], dest="model", type=Model)
+        assert action.choices is not None
         assert set(action.choices) == {m.name for m in Model}
 
     def test_call_sets_enum_value_via_parser(self):

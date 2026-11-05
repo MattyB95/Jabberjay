@@ -44,7 +44,7 @@ format-check:
 
 # Type check with ty
 type-check:
-    uv run ty check src/
+    uv run ty check
 
 # Run lint, format, and type checks (used in CI)
 check: lint format-check type-check

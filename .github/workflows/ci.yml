@@ -51,7 +51,7 @@ jobs:
         run: uv run black --check .
 
       - name: Type-check with ty
-        run: uv run ty check src/
+        run: uv run ty check
 
       - name: Audit dependencies for known vulnerabilities
         run: uv audit

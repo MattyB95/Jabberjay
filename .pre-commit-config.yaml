@@ -37,5 +37,5 @@ repos:
       - id: ty-check
         name: Type-check with ty
         language: system
-        entry: uv run ty check src/
+        entry: uv run ty check
         pass_filenames: false
