@@ -20,7 +20,7 @@ jabberjay [-h] [-m MODEL] [-d DATASET] [-vis VISUALISATION] [-v] audio
 
 ## Valid values
 
-**Models:** `AST`, `Classical`, `HuBERT`, `RawNet2`, `Spectra0`, `SpectraAASIST`, `SpectraAASIST3`, `VIT`, `Wav2Vec2`, `WavLM`
+**Models:** `AST`, `Classical`, `DFArena1B`, `HuBERT`, `RawNet2`, `Spectra0`, `SpectraAASIST`, `SpectraAASIST3`, `VIT`, `Wav2Vec2`, `WavLM`
 
 **Datasets:** `ASVspoof2019`, `ASVspoof5`, `VoxCelebSpoof`
 
@@ -33,6 +33,7 @@ jabberjay [-h] [-m MODEL] [-d DATASET] [-vis VISUALISATION] [-v] audio
 jabberjay interview.wav
 
 # Choose a model
+jabberjay interview.wav -m DFArena1B
 jabberjay interview.wav -m Spectra0
 jabberjay interview.wav -m HuBERT
 jabberjay interview.wav -m Wav2Vec2

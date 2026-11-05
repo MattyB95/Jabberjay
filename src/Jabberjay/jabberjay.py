@@ -143,8 +143,8 @@ class Jabberjay:
             ``ConstantQ`` and ``VoxCelebSpoof`` respectively so a bare
             ``jj.detect("audio.flac")`` works out of the box.
             AST requires ``dataset``; defaults to ``VoxCelebSpoof``.
-            All other models (Classical, RawNet2, Spectra0, SpectraAASIST,
-            SpectraAASIST3, HuBERT, Wav2Vec2, WavLM) ignore both.
+            All other models (Classical, DFArena1B, RawNet2, Spectra0,
+            SpectraAASIST, SpectraAASIST3, HuBERT, Wav2Vec2, WavLM) ignore both.
         """
         # Coerce strings to enums
         if isinstance(model, str):
@@ -176,6 +176,8 @@ class Jabberjay:
                 return self._ast_handler(y=y, sr=sr, dataset=dataset)
             case Model.Classical:
                 return self._classical_handler(audio=audio)
+            case Model.DFArena1B:
+                return self._df_arena_1b_handler(y=y, sr=sr)
             case Model.HuBERT:
                 return self._hubert_handler(y=y, sr=sr)
             case Model.RawNet2:
@@ -294,6 +296,13 @@ class Jabberjay:
         scores = SpectraAASIST3.predict(y=y, sr=sr)
         logger.debug(f"Spectra-AASIST3 predictions: {scores}")
         return self._result_from_scores(scores, Model.SpectraAASIST3)
+
+    def _df_arena_1b_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
+        import Jabberjay.Models.DFArena.run as DFArena
+
+        scores = DFArena.predict(y=y, sr=sr)
+        logger.debug(f"DF-Arena-1B predictions: {scores}")
+        return self._result_from_scores(scores, Model.DFArena1B)
 
     def _wav2vec2_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
         import Jabberjay.Models.Wav2Vec2.run as Wav2Vec2

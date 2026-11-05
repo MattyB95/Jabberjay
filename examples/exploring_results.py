@@ -35,8 +35,8 @@ print()
 
 # ── Full score breakdown ──────────────────────────────────────────────────
 # `scores` is a list[{"label": str, "score": float}] sorted highest-first.
-# Populated for VIT, AST, Spectra0, SpectraAASIST, SpectraAASIST3, Wav2Vec2,
-# HuBERT, and WavLM; it is None for Classical and RawNet2.
+# Populated for VIT, AST, DFArena1B, Spectra0, SpectraAASIST, SpectraAASIST3,
+# Wav2Vec2, HuBERT, and WavLM; it is None for Classical and RawNet2.
 
 result = jj.detect(
     AUDIO,

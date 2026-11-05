@@ -436,6 +436,15 @@ class TestSpectraPreprocess:
         out = preprocess(np.ones(8000, dtype=np.float32), sr=8000.0)
         assert out.shape == (1, _MAX_LEN)
 
+    def test_preemphasis_can_be_disabled(self):
+        from Jabberjay.Models.Spectra.shared import preprocess
+
+        y = np.random.default_rng(0).standard_normal(1000).astype(np.float32)
+        raw = preprocess(y, sr=16000.0, preemphasis=False)
+        emphasised = preprocess(y, sr=16000.0)
+        assert np.allclose(raw[0, :1000].numpy(), y)
+        assert not np.allclose(emphasised[0, :1000].numpy(), y)
+
 
 class _SpectraModelTestBase:
     """Shared test logic for all Spectra models that return softmax scores."""
@@ -640,6 +649,93 @@ class TestClassicalPredict:
 
         mock_download.assert_called_once()
         mock_load.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# DF Arena 1B
+# ---------------------------------------------------------------------------
+
+
+class TestDFArenaPredict:
+    def _predict(self, logits, state_dict=None):
+        """Run predict() with the model, download, and torch.load all mocked."""
+        import torch
+
+        from Jabberjay.Models.DFArena.run import predict
+
+        mock_model = MagicMock()
+        mock_model.eval.return_value = mock_model
+        mock_model.to.return_value = mock_model
+        mock_model.return_value = torch.tensor([logits])
+        with (
+            patch(
+                "Jabberjay.Models.DFArena.run.DFArena1B", return_value=mock_model
+            ) as mock_cls,
+            patch(
+                "Jabberjay.Models.DFArena.run.download_pretrained_model",
+                return_value="/fake/pytorch_model.bin",
+            ) as mock_download,
+            patch("torch.load", return_value=state_dict or {}) as mock_load,
+        ):
+            result = predict(y=AUDIO[0], sr=AUDIO[1])
+        return result, mock_model, mock_cls, mock_download, mock_load
+
+    def test_returns_bonafide_and_spoof_scores(self):
+        result, *_ = self._predict([0.2, 0.8])
+        assert {r["label"] for r in result} == {"Bonafide", "Spoof"}
+
+    def test_logit_order_is_spoof_then_bonafide(self):
+        """config.json maps id 0 -> spoof and id 1 -> bonafide."""
+        result, *_ = self._predict([-2.0, 3.0])
+        bonafide = next(r for r in result if r["label"] == "Bonafide")
+        spoof = next(r for r in result if r["label"] == "Spoof")
+        assert bonafide["score"] > spoof["score"]
+
+    def test_scores_sum_to_one(self):
+        result, *_ = self._predict([0.3, 0.7])
+        assert sum(r["score"] for r in result) == pytest.approx(1.0, abs=1e-5)
+
+    def test_downloads_pinned_revision(self):
+        from Jabberjay.Models.DFArena.run import _REVISION
+
+        *_, mock_download, _ = self._predict([0.2, 0.8])
+        assert mock_download.call_args.kwargs["revision"] == _REVISION
+
+    def test_loads_weights_safely_and_strictly(self):
+        *_, mock_model, _, _, mock_load = self._predict([0.2, 0.8])
+        assert mock_load.call_args.kwargs["weights_only"] is True
+        assert mock_model.load_state_dict.call_args.kwargs["strict"] is True
+
+    def test_strips_wrapper_prefix_from_state_dict_keys(self):
+        import torch
+
+        state_dict = {
+            "backbone.fc0.weight": torch.zeros(1),
+            "backbone.conformer.fc5.bias": torch.zeros(2),
+        }
+        _, mock_model, *_ = self._predict([0.2, 0.8], state_dict=state_dict)
+        loaded = mock_model.load_state_dict.call_args.args[0]
+        assert set(loaded) == {"fc0.weight", "conformer.fc5.bias"}
+
+    def test_model_is_loaded_once_across_repeated_calls(self):
+        import torch
+
+        from Jabberjay.Models.DFArena.run import predict
+
+        mock_model = MagicMock()
+        mock_model.eval.return_value = mock_model
+        mock_model.to.return_value = mock_model
+        mock_model.return_value = torch.tensor([[0.2, 0.8]])
+        with (
+            patch(
+                "Jabberjay.Models.DFArena.run.DFArena1B", return_value=mock_model
+            ) as mock_cls,
+            patch("Jabberjay.Models.DFArena.run.download_pretrained_model"),
+            patch("torch.load", return_value={}),
+        ):
+            predict(y=AUDIO[0], sr=AUDIO[1])
+            predict(y=AUDIO[0], sr=AUDIO[1])
+        mock_cls.assert_called_once()
 
 
 # ---------------------------------------------------------------------------

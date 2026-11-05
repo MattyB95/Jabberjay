@@ -33,6 +33,7 @@ def row(tag: str, result) -> None:
 for model in (
     Model.Classical,
     Model.RawNet2,
+    Model.DFArena1B,
     Model.Spectra0,
     Model.SpectraAASIST,
     Model.SpectraAASIST3,

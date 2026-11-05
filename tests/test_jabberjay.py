@@ -348,6 +348,12 @@ class TestDetectHandlers:
         assert isinstance(result, DetectionResult)
         assert result.model == Model.SpectraAASIST3
 
+    def test_df_arena_1b_handler(self):
+        with patch("Jabberjay.Models.DFArena.run.predict", return_value=self.scores):
+            result = self.jj.detect(self.audio, model=Model.DFArena1B)
+        assert isinstance(result, DetectionResult)
+        assert result.model == Model.DFArena1B
+
     def test_wav2vec2_handler(self):
         with patch("Jabberjay.Models.Wav2Vec2.run.predict", return_value=self.scores):
             result = self.jj.detect(self.audio, model=Model.Wav2Vec2)

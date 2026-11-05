@@ -42,6 +42,7 @@ Pass a model name as a string, or use the `Model` enum for IDE autocomplete.
     # Self-contained models — no extra arguments needed
     jj.detect("audio.wav", model="Classical")
     jj.detect("audio.wav", model="RawNet2")
+    jj.detect("audio.wav", model="DFArena1B")
     jj.detect("audio.wav", model="Spectra0")
     jj.detect("audio.wav", model="SpectraAASIST")
     jj.detect("audio.wav", model="SpectraAASIST3")
@@ -92,6 +93,7 @@ audio = jj.load("interview.wav")
 results = [
     jj.detect(audio, model=Model.Classical),
     jj.detect(audio, model=Model.RawNet2),
+    jj.detect(audio, model=Model.DFArena1B),
     jj.detect(audio, model=Model.Spectra0),
     jj.detect(audio, model=Model.SpectraAASIST),
     jj.detect(audio, model=Model.SpectraAASIST3),
