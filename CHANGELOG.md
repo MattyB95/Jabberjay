@@ -44,7 +44,10 @@ _Nothing yet._
   classifiers, and black's `target-version`. Verified locally on 3.15.2: the
   unit suite passes and the full model sweep gives results identical to 3.14.
   PyYAML has no 3.15 wheels yet, so it builds from source on install (pure
-  Python, without the optional libyaml C extension)
+  Python, without the optional libyaml C extension). 3.15 is also now the
+  default development version: `.python-version`, `ty`'s target, the lint
+  and docs CI jobs, the weekly integration sweep, and the uploaded coverage
+  report all use it. 3.12–3.14 remain fully supported and tested
 - **`just test-integration`** — runs the opt-in integration tests
 
 ### Fixed
