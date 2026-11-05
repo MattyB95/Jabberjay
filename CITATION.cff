@@ -23,8 +23,8 @@ repository-code: "https://github.com/MattyB95/Jabberjay"
 url: "https://mattyb95.github.io/Jabberjay"
 repository-artifact: "https://pypi.org/project/Jabberjay/"
 license: MIT
-version: 0.1.2
-date-released: "2026-10-25"
+version: 0.1.3
+date-released: "2026-11-05"
 keywords:
   - synthetic voice detection
   - deepfake detection
