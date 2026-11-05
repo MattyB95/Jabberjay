@@ -34,7 +34,7 @@ class DetectionResult:
     """The model used to produce this result."""
 
     scores: list[PredictionScore] | None = field(default=None)
-    """Full label/score breakdown from transformer models; None for Classical and RawNet2."""
+    """Full label/score breakdown, sorted highest-first; None for Classical and RawNet2."""
 
     def __str__(self) -> str:
         verdict = "Bonafide ✔️" if self.is_bonafide else "Spoof ❌"

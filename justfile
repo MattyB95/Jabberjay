@@ -81,13 +81,13 @@ docs-build:
 # Remove build artifacts
 [unix]
 clean:
-    rm -rf dist/ .pytest_cache/ htmlcov/ .coverage coverage.xml
+    rm -rf dist/ site/ .pytest_cache/ htmlcov/ .coverage coverage.xml
     find . -type d -name "__pycache__" -exec rm -rf {} +
     find . -type f -name "*.pyc" -delete
 
 [windows]
 clean:
-    Remove-Item -Recurse -Force dist, .pytest_cache, htmlcov, .coverage, coverage.xml -ErrorAction SilentlyContinue
+    Remove-Item -Recurse -Force dist, site, .pytest_cache, htmlcov, .coverage, coverage.xml -ErrorAction SilentlyContinue
     Get-ChildItem -Path . -Recurse -Filter "*.pyc" | Remove-Item -Force -ErrorAction SilentlyContinue
 
 # Run the CLI against a file (usage: just detect path/to/audio.wav)

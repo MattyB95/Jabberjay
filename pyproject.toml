@@ -141,3 +141,7 @@ invalid-mutable-override = "ignore"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/Jabberjay"]
+
+[tool.hatch.build.targets.sdist]
+# The README links the social preview by URL, so it isn't needed to build
+exclude = ["social_preview.png"]

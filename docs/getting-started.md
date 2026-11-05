@@ -105,10 +105,10 @@ results = [
               visualisation=Visualisation.ConstantQ),
 ]
 
-print(f"{'Model':<12}  {'Label':<10}  {'Confidence':>10}")
-print("-" * 38)
+print(f"{'Model':<15}  {'Label':<10}  {'Confidence':>10}")
+print("-" * 41)
 for r in results:
-    print(f"{r.model.value:<12}  {r.label:<10}  {r.confidence:>10.1%}")
+    print(f"{r.model.value:<15}  {r.label:<10}  {r.confidence:>10.1%}")
 ```
 
 ---
@@ -126,8 +126,8 @@ if result.is_bonafide:
 else:
     print(f"Synthetic voice detected ({result.confidence:.1%} confidence)")
 
-# Full score breakdown — available for transformer models (VIT, AST, Spectra0, SpectraAASIST, SpectraAASIST3, Wav2Vec2, HuBERT, WavLM)
-# None for Classical and RawNet2
+# Full score breakdown — available for every model except Classical and
+# RawNet2, where it is None
 if result.scores:
     for entry in result.scores:
         bar = "█" * int(entry["score"] * 30)

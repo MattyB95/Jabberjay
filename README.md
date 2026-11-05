@@ -2,7 +2,7 @@
 
 > One API. Every state-of-the-art synthetic voice detector.
 
-![Jabberjay social preview](social_preview.png)
+![Jabberjay social preview](https://raw.githubusercontent.com/MattyB95/Jabberjay/main/social_preview.png)
 
 <div align="center">
 
@@ -32,10 +32,10 @@ Synthetic voice detection is a fragmented landscape — state-of-the-art models 
 
 ```
 $ jabberjay interview.wav
-Bonafide ✔️  (94.1% confidence, model=VIT)
+Bonafide ✔️ (94.1% confidence, model=VIT)
 
 $ jabberjay suspicious.wav -m HuBERT
-Spoof ❌  (97.8% confidence, model=HuBERT)
+Spoof ❌ (97.8% confidence, model=HuBERT)
 ```
 
 ---
@@ -263,11 +263,11 @@ The `examples/` directory contains focused, runnable scripts:
 
 | Script                                                  | What it shows                                    |
 |---------------------------------------------------------|--------------------------------------------------|
-| [`quickstart.py`](examples/quickstart.py)               | Minimum viable usage                             |
-| [`choosing_a_model.py`](examples/choosing_a_model.py)   | Every model family, string and enum APIs         |
-| [`preloading_audio.py`](examples/preloading_audio.py)   | Efficient multi-model runs with `jj.load()`      |
-| [`exploring_results.py`](examples/exploring_results.py) | All `DetectionResult` fields and score breakdown |
-| [`run_all.py`](examples/run_all.py)                     | Exhaustive sweep across every model combination  |
+| [`quickstart.py`](https://github.com/MattyB95/Jabberjay/blob/main/examples/quickstart.py)               | Minimum viable usage                             |
+| [`choosing_a_model.py`](https://github.com/MattyB95/Jabberjay/blob/main/examples/choosing_a_model.py)   | Every model family, string and enum APIs         |
+| [`preloading_audio.py`](https://github.com/MattyB95/Jabberjay/blob/main/examples/preloading_audio.py)   | Efficient multi-model runs with `jj.load()`      |
+| [`exploring_results.py`](https://github.com/MattyB95/Jabberjay/blob/main/examples/exploring_results.py) | All `DetectionResult` fields and score breakdown |
+| [`run_all.py`](https://github.com/MattyB95/Jabberjay/blob/main/examples/run_all.py)                     | Exhaustive sweep across every model combination  |
 
 ```bash
 just example                           # run quickstart
@@ -301,7 +301,7 @@ See `just --list` for all available commands.
 
 ## Contributing
 
-Contributions are welcome — especially new models! See [CONTRIBUTING.md](CONTRIBUTING.md) for a full guide.
+Contributions are welcome — especially new models! See [CONTRIBUTING.md](https://github.com/MattyB95/Jabberjay/blob/main/CONTRIBUTING.md) for a full guide.
 
 The quickest way to make an impact is to open a [model request issue](https://github.com/MattyB95/Jabberjay/issues/new?template=model_request.yml) with a HuggingFace link and licence details.
 

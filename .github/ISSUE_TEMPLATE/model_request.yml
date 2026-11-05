@@ -34,8 +34,8 @@ body:
     id: licence
     attributes:
       label: Licence
-      description: Jabberjay can only include Apache 2.0 or MIT licensed models.
-      placeholder: "Apache 2.0 / MIT / other"
+      description: Apache 2.0 or MIT preferred. Other licences (including non-commercial) can be included if the weights are publicly downloadable for research use; they are clearly flagged in the docs.
+      placeholder: "Apache 2.0 / MIT / CC BY-NC 4.0 / other"
     validations:
       required: true
 
