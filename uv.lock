@@ -1066,7 +1066,7 @@ wheels = [
 
 [[package]]
 name = "librosa"
-version = "1.0.0"
+version = "1.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "decorator" },
@@ -1081,9 +1081,9 @@ dependencies = [
     { name = "soundfile" },
     { name = "soxr" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8e/c1/ce66b20953b7370421dd13d22b4e04e401346c824ceacb9f4e722eec84dc/librosa-1.0.0.tar.gz", hash = "sha256:73ed480d4022e436e85dfa6f6b06ff38a259b9210039ac99939cd64854b61a57", size = 377965, upload-time = "2026-08-11T15:37:37.013Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ad/f4/133b113a57c2fc2051feb38610ad5c7145f8d9091ab467683c3f18adf4fe/librosa-1.0.1.tar.gz", hash = "sha256:e3ab6451078d76bf8057a8262bc44c23fe3f95105cfed8acb415c3427b72b949", size = 388585, upload-time = "2026-11-12T16:58:33.934Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/96/14/0b2e4cc8017796dc8f69de740708601832c1e8d5377166eedb4db0a92264/librosa-1.0.0-py3-none-any.whl", hash = "sha256:5910a6c0e1b2e494b92758c1615a7acbd0515a2315e138927ba2982f2af88857", size = 294628, upload-time = "2026-08-11T15:37:35.455Z" },
+    { url = "https://files.pythonhosted.org/packages/4c/f6/947283574368245414b3143f329c3c15c298b2ffe185eb08febf0188a49f/librosa-1.0.1-py3-none-any.whl", hash = "sha256:bc26f947ca08307c5ff116b219560372aa340213d7f3cc2cf1f3f02b4e251147", size = 301475, upload-time = "2026-11-12T16:58:27.304Z" },
 ]
 
 [[package]]
