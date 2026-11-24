@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -560,6 +560,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#Jabberjay.jabberjay.Jabberjay.clear_cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clear_cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#Jabberjay.jabberjay.Jabberjay.detect" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -866,6 +877,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#Jabberjay.jabberjay.Jabberjay.clear_cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clear_cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#Jabberjay.jabberjay.Jabberjay.detect" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1157,7 +1179,7 @@
 pre-loaded <code>(samples, sample_rate)</code> tuple. Model weights are downloaded
 from Hugging Face Hub on first use and cached in memory for the lifetime
 of the process, so repeated calls for the same model skip both the
-download and the reload.</p>
+download and the reload. Call <code>clear_cache()</code> to release them.</p>
 <p>Example::</p>
 <div class="highlight"><pre><span></span><code>jj = Jabberjay()
 result = jj.detect("audio.wav")            # default VIT model
@@ -1184,6 +1206,34 @@ result = jj.detect("audio.wav", model="HuBERT")
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="Jabberjay.jabberjay.Jabberjay.clear_cache" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">clear_cache</span><span class="p">()</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Release every loaded model and return its memory.</p>
+<p>Models stay loaded after their first <code>detect()</code> call so later calls
+are fast. Running many different models in one process adds up —
+several GB each for DFArena1B and the Spectra family — so call this
+once you're done with a model (or between models in a sweep) to free
+RAM and GPU memory. The next <code>detect()</code> reloads from the local
+Hugging Face cache without re-downloading.</p>
+
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
@@ -1215,11 +1265,13 @@ result = jj.detect("audio.wav", model="HuBERT")
                 <code>audio</code>
             </td>
             <td>
-                  <code><span title="str">str</span> | <span title="pathlib.Path">Path</span> | <span title="Jabberjay.jabberjay.Audio">Audio</span></code>
+                  <code><span title="str">str</span> | <span title="os.PathLike">PathLike</span> | <span title="Jabberjay.jabberjay.Audio">Audio</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Path to an audio file, or a pre-loaded (samples, sample_rate) tuple.</p>
+                <p>Path to an audio file, or a pre-loaded <code>(samples,
+sample_rate)</code> tuple at any sample rate. Samples may be float
+or integer PCM, mono or multi-channel (downmixed to mono).</p>
               </div>
             </td>
             <td>
@@ -1235,7 +1287,8 @@ result = jj.detect("audio.wav", model="HuBERT")
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Model to use. Accepts a Model enum value or its string name (e.g. "VIT").</p>
+                <p>Model to use — a Model member or its name, case-insensitive
+(e.g. <code>"VIT"</code> or <code>"vit"</code>).</p>
               </div>
             </td>
             <td>
@@ -1251,7 +1304,7 @@ result = jj.detect("audio.wav", model="HuBERT")
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Visualisation for VIT models. Accepts Visualisation enum or string.</p>
+                <p>Spectrogram type for VIT. Member or name.</p>
               </div>
             </td>
             <td>
@@ -1267,7 +1320,7 @@ result = jj.detect("audio.wav", model="HuBERT")
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Dataset the model was trained on. Accepts Dataset enum or string.</p>
+                <p>Training dataset for VIT and AST. Member or name.</p>
               </div>
             </td>
             <td>
@@ -1289,7 +1342,7 @@ result = jj.detect("audio.wav", model="HuBERT")
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-internal" title="Jabberjay.jabberjay.DetectionResult(label, is_bonafide, confidence, model, scores=None)
+                  <code><a class="autorefs autorefs-internal" title="Jabberjay.jabberjay.DetectionResult(label, is_bonafide, confidence, model, scores=list())
 
   
       dataclass
@@ -1297,7 +1350,21 @@ result = jj.detect("audio.wav", model="HuBERT")
             </td>
             <td>
               <div class="doc-md-description">
-                <p>DetectionResult with label, confidence, and full scores where available.</p>
+                <p>DetectionResult with the label, its confidence, and the scores</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="Jabberjay.jabberjay.DetectionResult(label, is_bonafide, confidence, model, scores=list())
+
+  
+      dataclass
+   (Jabberjay.jabberjay.DetectionResult)" href="#Jabberjay.jabberjay.DetectionResult">DetectionResult</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>for both classes.</p>
               </div>
             </td>
           </tr>
@@ -1316,21 +1383,23 @@ result = jj.detect("audio.wav", model="HuBERT")
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="ValueError">ValueError</span></code>
+                  <code><span title="FileNotFoundError">FileNotFoundError</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If required arguments are missing, or audio is empty.</p>
+                <p>If <code>audio</code> is a path that doesn't exist.</p>
               </div>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                  <code><span title="KeyError">KeyError</span></code>
+                  <code><span title="ValueError">ValueError</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>If an unrecognised string is passed for model, dataset, or visualisation.</p>
+                <p>If the audio is empty, non-finite, wrongly shaped or
+unreadable, a required argument is <code>None</code>, or a name is
+unrecognised (<code>InvalidChoiceError</code>, also a <code>KeyError</code>).</p>
               </div>
             </td>
           </tr>
@@ -1493,7 +1562,9 @@ Jabberjay.enable_logging("INFO")    # skip debug messages
 
     <div class="doc doc-contents ">
 
-        <p>Load an audio file and return (samples, sample_rate).</p>
+        <p>Load an audio file as mono at its native rate: (samples, sample_rate).</p>
+<p>No resampling happens here; each model resamples to the rate it was
+trained at, so audio is only ever resampled once.</p>
 
 
     </div>
@@ -1515,7 +1586,7 @@ Jabberjay.enable_logging("INFO")    # skip debug messages
 
 
 <h3 id="Jabberjay.jabberjay.DetectionResult" class="doc doc-heading">
-              <code class="highlight language-python"><span class="n">Jabberjay</span><span class="o">.</span><span class="n">jabberjay</span><span class="o">.</span><span class="n">DetectionResult</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">is_bonafide</span><span class="p">,</span> <span class="n">confidence</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">scores</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+              <code class="highlight language-python"><span class="n">Jabberjay</span><span class="o">.</span><span class="n">jabberjay</span><span class="o">.</span><span class="n">DetectionResult</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">is_bonafide</span><span class="p">,</span> <span class="n">confidence</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">scores</span><span class="o">=</span><span class="nb">list</span><span class="p">())</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
@@ -1641,7 +1712,7 @@ Jabberjay.enable_logging("INFO")    # skip debug messages
 
 
 <h4 id="Jabberjay.jabberjay.DetectionResult.scores" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">scores</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">scores</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
@@ -1653,7 +1724,7 @@ Jabberjay.enable_logging("INFO")    # skip debug messages
 
     <div class="doc doc-contents ">
 
-        <p>Full label/score breakdown, sorted highest-first; None for Classical and RawNet2.</p>
+        <p>Full label/score breakdown for both classes, sorted highest-first.</p>
 
     </div>
 
@@ -1874,7 +1945,7 @@ Jabberjay.enable_logging("INFO")    # skip debug messages
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>

@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -492,6 +492,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Choosing a model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-much-audio-each-model-sees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How much audio each model sees
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -712,6 +729,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Choosing a model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-much-audio-each-model-sees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How much audio each model sees
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -856,7 +890,8 @@
 
 
 <h1 id="models">Models</h1>
-<p>Jabberjay bundles eleven model families. Each is downloaded from Hugging Face Hub on first use and cached locally, then kept in memory for the lifetime of the process so repeated <code>detect()</code> calls for the same model skip both the download and the reload.</p>
+<p>Jabberjay bundles eleven model families. Each is downloaded from Hugging Face Hub on first use and cached locally, then kept in memory for the lifetime of the process so repeated <code>detect()</code> calls for the same model skip both the download and the reload. Call <code>Jabberjay.clear_cache()</code> to release them when you're done.</p>
+<p>Every model is pinned to a reviewed commit of its Hugging Face repository, so an upstream change can never silently alter your results.</p>
 <hr />
 <h2 id="choosing-a-model">Choosing a model</h2>
 <table>
@@ -942,8 +977,37 @@
 <li>For the lowest error rate on In-the-Wild audio — use <strong>DFArena1B</strong> (EER 0.91%), or <strong>SpectraAASIST3</strong> (EER 0.961%) for a quarter of the download and a permissive license</li>
 <li>For a quick, general-purpose result — use <strong>WavLM</strong> or <strong>HuBERT</strong></li>
 <li>For a lightweight baseline with no deep learning — use <strong>Classical</strong></li>
-<li>To sweep all models and compare — use <code>jj.load()</code> once, then call <code>jj.detect()</code> for each</li>
+<li>To sweep all models and compare — use <code>jj.load()</code> once, call <code>jj.detect()</code> for each, and <code>Jabberjay.clear_cache()</code> between models to keep memory down</li>
 </ul>
+<h3 id="how-much-audio-each-model-sees">How much audio each model sees</h3>
+<p>Models differ in how much of a clip they actually score. For a long recording, a fixed-window model only judges the opening seconds — trim or split the audio yourself if the part you care about comes later.</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Audio scored</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RawNet2, DFArena1B, Spectra0, SpectraAASIST, SpectraAASIST3</td>
+<td>The <strong>first ~4 s</strong> (64,600 samples at 16 kHz); shorter clips are looped to fill it</td>
+</tr>
+<tr>
+<td>AST</td>
+<td>The <strong>first ~10 s</strong> (1,024 spectrogram frames)</td>
+</tr>
+<tr>
+<td>VIT</td>
+<td>The whole clip, squeezed into a single spectrogram image</td>
+</tr>
+<tr>
+<td>Wav2Vec2, HuBERT, WavLM, Classical</td>
+<td>The whole clip</td>
+</tr>
+</tbody>
+</table>
+<p>Audio can be passed at any sample rate — each model resamples to the rate it was trained at (16 kHz, or 22.05 kHz for VIT and Classical).</p>
 <hr />
 <h2 id="vit">VIT</h2>
 <p>Vision Transformer classifiers that convert the audio to a 2D image (spectrogram) and classify it visually.</p>
@@ -1046,7 +1110,7 @@
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Downloads ~4.6 GB of weights on first run, by far the largest model in Jabberjay, and needs roughly 5 GB of memory to run. The checkpoint is pinned to a reviewed revision and loaded with <code>weights_only=True</code>; no remote code is executed.</p>
+<p>Downloads ~4.6 GB of weights on first run, by far the largest model in Jabberjay, and needs roughly 5 GB of memory to run. The checkpoint is loaded with <code>weights_only=True</code>; no remote code is executed.</p>
 </div>
 <hr />
 <h2 id="spectra0">Spectra0</h2>
@@ -1195,26 +1259,26 @@
 <hr />
 <h2 id="wavlm">WavLM</h2>
 <p><code>DavidCombei/wavLM-base-Deepfake_V2</code></p>
-<p>WavLM-base fine-tuned on a <strong>mixed deepfake dataset</strong>.</p>
+<p>WavLM-base fine-tuned on a <strong>mixed deepfake dataset</strong> (<a href="https://arxiv.org/abs/2408.07414">arXiv:2408.07414</a>).</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"WavLM"</span><span class="p">)</span>
 </code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The checkpoint ships without label names, so Jabberjay maps them itself: its class 0 is <em>spoof</em> and class 1 <em>bonafide</em>. Neither the model card nor the paper states this; it was established by scoring known-genuine and known-synthetic (TTS) speech. Jabberjay 0.1.3 and earlier had the two swapped.</p>
+</div>
 <hr />
 <h2 id="rawnet2">RawNet2</h2>
 <p>End-to-end anti-spoofing network via <a href="https://github.com/eurecom-asp/rawnet2-antispoofing">rawnet2-antispoofing</a>, with weights from <strong>ASVspoof 2021</strong>. Operates directly on raw waveforms — no feature extraction step.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"RawNet2"</span><span class="p">)</span>
 </code></pre></div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><code>scores</code> is <code>None</code> for RawNet2 — only <code>label</code>, <code>is_bonafide</code>, and <code>confidence</code> are populated.</p>
-</div>
 <hr />
 <h2 id="classical">Classical</h2>
 <p>Feature-based KNN classifier trained on <strong>ASVspoof2019</strong>. Extracts hand-crafted audio features (MFCCs, spectral features) and classifies with k-nearest neighbours. Fast and dependency-light compared to the transformer models.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">jj</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="s2">"audio.wav"</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">"Classical"</span><span class="p">)</span>
 </code></pre></div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><code>scores</code> is <code>None</code> for Classical — only <code>label</code>, <code>is_bonafide</code>, and <code>confidence</code> are populated.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Jabberjay 0.1.3 and earlier labelled <strong>every</strong> clip Bonafide with this model — the classifier's classes are named <code>Genuine.wav</code>/<code>Synthetic.wav</code>, and both strings were read as "true". Re-run any Classical results produced with those versions.</p>
 </div>
 
 
@@ -1278,7 +1342,7 @@
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      <script src="../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>
