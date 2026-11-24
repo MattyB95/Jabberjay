@@ -17,10 +17,10 @@ class HtrgGraphAttentionLayer(nn.Module):
         self.proj_without_att = nn.Linear(in_dim, out_dim)
         self.proj_with_attM = nn.Linear(in_dim, out_dim)
         self.proj_without_attM = nn.Linear(in_dim, out_dim)
-        self.att_weight11 = nn.Parameter(torch.FloatTensor(out_dim, 1))
-        self.att_weight22 = nn.Parameter(torch.FloatTensor(out_dim, 1))
-        self.att_weight12 = nn.Parameter(torch.FloatTensor(out_dim, 1))
-        self.att_weightM = nn.Parameter(torch.FloatTensor(out_dim, 1))
+        self.att_weight11 = nn.Parameter(torch.empty(out_dim, 1))
+        self.att_weight22 = nn.Parameter(torch.empty(out_dim, 1))
+        self.att_weight12 = nn.Parameter(torch.empty(out_dim, 1))
+        self.att_weightM = nn.Parameter(torch.empty(out_dim, 1))
         for w in (
             self.att_weight11,
             self.att_weight22,
@@ -103,7 +103,7 @@ class GraphAttentionLayer(nn.Module):
         self.att_proj = nn.Linear(in_dim, out_dim)
         self.proj_with_att = nn.Linear(in_dim, out_dim)
         self.proj_without_att = nn.Linear(in_dim, out_dim)
-        self.att_weight = nn.Parameter(torch.FloatTensor(out_dim, 1))
+        self.att_weight = nn.Parameter(torch.empty(out_dim, 1))
         nn.init.xavier_normal_(self.att_weight)
         self.bn = nn.BatchNorm1d(out_dim)
         self.input_drop = nn.Dropout(p=0.2)

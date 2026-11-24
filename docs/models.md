@@ -1,6 +1,8 @@
 # Models
 
-Jabberjay bundles eleven model families. Each is downloaded from Hugging Face Hub on first use and cached locally, then kept in memory for the lifetime of the process so repeated `detect()` calls for the same model skip both the download and the reload.
+Jabberjay bundles eleven model families. Each is downloaded from Hugging Face Hub on first use and cached locally, then kept in memory for the lifetime of the process so repeated `detect()` calls for the same model skip both the download and the reload. Call `Jabberjay.clear_cache()` to release them when you're done.
+
+Every model is pinned to a reviewed commit of its Hugging Face repository, so an upstream change can never silently alter your results.
 
 ---
 
@@ -25,7 +27,20 @@ Jabberjay bundles eleven model families. Each is downloaded from Hugging Face Hu
 - For the lowest error rate on In-the-Wild audio — use **DFArena1B** (EER 0.91%), or **SpectraAASIST3** (EER 0.961%) for a quarter of the download and a permissive license
 - For a quick, general-purpose result — use **WavLM** or **HuBERT**
 - For a lightweight baseline with no deep learning — use **Classical**
-- To sweep all models and compare — use `jj.load()` once, then call `jj.detect()` for each
+- To sweep all models and compare — use `jj.load()` once, call `jj.detect()` for each, and `Jabberjay.clear_cache()` between models to keep memory down
+
+### How much audio each model sees
+
+Models differ in how much of a clip they actually score. For a long recording, a fixed-window model only judges the opening seconds — trim or split the audio yourself if the part you care about comes later.
+
+| Model                                                  | Audio scored                                                     |
+|--------------------------------------------------------|------------------------------------------------------------------|
+| RawNet2, DFArena1B, Spectra0, SpectraAASIST, SpectraAASIST3 | The **first ~4 s** (64,600 samples at 16 kHz); shorter clips are looped to fill it |
+| AST                                                    | The **first ~10 s** (1,024 spectrogram frames)                    |
+| VIT                                                    | The whole clip, squeezed into a single spectrogram image          |
+| Wav2Vec2, HuBERT, WavLM, Classical                     | The whole clip                                                    |
+
+Audio can be passed at any sample rate — each model resamples to the rate it was trained at (16 kHz, or 22.05 kHz for VIT and Classical).
 
 ---
 
@@ -95,7 +110,7 @@ jj.detect("audio.wav", model="DFArena1B")
     The DF Arena weights are released under a **non-commercial** license (research, teaching, and personal use only) — see the [model's LICENSE](https://huggingface.co/Speech-Arena-2025/DF_Arena_1B_V_1/blob/main/LICENSE.txt). Jabberjay's own code remains MIT; commercial use of this model requires a separate license from Idiap.
 
 !!! note
-    Downloads ~4.6 GB of weights on first run, by far the largest model in Jabberjay, and needs roughly 5 GB of memory to run. The checkpoint is pinned to a reviewed revision and loaded with `weights_only=True`; no remote code is executed.
+    Downloads ~4.6 GB of weights on first run, by far the largest model in Jabberjay, and needs roughly 5 GB of memory to run. The checkpoint is loaded with `weights_only=True`; no remote code is executed.
 
 ---
 
@@ -199,11 +214,14 @@ jj.detect("audio.wav", model="HuBERT")
 
 `DavidCombei/wavLM-base-Deepfake_V2`
 
-WavLM-base fine-tuned on a **mixed deepfake dataset**.
+WavLM-base fine-tuned on a **mixed deepfake dataset** ([arXiv:2408.07414](https://arxiv.org/abs/2408.07414)).
 
 ```python
 jj.detect("audio.wav", model="WavLM")
 ```
+
+!!! note
+    The checkpoint ships without label names, so Jabberjay maps them itself: its class 0 is *spoof* and class 1 *bonafide*. Neither the model card nor the paper states this; it was established by scoring known-genuine and known-synthetic (TTS) speech. Jabberjay 0.1.3 and earlier had the two swapped.
 
 ---
 
@@ -215,9 +233,6 @@ End-to-end anti-spoofing network via [rawnet2-antispoofing](https://github.com/e
 jj.detect("audio.wav", model="RawNet2")
 ```
 
-!!! note
-    `scores` is `None` for RawNet2 — only `label`, `is_bonafide`, and `confidence` are populated.
-
 ---
 
 ## Classical
@@ -228,5 +243,5 @@ Feature-based KNN classifier trained on **ASVspoof2019**. Extracts hand-crafted 
 jj.detect("audio.wav", model="Classical")
 ```
 
-!!! note
-    `scores` is `None` for Classical — only `label`, `is_bonafide`, and `confidence` are populated.
+!!! warning
+    Jabberjay 0.1.3 and earlier labelled **every** clip Bonafide with this model — the classifier's classes are named `Genuine.wav`/`Synthetic.wav`, and both strings were read as "true". Re-run any Classical results produced with those versions.

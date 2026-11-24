@@ -3,46 +3,55 @@ import torch
 import torch.nn as nn
 import torchaudio
 from loguru import logger
+from safetensors.torch import load_file
 from transformers import Wav2Vec2Config, Wav2Vec2Model
 
+from Jabberjay.Utilities.audio import fixed_length, resample
+from Jabberjay.Utilities.hugging_face import download_pretrained_model, revision_for
 from Jabberjay.Utilities.model_cache import cached_loader
 
 _TARGET_SR: int = 16_000
 _MAX_LEN: int = 64600
+_WEIGHTS_FILE = "model.safetensors"
 
 
-@cached_loader(maxsize=8)
+@cached_loader(maxsize=4)
 def load_pretrained(
     model_cls: type[nn.Module], model_id: str, device: str
 ) -> nn.Module:
-    """Load, cache, and move a HuggingFace-hosted Spectra model to device."""
-    logger.info(f"Loading model: {model_id}")
-    # strict=True: PyTorchModelHubMixin defaults to strict=False, which would
-    # silently leave any layer whose keys drift from the checkpoint randomly
-    # initialised instead of failing loudly
-    model = model_cls.from_pretrained(  # ty: ignore[unresolved-attribute]
-        model_id, strict=True
-    )
+    """Load, cache, and move a HuggingFace-hosted Spectra model to device.
+
+    Built on the meta device and adopting the checkpoint tensors directly
+    (assign=True), rather than via PyTorchModelHubMixin.from_pretrained():
+    that randomly initialises all ~300M parameters first only to overwrite
+    them, which is ~5s of a ~7s load. strict=True: any key drift between the
+    checkpoint and the ported architecture must raise, not silently leave
+    layers randomly initialised.
+    """
+    logger.info(f"Loading model: {model_id}@{revision_for(model_id)[:7]}")
+    weights_path = download_pretrained_model(repo_id=model_id, filename=_WEIGHTS_FILE)
+    state_dict = load_file(weights_path)
+    with torch.device("meta"):
+        model = model_cls()
+    model.load_state_dict(state_dict, strict=True, assign=True)
+    leftover = [
+        name
+        for name, t in [*model.named_parameters(), *model.named_buffers()]
+        if t.is_meta
+    ]
+    if leftover:
+        raise RuntimeError(
+            f"{model_id}: tensors not provided by the checkpoint: {leftover}"
+        )
     return model.eval().to(device)
 
 
 def preprocess(y: np.ndarray, sr: float, preemphasis: bool = True) -> torch.Tensor:
     """Resample, optionally apply preemphasis, and pad/trim to _MAX_LEN samples."""
-    audio = torch.from_numpy(y).float()
-    if sr != _TARGET_SR:
-        audio = torchaudio.functional.resample(audio, int(sr), _TARGET_SR)
+    audio = resample(y, sr, _TARGET_SR)
     if preemphasis:
         audio = torchaudio.functional.preemphasis(audio.unsqueeze(0)).squeeze(0)
-    x_len = audio.shape[0]
-    if x_len == 0:
-        raise ValueError(
-            "Input audio array is empty; cannot run inference on zero samples."
-        )
-    if x_len >= _MAX_LEN:
-        audio = audio[:_MAX_LEN]
-    else:
-        audio = audio.repeat(int(_MAX_LEN / x_len) + 1)[:_MAX_LEN]
-    return audio.unsqueeze(0)  # (1, _MAX_LEN)
+    return fixed_length(audio, _MAX_LEN).unsqueeze(0)  # (1, _MAX_LEN)
 
 
 class Wav2Vec2Encoder(nn.Module):
@@ -52,7 +61,9 @@ class Wav2Vec2Encoder(nn.Module):
         # fine-tuned copy of these weights (enforced by strict loading in
         # load_pretrained), so fetching the 1.27 GB base checkpoint here would
         # be downloaded and loaded only to be overwritten immediately
-        config = Wav2Vec2Config.from_pretrained(model_name_or_path)
+        config = Wav2Vec2Config.from_pretrained(
+            model_name_or_path, revision=revision_for(model_name_or_path)
+        )
         config.apply_spec_augment = False
         self.model = Wav2Vec2Model(config)
         self.model.masked_spec_embed = None  # type: ignore

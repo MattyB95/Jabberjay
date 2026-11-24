@@ -67,4 +67,4 @@ Spoof ❌ (97.8% confidence, model=HuBERT)
 |------|------------------------------------------------------------------------|
 | `0`  | Detection succeeded — the verdict is printed to stdout                 |
 | `1`  | Expected error (file not found, unreadable audio, invalid options) — a one-line `Error: …` message is printed to stderr |
-| `2`  | Invalid command-line arguments (unknown model/dataset/visualisation)  |
+| `2`  | Invalid command-line arguments (unknown model/dataset/visualisation; names are case-insensitive) |

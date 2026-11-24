@@ -34,9 +34,8 @@ else:
 print()
 
 # ── Full score breakdown ──────────────────────────────────────────────────
-# `scores` is a list[{"label": str, "score": float}] sorted highest-first.
-# Populated for VIT, AST, DFArena1B, Spectra0, SpectraAASIST, SpectraAASIST3,
-# Wav2Vec2, HuBERT, and WavLM; it is None for Classical and RawNet2.
+# `scores` is a list[{"label": str, "score": float}] with one entry per
+# label, sorted highest-first — populated for every model.
 
 result = jj.detect(
     AUDIO,
@@ -45,11 +44,10 @@ result = jj.detect(
     visualisation=Visualisation.ConstantQ,
 )
 
-if result.scores:
-    print("Full score breakdown:")
-    for entry in result.scores:
-        bar = "█" * int(entry["score"] * 30)
-        print(f"  {entry['label']:<10} {entry['score']:.3f}  {bar}")
+print("Full score breakdown:")
+for entry in result.scores:
+    bar = "█" * int(entry["score"] * 30)
+    print(f"  {entry['label']:<10} {entry['score']:.3f}  {bar}")
 print()
 
 # ── Comparing bonafide vs spoof ────────────────────────────────────────────
@@ -58,6 +56,6 @@ for path, label in [
     ("res/bonafide/bonafide.flac", "bonafide sample"),
     ("res/spoof/spoof.flac", "spoof sample"),
 ]:
-    r = jj.detect(path, model="WavLM")
+    r = jj.detect(path, model="RawNet2")
     verdict = "✔️ Bonafide" if r.is_bonafide else "❌ Spoof"
     print(f"{label:<18}  →  {verdict}  ({r.confidence:.1%})")

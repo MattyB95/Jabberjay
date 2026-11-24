@@ -1,9 +1,9 @@
 import matplotlib
 import pytest
 
-# Force the non-interactive Agg backend before any test imports matplotlib.
-# The uv-managed Python distribution does not bundle Tk, so the default
-# TkAgg backend raises TclError when plt.subplots() is called in tests.
+# Jabberjay renders through a bare matplotlib Figure and never starts a GUI
+# backend, but test_does_not_touch_pyplot imports pyplot to assert exactly
+# that — pin Agg so it can't try to start Tk (absent from uv's Pythons)
 matplotlib.use("Agg")
 
 

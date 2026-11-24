@@ -13,6 +13,85 @@ _Nothing yet._
 
 ---
 
+## [0.2.0] — 2026-11-24
+
+### Fixed
+- **Classical labelled every clip Bonafide** — the KNN classifier's classes
+  are the strings `"Genuine.wav"` / `"Synthetic.wav"`, and the result was
+  built with `bool(prediction)`, which is `True` for both. Classes are now
+  mapped through the label normaliser, so Classical returns Spoof for
+  synthetic audio (it now gets both reference clips right, and flags three of
+  four macOS TTS voices). **Any Classical result from 0.1.3 or earlier should
+  be re-run.**
+- **WavLM's labels were inverted** — the checkpoint ships without `id2label`,
+  and its class 0 is *spoof*, not bonafide as the generic normaliser assumed.
+  Neither the model card nor its paper states the mapping; it was established
+  empirically (four macOS TTS voices all score class 0 at 99.98%, the
+  bonafide reference clip scores class 1 at 99.96%) and is now set explicitly.
+- **Invalid pre-loaded audio produced silent nonsense** — `detect()` now
+  validates `(samples, sample_rate)` input before any model runs: NaN/inf,
+  >2-D, non-numeric and empty arrays raise a clear `ValueError` (previously
+  e.g. Spectra0 returned `Spoof nan%`); integer PCM such as `int16` is scaled
+  to [-1, 1] (previously Spectra0 scored raw integers); multi-channel audio is
+  downmixed to mono (previously four different internal errors); and silent
+  audio logs a warning.
+- **Classical and VIT depended on how audio was loaded** — both were trained
+  on audio at 22.05 kHz but used whatever rate they were given, so the same
+  clip passed pre-loaded at its native rate scored differently (Classical:
+  100% vs 80%). Both now resample to 22.05 kHz themselves.
+
+### Added
+- **`Jabberjay.clear_cache()`** — releases every loaded model and returns the
+  memory to the OS and GPU. Models were previously held for the life of the
+  process with no way to free them; a full sweep on a 16 GB machine swapped so
+  hard that warm 0.1 s inferences took 10–150 s.
+- **Full `scores` for every model** — Classical and RawNet2 now return both
+  class probabilities too, so `DetectionResult.scores` is always a two-entry
+  list (it defaults to `[]` instead of `None`).
+- **Case-insensitive model, dataset and visualisation names** — in both
+  `detect()` (`model="vit"`) and the CLI (`-m vit`). An unknown name raises
+  `InvalidChoiceError` listing the valid choices; it subclasses both
+  `ValueError` and, for compatibility, the `KeyError` raised before.
+- **Reference-score integration tests for every model** — all 21
+  model/dataset/visualisation combinations are run on both reference clips and
+  compared with recorded scores (`just test-integration`), so a dependency
+  upgrade that changes real predictions now fails a test.
+- Documentation of how much audio each model actually scores: RawNet2,
+  DFArena1B and the Spectra family only the first ~4 s, AST the first ~10 s.
+
+### Changed
+- **`load()` keeps the file's native sample rate** instead of resampling to
+  22,050 Hz. Each model resamples once, to the rate it was trained at,
+  instead of twice.
+- **Spectra models load ~5× faster** (cold start ~11 s → ~2 s) — they are
+  built on the meta device and adopt the checkpoint tensors directly, as
+  DFArena1B already did, instead of randomly initialising ~300M parameters
+  only to overwrite them.
+- **Model loads are thread-safe** — concurrent `detect()` calls that miss the
+  cache together now load a model once rather than once per thread.
+- **Model dispatch is table-driven** — the eleven per-model handler methods in
+  `jabberjay.py` are replaced by one `_MODELS` table, and the three VIT
+  visualisation sub-packages are merged into `Models/Transformer/VIT/run.py`.
+- **ty rule names updated for ty 0.0.104** — `invalid-mutable-override` →
+  `incompatible-mutable-override`, `unresolved-attribute` →
+  `missing-attribute`, and `invalid-return-type` → `invalid-explicit-return`
+  in `pyproject.toml` and the inline `ty: ignore` comments. The old names
+  raised `renamed-rule` warnings that made `ty check` exit non-zero and
+  failed the CI lint job.
+- CI enforces 100% coverage (was 80%), cancels superseded pull-request runs,
+  and pins every GitHub Action to a commit SHA. Pre-commit runs black and ruff
+  through `uv run`, so their versions come from `uv.lock` instead of drifting.
+- `safetensors` is now a declared dependency (it was only transitive).
+
+### Security
+- **Every Hugging Face download is pinned to a reviewed commit** —
+  previously only DFArena1B was. All 22 repositories are listed in
+  `Jabberjay.Utilities.hugging_face.REVISIONS`, and an unpinned repository is
+  refused. This matters most for the Classical model, a pickled `.joblib`
+  that would execute arbitrary code if its repository were compromised.
+
+---
+
 ## [0.1.3] — 2026-11-05
 
 ### Added
@@ -660,7 +739,8 @@ _Nothing yet._
 - Command-line interface (`jabberjay <audio>`)
 - GitHub Actions CI workflow and ruff linting
 
-[Unreleased]: https://github.com/MattyB95/Jabberjay/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/MattyB95/Jabberjay/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/MattyB95/Jabberjay/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/MattyB95/Jabberjay/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/MattyB95/Jabberjay/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/MattyB95/Jabberjay/compare/v0.1.0...v0.1.1
