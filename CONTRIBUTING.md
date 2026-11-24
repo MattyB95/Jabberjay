@@ -141,7 +141,7 @@ Set `needs_dataset=True` / `needs_visualisation=True` if `predict()` takes those
 - add the new enum value to `TestEnums.test_model_members` in `tests/test_enums.py`
 - add a `predict()` unit test in `tests/test_models.py` (mock all model loading — the suite runs offline)
 - add the repo to `_every_repo_jabberjay_loads()` in `tests/test_models.py` (dispatch is covered automatically by `TestDetectDispatch`)
-- add the model's bonafide scores on both reference clips to `REFERENCE_SCORES` in `tests/test_integration.py`, and its checkpoint to `_checkpoint()`, then run `just test-integration`
+- add the model's bonafide scores on both reference clips to `REFERENCE_SCORES` in `tests/test_integration.py`, and the files it loads to `_required_files()`, then run `just test-integration`
 - for a custom architecture, add shape and state-dict layout tests in `tests/test_architecture.py`
 
 **5. Update `CHANGELOG.md`** under `[Unreleased]` with the model name, HuggingFace link, and dataset.

@@ -27,10 +27,12 @@ on:
 permissions:
   contents: read
 
-# A newer push to the same PR/branch supersedes an in-flight run. Pushes to
-# main/develop are never cancelled, so every commit there still publishes.
+# A newer push to a pull request supersedes its in-flight run. Pushes to
+# main/develop each get a group of their own (keyed by run id): a shared group
+# holds only one pending run, so a burst of pushes would silently drop the
+# middle ones, leaving those commits untested and unpublished.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:

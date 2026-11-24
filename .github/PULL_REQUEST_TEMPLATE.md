@@ -28,5 +28,5 @@
 - [ ] Label mapping verified on known-genuine and known-synthetic audio (pass a `label_map` if the checkpoint has no `id2label`)
 - [ ] Model registered in `_MODELS` in `jabberjay.py`
 - [ ] `test_model_members` updated in `tests/test_enums.py`, and the repo added to `_every_repo_jabberjay_loads()` in `tests/test_models.py`
-- [ ] Reference scores added to `REFERENCE_SCORES` (and the checkpoint to `_checkpoint()`) in `tests/test_integration.py`, and `just test-integration` passes
+- [ ] Reference scores added to `REFERENCE_SCORES` (and the files it loads to `_required_files()`) in `tests/test_integration.py`, and `just test-integration` passes
 - [ ] Model card link added to README models table, and every other model list updated (see CONTRIBUTING.md, step 6)

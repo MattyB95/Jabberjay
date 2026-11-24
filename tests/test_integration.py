@@ -59,8 +59,20 @@ REFERENCE_SCORES: dict[str, tuple[float, float]] = {
 pytestmark = pytest.mark.integration
 
 
-def _checkpoint(model: Model, dataset: Dataset, vis: Visualisation) -> tuple[str, str]:
-    """(repo id, a file whose presence means the weights are cached)."""
+# Weights files a transformers pipeline may load, in order of preference
+_PIPELINE_WEIGHTS = ("model.safetensors", "pytorch_model.bin")
+_PIPELINE_FILES = (("config.json",), ("preprocessor_config.json",), _PIPELINE_WEIGHTS)
+
+
+def _required_files(
+    model: Model, dataset: Dataset, vis: Visualisation
+) -> list[tuple[str, tuple[str, ...]]]:
+    """Every (repo id, acceptable filenames) a model loads — all must be cached.
+
+    Checking a single file isn't enough: a partially cached model (say, a
+    pipeline's config.json without its weights) would otherwise start a
+    multi-GB download, or fail offline, instead of skipping.
+    """
     from Jabberjay.Models.Classical import run as classical
     from Jabberjay.Models.DFArena import run as df_arena
     from Jabberjay.Models.HuBERT import run as hubert
@@ -73,27 +85,36 @@ def _checkpoint(model: Model, dataset: Dataset, vis: Visualisation) -> tuple[str
     from Jabberjay.Models.Wav2Vec2 import run as wav2vec2
     from Jabberjay.Models.WavLM import run as wavlm
 
+    def pipeline(repo_id: str) -> list[tuple[str, tuple[str, ...]]]:
+        return [(repo_id, files) for files in _PIPELINE_FILES]
+
     match model:
         case Model.Classical:
-            return classical.REPO_ID, classical.FILENAME
+            return [(classical.REPO_ID, (classical.FILENAME,))]
         case Model.RawNet2:
-            return rawnet2.REPO_ID, rawnet2.FILENAME
+            return [(rawnet2.REPO_ID, (rawnet2.FILENAME,))]
         case Model.DFArena1B:
-            return df_arena.MODEL_ID, df_arena.WEIGHTS_FILE
+            return [
+                (df_arena.MODEL_ID, (df_arena.WEIGHTS_FILE,)),
+                ("facebook/wav2vec2-xls-r-1b", ("config.json",)),
+            ]
         case Model.Spectra0 | Model.SpectraAASIST | Model.SpectraAASIST3:
             run = {
                 Model.Spectra0: spectra0,
                 Model.SpectraAASIST: spectra_aasist,
                 Model.SpectraAASIST3: spectra_aasist3,
             }[model]
-            return run.MODEL_ID, "model.safetensors"
+            return [
+                (run.MODEL_ID, ("model.safetensors",)),
+                ("facebook/wav2vec2-xls-r-300m", ("config.json",)),
+            ]
         case Model.AST:
-            return ast.model_id(dataset), "config.json"
+            return pipeline(ast.model_id(dataset))
         case Model.VIT:
-            return vit.model_id(dataset, vis), "config.json"
+            return pipeline(vit.model_id(dataset, vis))
         case _:
             run = {Model.HuBERT: hubert, Model.Wav2Vec2: wav2vec2, Model.WavLM: wavlm}
-            return run[model].MODEL_ID, "config.json"
+            return pipeline(run[model].MODEL_ID)
 
 
 def _cases():
@@ -109,12 +130,19 @@ def _cases():
             yield model, Dataset.VoxCelebSpoof, Visualisation.ConstantQ, model.value
 
 
-def _require_cached(repo_id: str, filename: str) -> None:
+def _is_cached(repo_id: str, filename: str) -> bool:
     revision = revision_for(repo_id)
-    if not isinstance(
-        try_to_load_from_cache(repo_id, filename, revision=revision), str
-    ):
-        reason = f"{repo_id}@{revision[:7]} not in the HuggingFace cache"
+    return isinstance(try_to_load_from_cache(repo_id, filename, revision=revision), str)
+
+
+def _require_cached(required: list[tuple[str, tuple[str, ...]]]) -> None:
+    missing = [
+        f"{repo_id}@{revision_for(repo_id)[:7]}: {' or '.join(files)}"
+        for repo_id, files in required
+        if not any(_is_cached(repo_id, f) for f in files)
+    ]
+    if missing:
+        reason = "not in the HuggingFace cache: " + "; ".join(missing)
         if os.environ.get("JABBERJAY_REQUIRE_WEIGHTS") == "1":
             pytest.fail(reason)
         pytest.skip(reason)
@@ -140,7 +168,7 @@ def test_every_combination_has_a_reference_score():
     ids=[tag for *_, tag in _cases()],
 )
 def test_matches_reference_scores(jj, clips, model, dataset, visualisation, tag):
-    _require_cached(*_checkpoint(model, dataset, visualisation))
+    _require_cached(_required_files(model, dataset, visualisation))
     try:
         for (clip, audio), expected in zip(
             clips.items(), REFERENCE_SCORES[tag], strict=True
@@ -166,7 +194,7 @@ def test_matches_reference_scores(jj, clips, model, dataset, visualisation, tag)
 def test_path_input_matches_preloaded_input(jj, clips):
     """detect(path) and detect(load(path)) must agree exactly."""
     _require_cached(
-        *_checkpoint(Model.Spectra0, Dataset.VoxCelebSpoof, Visualisation.ConstantQ)
+        _required_files(Model.Spectra0, Dataset.VoxCelebSpoof, Visualisation.ConstantQ)
     )
     try:
         from_path = jj.detect(CLIPS["spoof"], model=Model.Spectra0)
