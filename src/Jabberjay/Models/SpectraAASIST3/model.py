@@ -39,19 +39,23 @@ class KANLinear(nn.Module):
         )
         self.grid: torch.Tensor
         self.register_buffer("grid", grid)
-        self.base_weight = nn.Parameter(torch.Tensor(out_features, in_features))
+        self.base_weight = nn.Parameter(torch.empty(out_features, in_features))
         self.spline_weight = nn.Parameter(
-            torch.Tensor(out_features, in_features, grid_size + spline_order)
+            torch.empty(out_features, in_features, grid_size + spline_order)
         )
         self.enable_standalone_scale_spline = enable_standalone_scale_spline
         if enable_standalone_scale_spline:
-            self.spline_scaler = nn.Parameter(torch.Tensor(out_features, in_features))
+            self.spline_scaler = nn.Parameter(torch.empty(out_features, in_features))
         self.scale_noise = scale_noise
         self.scale_base = scale_base
         self.scale_spline = scale_spline
         self.base_activation = base_activation()
         self.grid_eps = grid_eps
-        self._reset_parameters()
+        # On the meta device (see Spectra.shared.load_pretrained) every value
+        # comes from the checkpoint, and the lstsq-based spline init has no
+        # meta kernel — so only initialise when building real tensors
+        if not self.grid.is_meta:
+            self._reset_parameters()
 
     def _reset_parameters(self):
         nn.init.kaiming_uniform_(self.base_weight, a=math.sqrt(5) * self.scale_base)
@@ -126,10 +130,10 @@ class HtrgGraphAttentionLayer(nn.Module):
         self.proj_without_att = KANLinear(in_dim, out_dim)
         self.proj_with_attM = KANLinear(in_dim, out_dim)
         self.proj_without_attM = KANLinear(in_dim, out_dim)
-        self.att_weight11 = nn.Parameter(torch.FloatTensor(out_dim, 1))
-        self.att_weight22 = nn.Parameter(torch.FloatTensor(out_dim, 1))
-        self.att_weight12 = nn.Parameter(torch.FloatTensor(out_dim, 1))
-        self.att_weightM = nn.Parameter(torch.FloatTensor(out_dim, 1))
+        self.att_weight11 = nn.Parameter(torch.empty(out_dim, 1))
+        self.att_weight22 = nn.Parameter(torch.empty(out_dim, 1))
+        self.att_weight12 = nn.Parameter(torch.empty(out_dim, 1))
+        self.att_weightM = nn.Parameter(torch.empty(out_dim, 1))
         for w in (
             self.att_weight11,
             self.att_weight22,
@@ -215,7 +219,7 @@ class GraphAttentionLayer(nn.Module):
         self.att_proj = KANLinear(in_dim, out_dim)
         self.proj_with_att = KANLinear(in_dim, out_dim)
         self.proj_without_att = KANLinear(in_dim, out_dim)
-        self.att_weight = nn.Parameter(torch.FloatTensor(out_dim, 1))
+        self.att_weight = nn.Parameter(torch.empty(out_dim, 1))
         nn.init.xavier_normal_(self.att_weight)
         self.bn = nn.BatchNorm1d(out_dim)
         self.input_drop = nn.Dropout(p=0.2)

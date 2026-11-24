@@ -1,8 +1,10 @@
-from typing import TypedDict
+from typing import Literal, TypedDict
+
+Label = Literal["Bonafide", "Spoof"]
 
 
 class PredictionScore(TypedDict):
-    """A single label/score entry returned by transformer classification pipelines."""
+    """A single label/score entry; every model returns one per class."""
 
-    label: str
+    label: Label
     score: float

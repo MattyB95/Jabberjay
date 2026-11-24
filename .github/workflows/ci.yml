@@ -27,6 +27,14 @@ on:
 permissions:
   contents: read
 
+# A newer push to a pull request supersedes its in-flight run. Pushes to
+# main/develop each get a group of their own (keyed by run id): a shared group
+# holds only one pending run, so a burst of pushes would silently drop the
+# middle ones, leaving those commits untested and unpublished.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   # ── Lint & type-check ──────────────────────────────────────────────────────
   lint:
@@ -35,9 +43,9 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: astral-sh/setup-uv@v10.3.3
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           enable-cache: true
 
@@ -68,9 +76,9 @@ jobs:
       matrix:
         python-version: ["3.12", "3.13", "3.14", "3.15"]
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: astral-sh/setup-uv@v10.3.3
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
@@ -79,11 +87,11 @@ jobs:
         run: uv sync --locked --group dev
 
       - name: Test with pytest
-        run: uv run pytest --cov-fail-under=80
+        run: uv run pytest  # enforces 100% coverage via pyproject addopts
 
       - name: Upload coverage report
         if: matrix.python-version == '3.15'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage-report
           path: coverage.xml
@@ -99,9 +107,9 @@ jobs:
       contents: read
       id-token: write  # required for OIDC trusted publisher authentication
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: astral-sh/setup-uv@v10.3.3
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           enable-cache: true
 
@@ -128,9 +136,9 @@ jobs:
       contents: read
       id-token: write  # required for OIDC trusted publisher authentication
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: astral-sh/setup-uv@v10.3.3
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           enable-cache: true
 

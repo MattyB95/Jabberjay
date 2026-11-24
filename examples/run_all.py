@@ -3,7 +3,9 @@ run_all.py — exhaustive sweep across every model, dataset, and visualisation.
 
 Useful as a smoke test to confirm every combination works end-to-end.
 Expect this to take several minutes as each model is downloaded on first run
-and cached by HuggingFace Hub locally (~/.cache/huggingface).
+and cached by HuggingFace Hub locally (~/.cache/huggingface). Each model is
+released from memory once its rows are printed — holding all of them at once
+needs well over 16 GB.
 
 Run:
     uv run python examples/run_all.py
@@ -27,6 +29,7 @@ print("-" * 56)
 
 def row(tag: str, result) -> None:
     print(f"{tag:<30}  {result.label:<10}  {result.confidence:>10.1%}")
+    Jabberjay.clear_cache()
 
 
 # Self-contained models

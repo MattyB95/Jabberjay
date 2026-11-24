@@ -77,9 +77,11 @@ Pass a model name as a string, or use the `Model` enum for IDE autocomplete.
 
 ## Pre-loading audio
 
-If you want to run multiple models against the same clip, load the audio once with `jj.load()` and reuse the result. This avoids redundant disk reads.
+If you want to run multiple models against the same clip, load the audio once with `jj.load()` and reuse the result. This avoids redundant disk reads. `load()` keeps the file's own sample rate; each model resamples to the rate it needs.
 
-Each model is also cached in memory after its first `detect()` call, so calling the same model again later in the process (even with a different clip) reuses the already-loaded weights instead of reloading them.
+You can also pass audio you loaded yourself as a `(samples, sample_rate)` tuple. Float or integer PCM (e.g. `int16` from `soundfile`) and mono or multi-channel arrays are all accepted — `detect()` scales integers to [-1, 1], downmixes to mono, and rejects empty, NaN or wrongly-shaped input with a clear `ValueError`.
+
+Each model is also cached in memory after its first `detect()` call, so calling the same model again later in the process (even with a different clip) reuses the already-loaded weights instead of reloading them. Running many different models adds up — DFArena1B alone needs ~5 GB — so call `Jabberjay.clear_cache()` once you're finished with a model.
 
 ```python
 from Jabberjay import Dataset, Jabberjay, Model, Visualisation
@@ -126,12 +128,10 @@ if result.is_bonafide:
 else:
     print(f"Synthetic voice detected ({result.confidence:.1%} confidence)")
 
-# Full score breakdown — available for every model except Classical and
-# RawNet2, where it is None
-if result.scores:
-    for entry in result.scores:
-        bar = "█" * int(entry["score"] * 30)
-        print(f"  {entry['label']:<10} {entry['score']:.3f}  {bar}")
+# Full score breakdown for both labels, highest first
+for entry in result.scores:
+    bar = "█" * int(entry["score"] * 30)
+    print(f"  {entry['label']:<10} {entry['score']:.3f}  {bar}")
 ```
 
 ---

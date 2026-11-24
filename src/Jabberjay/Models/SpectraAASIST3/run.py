@@ -7,12 +7,12 @@ from Jabberjay.Models.SpectraAASIST3.model import SpectraAASIST3
 from Jabberjay.Utilities.device import get_device
 from Jabberjay.Utilities.types import PredictionScore
 
-_MODEL_ID = "lab260/Spectra-AASIST3"
+MODEL_ID = "lab260/Spectra-AASIST3"
 
 
 def predict(y: np.ndarray, sr: float) -> list[PredictionScore]:
     device = get_device()
-    model = load_pretrained(SpectraAASIST3, _MODEL_ID, device)
+    model = load_pretrained(SpectraAASIST3, MODEL_ID, device)
     audio = preprocess(y, sr).to(device)
     logger.debug(
         f"Running Spectra-AASIST3 inference on {audio.shape[1]} samples at {_TARGET_SR}Hz"

@@ -9,16 +9,17 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
+import torch
 
-from Jabberjay.Utilities.enum_handler import Dataset
-from Jabberjay.Utilities.types import PredictionScore
+from Jabberjay.Utilities.enum_handler import Dataset, Visualisation
 
 # ---------------------------------------------------------------------------
 # Shared helpers
 # ---------------------------------------------------------------------------
 
 AUDIO = (np.zeros(16000, dtype=np.float32), 16000.0)
-FAKE_RAW_SCORES: list[PredictionScore] = [
+# Raw pipeline output, before label normalisation
+FAKE_RAW_SCORES: list[dict[str, str | float]] = [
     {"label": "bonafide", "score": 0.9},
     {"label": "fake", "score": 0.1},
 ]
@@ -120,6 +121,72 @@ class TestWavLMPredict:
         assert result[0]["score"] == 0.9
 
 
+class TestWavLMLabelMapping:
+    """The WavLM checkpoint has no id2label; index 0 is spoof (see WavLM/run.py)."""
+
+    def _scores(self, raw):
+        from Jabberjay.Models.WavLM.run import predict
+
+        with patch(_PIPELINE_PATH, return_value=_mock_pipeline(raw)):
+            return {r["label"]: r["score"] for r in predict(y=AUDIO[0], sr=AUDIO[1])}
+
+    def test_label_0_is_spoof(self):
+        scores = self._scores(
+            [{"label": "LABEL_0", "score": 0.98}, {"label": "LABEL_1", "score": 0.02}]
+        )
+        assert scores == {"Spoof": 0.98, "Bonafide": 0.02}
+
+    def test_label_1_is_bonafide(self):
+        scores = self._scores(
+            [{"label": "LABEL_1", "score": 0.7}, {"label": "LABEL_0", "score": 0.3}]
+        )
+        assert scores == {"Bonafide": 0.7, "Spoof": 0.3}
+
+
+class TestPipelineRevisions:
+    def test_pipeline_is_loaded_at_the_pinned_revision(self):
+        from Jabberjay.Models.HuBERT.run import MODEL_ID, predict
+        from Jabberjay.Utilities.hugging_face import REVISIONS
+
+        mock_factory = MagicMock(return_value=_mock_pipeline())
+        with patch(_PIPELINE_PATH, mock_factory):
+            predict(y=AUDIO[0], sr=AUDIO[1])
+        assert mock_factory.call_args.kwargs["revision"] == REVISIONS[MODEL_ID]
+
+
+def _every_repo_jabberjay_loads() -> list[str]:
+    from Jabberjay.Models.Classical import run as classical
+    from Jabberjay.Models.DFArena import run as df_arena
+    from Jabberjay.Models.HuBERT import run as hubert
+    from Jabberjay.Models.RawNet2 import run as rawnet2
+    from Jabberjay.Models.Spectra0 import run as spectra0
+    from Jabberjay.Models.SpectraAASIST import run as spectra_aasist
+    from Jabberjay.Models.SpectraAASIST3 import run as spectra_aasist3
+    from Jabberjay.Models.Transformer.AST import run as ast
+    from Jabberjay.Models.Transformer.VIT import run as vit
+    from Jabberjay.Models.Wav2Vec2 import run as wav2vec2
+    from Jabberjay.Models.WavLM import run as wavlm
+
+    return [
+        classical.REPO_ID,
+        rawnet2.REPO_ID,
+        df_arena.MODEL_ID,
+        "facebook/wav2vec2-xls-r-1b",  # DFArena1B's encoder config
+        "facebook/wav2vec2-xls-r-300m",  # the Spectra encoders' config
+        *(m.MODEL_ID for m in (hubert, wav2vec2, wavlm)),
+        *(m.MODEL_ID for m in (spectra0, spectra_aasist, spectra_aasist3)),
+        *(ast.model_id(d) for d in Dataset),
+        *(vit.model_id(d, v) for d in Dataset for v in Visualisation),
+    ]
+
+
+def test_every_repo_jabberjay_loads_is_pinned():
+    from Jabberjay.Utilities.hugging_face import REVISIONS
+
+    repos = _every_repo_jabberjay_loads()
+    assert set(repos) == set(REVISIONS)
+
+
 class TestASTPredict:
     def test_returns_normalised_scores(self):
         from Jabberjay.Models.Transformer.AST.run import predict
@@ -144,160 +211,90 @@ class TestASTPredict:
 # VIT models
 # ---------------------------------------------------------------------------
 
+_VIT = "Jabberjay.Models.Transformer.VIT.run"
+
 
 class TestVITPredict:
     @staticmethod
-    def _run_constantq(raw_scores=None):
-        from Jabberjay.Models.Transformer.VIT.ConstantQ.run import predict
+    def _predict(visualisation, *, sr=22050.0, factory=None, **patches):
+        from Jabberjay.Models.Transformer.VIT.run import predict
 
-        mock_image = MagicMock()
-        mock_pipe = _mock_pipeline(raw_scores)
-        mock_cqt = np.zeros((84, 32))
+        factory = factory or MagicMock(return_value=_mock_pipeline())
         with (
-            patch(
-                "Jabberjay.Models.Transformer.VIT.utility.pipeline",
-                return_value=mock_pipe,
-            ),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.get_image",
-                return_value=mock_image,
-            ),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.cqt",
-                return_value=mock_cqt,
-            ),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.amplitude_to_db",
-                return_value=mock_cqt,
-            ),
+            patch(_PIPELINE_PATH, factory),
+            patch(f"{_VIT}.get_image", return_value=MagicMock()) as mock_image,
         ):
-            return predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
+            result = predict(
+                y=np.ones(22050, dtype=np.float32),
+                sr=sr,
+                dataset=Dataset.VoxCelebSpoof,
+                visualisation=visualisation,
+            )
+        return result, factory, mock_image
 
-    def test_constantq_returns_normalised_scores(self):
-        result = self._run_constantq()
+    @pytest.mark.parametrize("visualisation", list(Visualisation))
+    def test_returns_normalised_scores(self, visualisation):
+        result, *_ = self._predict(visualisation)
         assert result[0]["label"] == "Bonafide"
 
-    def test_pipeline_loaded_onto_selected_device(self):
-        from Jabberjay.Models.Transformer.VIT.ConstantQ.run import predict
+    @pytest.mark.parametrize(
+        ("visualisation", "repo_name"),
+        [
+            (Visualisation.ConstantQ, "ConstantQ"),
+            (Visualisation.MelSpectrogram, "Mel_Spectrogram"),
+            (Visualisation.MFCC, "MFCC"),
+        ],
+    )
+    def test_model_id_matches_hub_repo_name(self, visualisation, repo_name):
+        from Jabberjay.Models.Transformer.VIT.run import model_id
 
-        mock_factory = MagicMock(return_value=_mock_pipeline())
-        mock_cqt = np.zeros((84, 32))
-        with (
-            patch("Jabberjay.Models.Transformer.VIT.utility.pipeline", mock_factory),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.utility.get_device",
-                return_value="mps",
-            ),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.get_image",
-                return_value=MagicMock(),
-            ),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.cqt",
-                return_value=mock_cqt,
-            ),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.amplitude_to_db",
-                return_value=mock_cqt,
-            ),
-        ):
-            predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
+        assert model_id(Dataset.ASVspoof5, visualisation) == (
+            f"MattyB95/VIT-ASVspoof5-{repo_name}-Synthetic-Voice-Detection"
+        )
 
-        assert mock_factory.call_args.kwargs["device"].type == "mps"
+    def test_pipeline_loaded_at_pinned_revision_on_selected_device(self):
+        from Jabberjay.Models.Transformer.VIT.run import model_id
+        from Jabberjay.Utilities.hugging_face import REVISIONS
 
-    def test_constantq_pipeline_is_loaded_once_across_repeated_calls(self):
-        """VIT's shared load_pipeline() caches by model id — a second call
-        for the same dataset must not reload the pipeline."""
-        from Jabberjay.Models.Transformer.VIT.ConstantQ.run import predict
+        with patch("Jabberjay.Utilities.pipeline.get_device", return_value="mps"):
+            _, factory, _ = self._predict(Visualisation.ConstantQ)
+        kwargs = factory.call_args.kwargs
+        assert factory.call_args.args[0] == "image-classification"
+        assert kwargs["device"].type == "mps"
+        repo = model_id(Dataset.VoxCelebSpoof, Visualisation.ConstantQ)
+        assert kwargs["revision"] == REVISIONS[repo]
 
-        mock_image = MagicMock()
-        mock_pipe = _mock_pipeline()
-        mock_cqt = np.zeros((84, 32))
-        mock_factory = MagicMock(return_value=mock_pipe)
-        with (
-            patch(
-                "Jabberjay.Models.Transformer.VIT.utility.pipeline",
-                mock_factory,
-            ),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.get_image",
-                return_value=mock_image,
-            ),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.cqt",
-                return_value=mock_cqt,
-            ),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.ConstantQ.run.librosa.amplitude_to_db",
-                return_value=mock_cqt,
-            ),
-        ):
-            predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
-            predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
+    def test_pipeline_is_loaded_once_across_repeated_calls(self):
+        factory = MagicMock(return_value=_mock_pipeline())
+        self._predict(Visualisation.ConstantQ, factory=factory)
+        self._predict(Visualisation.ConstantQ, factory=factory)
+        factory.assert_called_once()
 
-        mock_factory.assert_called_once()
+    def test_audio_is_rendered_at_the_training_sample_rate(self):
+        from Jabberjay.Models.Transformer.VIT.run import TRAINING_SR
 
-    def test_mfcc_returns_normalised_scores(self):
-        from Jabberjay.Models.Transformer.VIT.MFCC.run import predict
+        _, _, mock_image = self._predict(Visualisation.MFCC, sr=16000.0)
+        assert mock_image.call_args.kwargs["sr"] == TRAINING_SR
 
-        mock_image = MagicMock()
-        mock_pipe = _mock_pipeline()
-        with (
-            patch(
-                "Jabberjay.Models.Transformer.VIT.utility.pipeline",
-                return_value=mock_pipe,
-            ),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.MFCC.run.get_image",
-                return_value=mock_image,
-            ),
-        ):
-            result = predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
-
-        assert result[0]["label"] == "Bonafide"
-
-    def test_melspectrogram_returns_normalised_scores(self):
-        from Jabberjay.Models.Transformer.VIT.MelSpectrogram.run import predict
-
-        mock_image = MagicMock()
-        mock_pipe = _mock_pipeline()
-        with (
-            patch(
-                "Jabberjay.Models.Transformer.VIT.utility.pipeline",
-                return_value=mock_pipe,
-            ),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.MelSpectrogram.run.get_image",
-                return_value=mock_image,
-            ),
-        ):
-            result = predict(audio=AUDIO, dataset=Dataset.VoxCelebSpoof)
-
-        assert result[0]["label"] == "Bonafide"
-
-
-# ---------------------------------------------------------------------------
-# VIT utility
-# ---------------------------------------------------------------------------
+    def test_training_rate_audio_is_not_resampled(self):
+        with patch(f"{_VIT}.librosa.resample") as mock_resample:
+            self._predict(Visualisation.MFCC, sr=22050.0)
+        mock_resample.assert_not_called()
 
 
 class TestGetImage:
     def test_returns_pil_image(self):
-
         from PIL import Image
 
-        from Jabberjay.Models.Transformer.VIT.utility import get_image
+        from Jabberjay.Models.Transformer.VIT.run import get_image
 
         def fake_savefig(buf, **kwargs):
             img = Image.new("RGB", (10, 10), color="white")
             img.save(buf, format="PNG")
 
         with (
-            patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.utility.Figure.savefig",
-                side_effect=fake_savefig,
-            ),
+            patch(f"{_VIT}.librosa.display.specshow"),
+            patch(f"{_VIT}.Figure.savefig", side_effect=fake_savefig),
         ):
             result = get_image(data=np.zeros((128, 100)), sr=22050.0)
 
@@ -308,7 +305,7 @@ class TestGetImage:
         no figures left registered in pyplot's global state."""
         from matplotlib import pyplot as plt
 
-        from Jabberjay.Models.Transformer.VIT.utility import get_image
+        from Jabberjay.Models.Transformer.VIT.run import get_image
 
         plt.close("all")
         with patch("matplotlib.pyplot.figure") as mock_plt_figure:
@@ -321,7 +318,7 @@ class TestGetImage:
 
         from PIL import Image
 
-        from Jabberjay.Models.Transformer.VIT.utility import get_image
+        from Jabberjay.Models.Transformer.VIT.run import get_image
 
         result = {}
 
@@ -334,69 +331,33 @@ class TestGetImage:
         assert isinstance(result["img"], Image.Image)
 
     def test_buffer_closed_on_success(self):
-        """Ensure the BytesIO buffer is closed after a successful call."""
         from PIL import Image
 
-        from Jabberjay.Models.Transformer.VIT.utility import get_image
+        from Jabberjay.Models.Transformer.VIT.run import get_image
 
         mock_buf = MagicMock(spec=io.BytesIO)
-        mock_buf.read.return_value = b""
-
-        real_buf = io.BytesIO()
         real_image = Image.new("RGB", (10, 10))
-        real_image.save(real_buf, format="PNG")
-        real_buf.seek(0)
-        mock_buf.__enter__ = MagicMock(return_value=mock_buf)
-        mock_buf.__exit__ = MagicMock(return_value=False)
-
-        def fake_savefig(buf, **kwargs):
-            real_image.save(buf, format="PNG")
 
         with (
-            patch(
-                "Jabberjay.Models.Transformer.VIT.utility.io.BytesIO",
-                return_value=mock_buf,
-            ),
-            patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.utility.Figure.savefig",
-                side_effect=fake_savefig,
-            ),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.utility.Image.open",
-                return_value=real_image,
-            ),
+            patch(f"{_VIT}.io.BytesIO", return_value=mock_buf),
+            patch(f"{_VIT}.librosa.display.specshow"),
+            patch(f"{_VIT}.Figure.savefig"),
+            patch(f"{_VIT}.Image.open", return_value=real_image),
         ):
             get_image(data=np.zeros((128, 100)), sr=22050.0)
 
         mock_buf.close.assert_called_once()
 
     def test_buffer_closed_on_error(self):
-        """Ensure the BytesIO buffer is closed even when Image.open raises."""
-        import pytest
-
-        from Jabberjay.Models.Transformer.VIT.utility import get_image
+        from Jabberjay.Models.Transformer.VIT.run import get_image
 
         mock_buf = MagicMock(spec=io.BytesIO)
 
-        def fake_savefig(buf, **kwargs):
-            pass
-
         with (
-            patch("Jabberjay.Models.Transformer.VIT.utility.Figure"),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.utility.io.BytesIO",
-                return_value=mock_buf,
-            ),
-            patch("Jabberjay.Models.Transformer.VIT.utility.librosa.display.specshow"),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.utility.Figure.savefig",
-                side_effect=fake_savefig,
-            ),
-            patch(
-                "Jabberjay.Models.Transformer.VIT.utility.Image.open",
-                side_effect=RuntimeError("corrupt image"),
-            ),
+            patch(f"{_VIT}.Figure"),
+            patch(f"{_VIT}.io.BytesIO", return_value=mock_buf),
+            patch(f"{_VIT}.librosa.display.specshow"),
+            patch(f"{_VIT}.Image.open", side_effect=RuntimeError("corrupt image")),
             pytest.raises(RuntimeError),
         ):
             get_image(data=np.zeros((128, 100)), sr=22050.0)
@@ -405,14 +366,12 @@ class TestGetImage:
 
 
 # ---------------------------------------------------------------------------
-# Spectra0
+# Spectra family
 # ---------------------------------------------------------------------------
 
 
 class TestSpectraPreprocess:
     def test_rejects_empty_audio(self):
-        import pytest
-
         from Jabberjay.Models.Spectra.shared import preprocess
 
         with pytest.raises(ValueError, match="empty"):
@@ -446,128 +405,185 @@ class TestSpectraPreprocess:
         assert not np.allclose(emphasised[0, :1000].numpy(), y)
 
 
-class _SpectraModelTestBase:
-    """Shared test logic for all Spectra models that return softmax scores."""
+class _TinySpectra(torch.nn.Module):
+    """Stand-in for a Spectra model: one parameter and one persistent buffer."""
 
-    model_module: str
-    model_class: str
+    def __init__(self):
+        super().__init__()
+        self.linear = torch.nn.Linear(2, 2)
+        self.register_buffer("scale", torch.ones(2))
 
-    def _make_mock_model(self, logits):
-        import torch
 
-        mock_model = MagicMock()
-        mock_model.eval.return_value = mock_model
-        mock_model.to.return_value = mock_model
-        mock_model.return_value = torch.tensor([logits])
-        return mock_model
+def _tiny_state_dict(**overrides):
+    state = {
+        "linear.weight": torch.eye(2),
+        "linear.bias": torch.tensor([0.5, -0.5]),
+        "scale": torch.full((2,), 3.0),
+    }
+    state.update(overrides)
+    return {k: v for k, v in state.items() if v is not None}
 
-    def _patch_path(self):
-        return f"Jabberjay.Models.{self.model_module}.run.{self.model_class}.from_pretrained"
 
-    def test_returns_bonafide_and_spoof_scores(self):
-        import importlib
+class TestSpectraLoadPretrained:
+    _SHARED = "Jabberjay.Models.Spectra.shared"
 
-        predict = importlib.import_module(
-            f"Jabberjay.Models.{self.model_module}.run"
-        ).predict
-        mock_model = self._make_mock_model([0.2, 0.8])
-        with patch(self._patch_path(), return_value=mock_model):
-            result = predict(y=AUDIO[0], sr=AUDIO[1])
-        assert {r["label"] for r in result} == {"Bonafide", "Spoof"}
+    def _load(self, state_dict, repo="lab260/spectra_0"):
+        from Jabberjay.Models.Spectra.shared import load_pretrained
 
-    def test_higher_bonafide_logit_yields_higher_bonafide_score(self):
-        import importlib
+        with (
+            patch(
+                f"{self._SHARED}.download_pretrained_model",
+                return_value="/fake/model.safetensors",
+            ) as mock_download,
+            patch(f"{self._SHARED}.load_file", return_value=state_dict),
+        ):
+            model = load_pretrained(_TinySpectra, repo, "cpu")
+        return model, mock_download
 
-        predict = importlib.import_module(
-            f"Jabberjay.Models.{self.model_module}.run"
-        ).predict
-        mock_model = self._make_mock_model([0.1, 0.9])
-        with patch(self._patch_path(), return_value=mock_model):
-            result = predict(y=AUDIO[0], sr=AUDIO[1])
-        bonafide = next(r for r in result if r["label"] == "Bonafide")
-        spoof = next(r for r in result if r["label"] == "Spoof")
-        assert bonafide["score"] > spoof["score"]
+    def test_adopts_checkpoint_tensors(self):
+        model, _ = self._load(_tiny_state_dict())
+        assert torch.equal(model.linear.weight, torch.eye(2))
+        assert torch.equal(model.scale, torch.full((2,), 3.0))
+        assert not any(p.is_meta for p in model.parameters())
+        assert not model.training
 
-    def test_scores_sum_to_one(self):
-        import importlib
+    def test_downloads_safetensors_from_the_pinned_revision(self):
+        _, mock_download = self._load(_tiny_state_dict())
+        mock_download.assert_called_once_with(
+            repo_id="lab260/spectra_0", filename="model.safetensors"
+        )
 
-        import pytest
+    def test_missing_checkpoint_key_raises(self):
+        with pytest.raises(RuntimeError, match="Missing key"):
+            self._load(_tiny_state_dict(scale=None))
 
-        predict = importlib.import_module(
-            f"Jabberjay.Models.{self.model_module}.run"
-        ).predict
-        mock_model = self._make_mock_model([0.3, 0.7])
-        with patch(self._patch_path(), return_value=mock_model):
-            result = predict(y=AUDIO[0], sr=AUDIO[1])
-        assert sum(r["score"] for r in result) == pytest.approx(1.0, abs=1e-5)
+    def test_unexpected_checkpoint_key_raises(self):
+        with pytest.raises(RuntimeError, match="Unexpected key"):
+            self._load(_tiny_state_dict(extra=torch.zeros(1)))
+
+    def test_tensor_left_on_meta_device_raises(self):
+        from Jabberjay.Models.Spectra.shared import load_pretrained
+
+        class WithNonPersistentBuffer(_TinySpectra):
+            def __init__(self):
+                super().__init__()
+                self.register_buffer("cache", torch.zeros(2), persistent=False)
+
+        with (
+            patch(f"{self._SHARED}.download_pretrained_model"),
+            patch(f"{self._SHARED}.load_file", return_value=_tiny_state_dict()),
+            pytest.raises(RuntimeError, match="not provided by the checkpoint"),
+        ):
+            load_pretrained(WithNonPersistentBuffer, "lab260/spectra_0", "cpu")
 
     def test_model_is_loaded_once_across_repeated_calls(self):
-        """Spectra.shared.load_pretrained() caches by (class, model id, device)
-        — a second predict() call for the same model must not reload it."""
+        from Jabberjay.Models.Spectra.shared import load_pretrained
+
+        with (
+            patch(f"{self._SHARED}.download_pretrained_model") as mock_download,
+            patch(f"{self._SHARED}.load_file", return_value=_tiny_state_dict()),
+        ):
+            first = load_pretrained(_TinySpectra, "lab260/spectra_0", "cpu")
+            second = load_pretrained(_TinySpectra, "lab260/spectra_0", "cpu")
+        assert first is second
+        mock_download.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    ("model_module", "model_class"),
+    [
+        ("Spectra0", "Spectra0Model"),
+        ("SpectraAASIST", "SpectraAASIST"),
+        ("SpectraAASIST3", "SpectraAASIST3"),
+    ],
+)
+def test_spectra_architecture_builds_on_meta_device(model_module, model_class):
+    """Every Spectra architecture must construct under torch.device("meta")
+    (AASIST3's KANLinear init uses lstsq, which has no meta kernel)."""
+    import importlib
+
+    cls = getattr(
+        importlib.import_module(f"Jabberjay.Models.{model_module}.model"), model_class
+    )
+    with (
+        patch("Jabberjay.Models.Spectra.shared.Wav2Vec2Config.from_pretrained") as cfg,
+        torch.device("meta"),
+    ):
+        from transformers import Wav2Vec2Config
+
+        cfg.return_value = Wav2Vec2Config(
+            hidden_size=1024,
+            num_hidden_layers=1,
+            num_attention_heads=4,
+            intermediate_size=64,
+            conv_dim=(8, 8),
+            conv_kernel=(10, 3),
+            conv_stride=(5, 2),
+            num_conv_pos_embeddings=16,
+            num_conv_pos_embedding_groups=4,
+        )
+        model = cls()
+    assert all(p.is_meta for p in model.parameters())
+
+
+class _SpectraPredictBase:
+    """Shared predict() tests for the Spectra models (loader mocked)."""
+
+    model_module: str
+
+    def _predict(self, logits):
         import importlib
 
-        predict = importlib.import_module(
-            f"Jabberjay.Models.{self.model_module}.run"
-        ).predict
-        mock_model = self._make_mock_model([0.2, 0.8])
-        with patch(self._patch_path(), return_value=mock_model) as mock_from_pretrained:
-            predict(y=AUDIO[0], sr=AUDIO[1])
-            predict(y=AUDIO[0], sr=AUDIO[1])
-        mock_from_pretrained.assert_called_once()
+        run = importlib.import_module(f"Jabberjay.Models.{self.model_module}.run")
+        mock_model = MagicMock(return_value=torch.tensor([logits]))
+        with patch.object(run, "load_pretrained", return_value=mock_model) as loader:
+            result = run.predict(y=AUDIO[0], sr=AUDIO[1])
+        return {r["label"]: r["score"] for r in result}, loader
 
-    def test_weights_are_loaded_strictly(self):
-        """A checkpoint/architecture key mismatch must raise, not silently
-        leave layers randomly initialised (PyTorchModelHubMixin's default)."""
+    def test_returns_bonafide_and_spoof_scores(self):
+        scores, _ = self._predict([0.2, 0.8])
+        assert set(scores) == {"Bonafide", "Spoof"}
+
+    def test_higher_bonafide_logit_yields_higher_bonafide_score(self):
+        scores, _ = self._predict([0.1, 0.9])
+        assert scores["Bonafide"] > scores["Spoof"]
+
+    def test_scores_sum_to_one(self):
+        scores, _ = self._predict([0.3, 0.7])
+        assert sum(scores.values()) == pytest.approx(1.0, abs=1e-5)
+
+    def test_loads_its_own_model_id(self):
         import importlib
 
-        predict = importlib.import_module(
-            f"Jabberjay.Models.{self.model_module}.run"
-        ).predict
-        mock_model = self._make_mock_model([0.2, 0.8])
-        with patch(self._patch_path(), return_value=mock_model) as mock_from_pretrained:
-            predict(y=AUDIO[0], sr=AUDIO[1])
-        assert mock_from_pretrained.call_args.kwargs["strict"] is True
+        run = importlib.import_module(f"Jabberjay.Models.{self.model_module}.run")
+        _, loader = self._predict([0.2, 0.8])
+        assert loader.call_args.args[1] == run.MODEL_ID
 
 
-class TestSpectra0Predict(_SpectraModelTestBase):
+class TestSpectra0Predict(_SpectraPredictBase):
     model_module = "Spectra0"
-    model_class = "Spectra0Model"
 
     def test_uses_calibrated_threshold_not_naive_argmax(self):
         """bonafide_logit=-0.5 is below spoof_logit=0.5 (naive argmax would
         say Spoof) but above the model's -1.0625009 calibrated threshold,
         so the verdict must be Bonafide."""
-        from Jabberjay.Models.Spectra0.run import predict
-
-        mock_model = self._make_mock_model([0.5, -0.5])
-        with patch(self._patch_path(), return_value=mock_model):
-            result = predict(y=AUDIO[0], sr=AUDIO[1])
-        bonafide = next(r for r in result if r["label"] == "Bonafide")
-        spoof = next(r for r in result if r["label"] == "Spoof")
-        assert bonafide["score"] > spoof["score"]
+        scores, _ = self._predict([0.5, -0.5])
+        assert scores["Bonafide"] > scores["Spoof"]
 
 
-class TestSpectraAASISTPredict(_SpectraModelTestBase):
+class TestSpectraAASISTPredict(_SpectraPredictBase):
     model_module = "SpectraAASIST"
-    model_class = "SpectraAASIST"
 
     def test_uses_calibrated_threshold_not_naive_argmax(self):
         """bonafide_logit=-0.5 is below spoof_logit=0.5 (naive argmax would
         say Spoof) but above the model's -1.140625 calibrated threshold,
         so the verdict must be Bonafide."""
-        from Jabberjay.Models.SpectraAASIST.run import predict
-
-        mock_model = self._make_mock_model([0.5, -0.5])
-        with patch(self._patch_path(), return_value=mock_model):
-            result = predict(y=AUDIO[0], sr=AUDIO[1])
-        bonafide = next(r for r in result if r["label"] == "Bonafide")
-        spoof = next(r for r in result if r["label"] == "Spoof")
-        assert bonafide["score"] > spoof["score"]
+        scores, _ = self._predict([0.5, -0.5])
+        assert scores["Bonafide"] > scores["Spoof"]
 
 
-class TestSpectraAASIST3Predict(_SpectraModelTestBase):
+class TestSpectraAASIST3Predict(_SpectraPredictBase):
     model_module = "SpectraAASIST3"
-    model_class = "SpectraAASIST3"
 
 
 # ---------------------------------------------------------------------------
@@ -576,79 +592,59 @@ class TestSpectraAASIST3Predict(_SpectraModelTestBase):
 
 
 class TestClassicalPredict:
-    def test_returns_prediction_and_confidence(self):
+    _RUN = "Jabberjay.Models.Classical.run"
+
+    def _predict(self, proba, *, sr=22050.0, classes=("Genuine.wav", "Synthetic.wav")):
         from Jabberjay.Models.Classical.run import predict
 
         mock_clf = MagicMock()
-        mock_clf.predict.return_value = [1]
-        mock_clf.predict_proba.return_value = np.array([[0.1, 0.9]])
-
+        mock_clf.classes_ = np.array(classes)
+        mock_clf.predict_proba.return_value = np.array([proba])
         with (
             patch(
-                "Jabberjay.Models.Classical.run.download_pretrained_model",
-                return_value="/fake/model.joblib",
-            ),
-            patch("Jabberjay.Models.Classical.run.load", return_value=mock_clf),
-            patch(
-                "Jabberjay.Models.Classical.run.get_features",
-                return_value=MagicMock(),
-            ),
-        ):
-            prediction, confidence = predict(audio=AUDIO)
-
-        assert prediction == 1
-        assert confidence == pytest.approx(0.9)
-
-    def test_spoof_prediction(self):
-        from Jabberjay.Models.Classical.run import predict
-
-        mock_clf = MagicMock()
-        mock_clf.predict.return_value = [0]
-        mock_clf.predict_proba.return_value = np.array([[0.8, 0.2]])
-
-        with (
-            patch(
-                "Jabberjay.Models.Classical.run.download_pretrained_model",
-                return_value="/fake/model.joblib",
-            ),
-            patch("Jabberjay.Models.Classical.run.load", return_value=mock_clf),
-            patch(
-                "Jabberjay.Models.Classical.run.get_features",
-                return_value=MagicMock(),
-            ),
-        ):
-            prediction, confidence = predict(audio=AUDIO)
-
-        assert prediction == 0
-        assert confidence == pytest.approx(0.8)
-
-    def test_classifier_is_loaded_once_across_repeated_calls(self):
-        """_load_classifier() caches the downloaded joblib model — a second
-        predict() call must not re-download or re-deserialise it."""
-        from Jabberjay.Models.Classical.run import predict
-
-        mock_clf = MagicMock()
-        mock_clf.predict.return_value = [1]
-        mock_clf.predict_proba.return_value = np.array([[0.1, 0.9]])
-
-        with (
-            patch(
-                "Jabberjay.Models.Classical.run.download_pretrained_model",
+                f"{self._RUN}.download_pretrained_model",
                 return_value="/fake/model.joblib",
             ) as mock_download,
-            patch(
-                "Jabberjay.Models.Classical.run.load", return_value=mock_clf
-            ) as mock_load,
-            patch(
-                "Jabberjay.Models.Classical.run.get_features",
-                return_value=MagicMock(),
-            ),
+            patch(f"{self._RUN}.load", return_value=mock_clf) as mock_load,
+            patch(f"{self._RUN}.get_features", return_value=MagicMock()) as mock_feat,
         ):
-            predict(audio=AUDIO)
-            predict(audio=AUDIO)
+            result = predict(y=np.ones(22050, dtype=np.float32), sr=sr)
+            result_again = predict(y=np.ones(22050, dtype=np.float32), sr=sr)
+        assert result == result_again
+        return (
+            {r["label"]: r["score"] for r in result},
+            mock_download,
+            mock_load,
+            mock_feat,
+        )
 
+    def test_synthetic_class_maps_to_spoof(self):
+        """Regression: the classifier's classes are the strings
+        'Genuine.wav'/'Synthetic.wav', and bool() of either is True — so
+        earlier versions labelled every clip Bonafide."""
+        scores, *_ = self._predict([0.2, 0.8])
+        assert scores == {"Bonafide": pytest.approx(0.2), "Spoof": pytest.approx(0.8)}
+
+    def test_genuine_class_maps_to_bonafide(self):
+        scores, *_ = self._predict([0.9, 0.1])
+        assert scores["Bonafide"] == pytest.approx(0.9)
+
+    def test_scores_follow_classes_order_not_index_convention(self):
+        scores, *_ = self._predict([0.7, 0.3], classes=("Synthetic.wav", "Genuine.wav"))
+        assert scores == {"Spoof": pytest.approx(0.7), "Bonafide": pytest.approx(0.3)}
+
+    def test_classifier_is_loaded_once_across_repeated_calls(self):
+        _, mock_download, mock_load, _ = self._predict([0.5, 0.5])
         mock_download.assert_called_once()
         mock_load.assert_called_once()
+
+    def test_features_extracted_at_training_sample_rate(self):
+        from Jabberjay.Models.Classical.run import TRAINING_SR
+
+        *_, mock_feat = self._predict([0.5, 0.5], sr=16000.0)
+        y, sr = mock_feat.call_args.kwargs["audio"]
+        assert sr == TRAINING_SR
+        assert len(y) == pytest.approx(22050 * TRAINING_SR / 16000, abs=2)
 
 
 # ---------------------------------------------------------------------------
@@ -659,8 +655,6 @@ class TestClassicalPredict:
 class TestDFArenaPredict:
     def _predict(self, logits, state_dict=None):
         """Run predict() with the model, download, and torch.load all mocked."""
-        import torch
-
         from Jabberjay.Models.DFArena.run import predict
 
         mock_model = MagicMock()
@@ -695,11 +689,11 @@ class TestDFArenaPredict:
         result, *_ = self._predict([0.3, 0.7])
         assert sum(r["score"] for r in result) == pytest.approx(1.0, abs=1e-5)
 
-    def test_downloads_pinned_revision(self):
-        from Jabberjay.Models.DFArena.run import _REVISION
+    def test_downloads_the_checkpoint_through_the_pinned_wrapper(self):
+        from Jabberjay.Models.DFArena.run import MODEL_ID, WEIGHTS_FILE
 
         *_, mock_download, _ = self._predict([0.2, 0.8])
-        assert mock_download.call_args.kwargs["revision"] == _REVISION
+        mock_download.assert_called_once_with(repo_id=MODEL_ID, filename=WEIGHTS_FILE)
 
     def test_loads_weights_safely_and_strictly(self):
         *_, mock_model, _, _, mock_load = self._predict([0.2, 0.8])
@@ -707,8 +701,6 @@ class TestDFArenaPredict:
         assert mock_model.load_state_dict.call_args.kwargs["strict"] is True
 
     def test_strips_wrapper_prefix_from_state_dict_keys(self):
-        import torch
-
         state_dict = {
             "backbone.fc0.weight": torch.zeros(1),
             "backbone.conformer.fc5.bias": torch.zeros(2),
@@ -718,8 +710,6 @@ class TestDFArenaPredict:
         assert set(loaded) == {"fc0.weight", "conformer.fc5.bias"}
 
     def test_model_is_loaded_once_across_repeated_calls(self):
-        import torch
-
         from Jabberjay.Models.DFArena.run import predict
 
         mock_model = MagicMock()
@@ -742,224 +732,97 @@ class TestDFArenaPredict:
 # RawNet2
 # ---------------------------------------------------------------------------
 
+_RAWNET = "Jabberjay.Models.RawNet2.run"
+
 
 class TestRawNet2Config:
-    def test_oserror_raises_runtime_error(self):
-        import Jabberjay.Models.RawNet2.run as rawnet2_run
-        from Jabberjay.Models.RawNet2.run import predict
+    def test_loads_bundled_config(self):
+        from Jabberjay.Models.RawNet2.run import _load_config
 
-        original = rawnet2_run._CONFIG
-        rawnet2_run._CONFIG = None  # reset cache so the open is attempted
-        try:
-            with (
-                patch("builtins.open", side_effect=OSError("missing")),
-                pytest.raises(RuntimeError, match="Failed to load RawNet2 config"),
-            ):
-                predict(y=AUDIO[0], sr=AUDIO[1])
-        finally:
-            rawnet2_run._CONFIG = original
+        assert _load_config()["nb_samp"] == 64600
+
+    def test_oserror_raises_runtime_error(self):
+        from Jabberjay.Models.RawNet2.run import _load_config
+
+        with (
+            patch(f"{_RAWNET}._CONFIG_PATH") as mock_path,
+            pytest.raises(RuntimeError, match="Failed to load RawNet2 config"),
+        ):
+            mock_path.open.side_effect = OSError("missing")
+            _load_config()
 
     def test_yaml_error_raises_runtime_error(self):
         import yaml
 
-        import Jabberjay.Models.RawNet2.run as rawnet2_run
-        from Jabberjay.Models.RawNet2.run import predict
+        from Jabberjay.Models.RawNet2.run import _load_config
 
-        original = rawnet2_run._CONFIG
-        rawnet2_run._CONFIG = None  # reset cache so the open is attempted
-        try:
-            with patch("builtins.open", mock_open := MagicMock()):
-                mock_open.return_value.__enter__.return_value = MagicMock()
-                with (
-                    patch(
-                        "Jabberjay.Models.RawNet2.run.yaml.safe_load",
-                        side_effect=yaml.YAMLError("bad yaml"),
-                    ),
-                    pytest.raises(RuntimeError, match="Failed to load RawNet2 config"),
-                ):
-                    predict(y=AUDIO[0], sr=AUDIO[1])
-        finally:
-            rawnet2_run._CONFIG = original
+        with (
+            patch(f"{_RAWNET}.yaml.safe_load", side_effect=yaml.YAMLError("bad")),
+            pytest.raises(RuntimeError, match="Failed to load RawNet2 config"),
+        ):
+            _load_config()
+
+    def test_config_without_model_section_raises_runtime_error(self):
+        from Jabberjay.Models.RawNet2.run import _load_config
+
+        with (
+            patch(f"{_RAWNET}.yaml.safe_load", return_value={"optimizer": "Adam"}),
+            pytest.raises(RuntimeError, match="Failed to load RawNet2 config"),
+        ):
+            _load_config()
 
 
 class TestRawNet2Predict:
+    @staticmethod
+    def _predict(y=None, sr=16000.0, log_probs=(-2.3, -0.1), state_dict=None):
+        from Jabberjay.Models.RawNet2.run import predict
+
+        mock_model = MagicMock(return_value=torch.tensor([log_probs]))
+        with (
+            patch(f"{_RAWNET}.RawNet", return_value=mock_model) as mock_rawnet,
+            patch(
+                f"{_RAWNET}.download_pretrained_model",
+                return_value="/fake/model.pth",
+            ) as mock_download,
+            patch("torch.load", return_value={} if state_dict is None else state_dict),
+        ):
+            y = AUDIO[0] if y is None else y
+            result = predict(y=y, sr=sr)
+            predict(y=y, sr=sr)
+        return result, mock_model, mock_rawnet, mock_download
+
     def test_sincconv_filters_buffer_is_not_persisted_in_state_dict(self):
         from Jabberjay.Models.RawNet2.model import SincConv
 
         sinc_conv = SincConv(device="cpu", out_channels=2, kernel_size=31)
-
         assert "filters" not in sinc_conv.state_dict()
 
     def test_ignores_legacy_sinc_filters_state_dict_key(self):
-        import torch
-
-        from Jabberjay.Models.RawNet2.run import predict
-
-        mock_model = MagicMock()
-        mock_out = MagicMock()
-        mock_out.exp.return_value = torch.tensor([[0.1, 0.9]])
-        mock_out.max.return_value = (MagicMock(), torch.tensor([1]))
-        mock_model.return_value = mock_out
-
-        state_dict = {
-            "Sinc_conv.filters": torch.tensor([1.0]),
-            "foo": torch.tensor(1.0),
-        }
-
-        with (
-            patch("Jabberjay.Models.RawNet2.run.RawNet", return_value=mock_model),
-            patch(
-                "Jabberjay.Models.RawNet2.run.download_pretrained_model",
-                return_value="/fake/model.pth",
-            ),
-            patch("torch.load", return_value=state_dict),
-            patch("torch.no_grad"),
-        ):
-            predict(y=AUDIO[0], sr=AUDIO[1])
-
-        loaded_state_dict = mock_model.load_state_dict.call_args.args[0]
-        assert "Sinc_conv.filters" not in loaded_state_dict
-        assert loaded_state_dict["foo"] is state_dict["foo"]
+        state_dict = {"Sinc_conv.filters": torch.tensor([1.0]), "foo": torch.ones(1)}
+        _, mock_model, *_ = self._predict(state_dict=state_dict)
+        loaded = mock_model.load_state_dict.call_args.args[0]
+        assert "Sinc_conv.filters" not in loaded
+        assert loaded["foo"] is state_dict["foo"]
 
     def test_empty_audio_raises_value_error(self):
-        from Jabberjay.Models.RawNet2.run import predict
+        with pytest.raises(ValueError, match="Input audio array is empty"):
+            self._predict(y=np.zeros(0, dtype=np.float32))
 
-        with (
-            patch("Jabberjay.Models.RawNet2.run.RawNet", return_value=MagicMock()),
-            patch(
-                "Jabberjay.Models.RawNet2.run.download_pretrained_model",
-                return_value="/fake/model.pth",
-            ),
-            patch("torch.load", return_value={}),
-            pytest.raises(ValueError, match="Input audio array is empty"),
-        ):
-            predict(y=np.zeros(0, dtype=np.float32), sr=16000.0)
+    def test_returns_both_class_probabilities_from_log_softmax(self):
+        import math
 
-    def test_returns_prediction_and_confidence(self):
-        from Jabberjay.Models.RawNet2.run import predict
+        result, *_ = self._predict(log_probs=(math.log(0.2), math.log(0.8)))
+        scores = {r["label"]: r["score"] for r in result}
+        assert scores == {"Spoof": pytest.approx(0.2), "Bonafide": pytest.approx(0.8)}
 
-        mock_predicted = MagicMock()
-        mock_predicted.item.return_value = 1
-
-        # probs[0][predicted.item()] must be a float-able value
-        mock_inner = MagicMock()
-        mock_inner.__getitem__ = MagicMock(return_value=0.85)
-        mock_probs = MagicMock()
-        mock_probs.__getitem__ = MagicMock(return_value=mock_inner)
-
-        mock_out = MagicMock()
-        mock_out.exp.return_value = mock_probs
-        mock_out.max.return_value = (MagicMock(), mock_predicted)
-
-        mock_model = MagicMock()
-        mock_model.return_value = mock_out
-
-        with (
-            patch("Jabberjay.Models.RawNet2.run.RawNet", return_value=mock_model),
-            patch(
-                "Jabberjay.Models.RawNet2.run.download_pretrained_model",
-                return_value="/fake/model.pth",
-            ),
-            patch("torch.load", return_value={}),
-            patch("torch.no_grad"),
-        ):
-            prediction, confidence = predict(y=AUDIO[0], sr=AUDIO[1])
-
-        assert prediction is mock_predicted
-        assert isinstance(confidence, float)
-
-    def test_resamples_when_sr_differs_from_target(self):
-        """22050Hz input must be resampled to the model's 16kHz target rate."""
-        from Jabberjay.Models.RawNet2.run import predict
-
-        mock_predicted = MagicMock()
-        mock_predicted.item.return_value = 1
-        mock_inner = MagicMock()
-        mock_inner.__getitem__ = MagicMock(return_value=0.85)
-        mock_probs = MagicMock()
-        mock_probs.__getitem__ = MagicMock(return_value=mock_inner)
-        mock_out = MagicMock()
-        mock_out.exp.return_value = mock_probs
-        mock_out.max.return_value = (MagicMock(), mock_predicted)
-        mock_model = MagicMock()
-        mock_model.return_value = mock_out
-
-        y = np.zeros(22050, dtype=np.float32)
-        with (
-            patch("Jabberjay.Models.RawNet2.run.RawNet", return_value=mock_model),
-            patch(
-                "Jabberjay.Models.RawNet2.run.download_pretrained_model",
-                return_value="/fake/model.pth",
-            ),
-            patch("torch.load", return_value={}),
-            patch("torch.no_grad"),
-        ):
-            prediction, confidence = predict(y=y, sr=22050.0)
-
-        assert prediction is mock_predicted
-        assert isinstance(confidence, float)
-
-    def test_trims_audio_longer_than_max_len(self):
-        """Audio already at/above nb_samp must be trimmed, not repeat-padded."""
-        from Jabberjay.Models.RawNet2.run import predict
-
-        mock_predicted = MagicMock()
-        mock_predicted.item.return_value = 1
-        mock_inner = MagicMock()
-        mock_inner.__getitem__ = MagicMock(return_value=0.85)
-        mock_probs = MagicMock()
-        mock_probs.__getitem__ = MagicMock(return_value=mock_inner)
-        mock_out = MagicMock()
-        mock_out.exp.return_value = mock_probs
-        mock_out.max.return_value = (MagicMock(), mock_predicted)
-        mock_model = MagicMock()
-        mock_model.return_value = mock_out
-
-        y = np.zeros(70_000, dtype=np.float32)  # longer than nb_samp=64600
-        with (
-            patch("Jabberjay.Models.RawNet2.run.RawNet", return_value=mock_model),
-            patch(
-                "Jabberjay.Models.RawNet2.run.download_pretrained_model",
-                return_value="/fake/model.pth",
-            ),
-            patch("torch.load", return_value={}),
-            patch("torch.no_grad"),
-        ):
-            prediction, confidence = predict(y=y, sr=16000.0)
-
-        assert prediction is mock_predicted
-        assert isinstance(confidence, float)
+    @pytest.mark.parametrize(
+        ("length", "sr"), [(1000, 16000.0), (70_000, 16000.0), (22050, 22050.0)]
+    )
+    def test_model_always_sees_exactly_nb_samp_samples(self, length, sr):
+        _, mock_model, *_ = self._predict(y=np.ones(length, dtype=np.float32), sr=sr)
+        assert mock_model.call_args.args[0].shape == (1, 64600)
 
     def test_model_is_loaded_once_across_repeated_calls(self):
-        """_load_model() caches the constructed RawNet + downloaded weights
-        — a second predict() call must not rebuild or re-download them."""
-        from Jabberjay.Models.RawNet2.run import predict
-
-        mock_predicted = MagicMock()
-        mock_predicted.item.return_value = 1
-        mock_inner = MagicMock()
-        mock_inner.__getitem__ = MagicMock(return_value=0.85)
-        mock_probs = MagicMock()
-        mock_probs.__getitem__ = MagicMock(return_value=mock_inner)
-        mock_out = MagicMock()
-        mock_out.exp.return_value = mock_probs
-        mock_out.max.return_value = (MagicMock(), mock_predicted)
-        mock_model = MagicMock()
-        mock_model.return_value = mock_out
-
-        with (
-            patch(
-                "Jabberjay.Models.RawNet2.run.RawNet", return_value=mock_model
-            ) as mock_rawnet,
-            patch(
-                "Jabberjay.Models.RawNet2.run.download_pretrained_model",
-                return_value="/fake/model.pth",
-            ) as mock_download,
-            patch("torch.load", return_value={}),
-            patch("torch.no_grad"),
-        ):
-            predict(y=AUDIO[0], sr=AUDIO[1])
-            predict(y=AUDIO[0], sr=AUDIO[1])
-
+        *_, mock_rawnet, mock_download = self._predict()
         mock_rawnet.assert_called_once()
         mock_download.assert_called_once()

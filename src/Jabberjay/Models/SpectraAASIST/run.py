@@ -7,7 +7,7 @@ from Jabberjay.Models.SpectraAASIST.model import SpectraAASIST
 from Jabberjay.Utilities.device import get_device
 from Jabberjay.Utilities.types import PredictionScore
 
-_MODEL_ID = "lab260/Spectra-AASIST"
+MODEL_ID = "lab260/Spectra-AASIST"
 # The model card documents -1.140625 as the EER-tuned threshold, but
 # SpectraAASIST.classify()'s own default parameter is -1.0625009 — a stale
 # value carried over from Spectra0's model.py. We use the documented value
@@ -17,7 +17,7 @@ _THRESHOLD = -1.140625
 
 def predict(y: np.ndarray, sr: float) -> list[PredictionScore]:
     device = get_device()
-    model = load_pretrained(SpectraAASIST, _MODEL_ID, device)
+    model = load_pretrained(SpectraAASIST, MODEL_ID, device)
     audio = preprocess(y, sr).to(device)
     logger.debug(
         f"Running Spectra-AASIST inference on {audio.shape[1]} samples at {_TARGET_SR}Hz"

@@ -23,8 +23,14 @@ class TestDetectionResult:
         assert "Spoof" in str(r)
         assert "80.0%" in str(r)
 
-    def test_scores_defaults_to_none(self):
+    def test_scores_defaults_to_empty_list(self):
         r = DetectionResult(
             label="Bonafide", is_bonafide=True, confidence=1.0, model=Model.RawNet2
         )
-        assert r.scores is None
+        assert r.scores == []
+
+    def test_scores_default_is_not_shared_between_instances(self):
+        a = DetectionResult("Spoof", False, 0.9, Model.VIT)
+        b = DetectionResult("Spoof", False, 0.9, Model.VIT)
+        a.scores.append({"label": "Spoof", "score": 0.9})
+        assert b.scores == []

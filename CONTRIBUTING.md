@@ -97,53 +97,52 @@ import numpy as np
 from Jabberjay.Utilities.pipeline import run_pipeline
 from Jabberjay.Utilities.types import PredictionScore
 
-_MODEL_ID = "author/model-id-on-huggingface"
-_TARGET_SR = 16_000
+MODEL_ID = "author/model-id-on-huggingface"
 
 
 def predict(y: np.ndarray, sr: float) -> list[PredictionScore]:
-    return run_pipeline(_MODEL_ID, y, sr, "MyModel", sampling_rate=_TARGET_SR)
+    return run_pipeline(MODEL_ID, y, sr, "MyModel")
 ```
+
+`predict()` receives validated mono float32 samples at whatever rate the caller had; resample inside the model to the rate it was trained at (the pipeline helper does this for you). It must return one `PredictionScore` per class — both `Bonafide` and `Spoof`.
+
+**Pin the repository.** Add the model's repo id and the full 40-character commit hash you reviewed to `REVISIONS` in [`Utilities/hugging_face.py`](src/Jabberjay/Utilities/hugging_face.py). Every download goes through that table and an unpinned repo is refused, so the model won't load until it's there.
 
 If your model needs custom loading (a `torch.nn.Module`, a non-pipeline HuggingFace class, a `.joblib`/`.pth` file, etc. — see the `Spectra*`, `RawNet2`, or `Classical` model families for examples), wrap the load in `Jabberjay.Utilities.model_cache.cached_loader` instead of calling `.from_pretrained()`/`load()` directly inside `predict()`. Every model in Jabberjay caches its loaded weights in-process so repeated `detect()` calls for the same model don't pay the reload cost — a new model that skips this would be the one exception and would noticeably slow down multi-call use (e.g. `examples/run_all.py`):
 
 ```python
+from Jabberjay.Utilities.hugging_face import download_pretrained_model
 from Jabberjay.Utilities.model_cache import cached_loader
 
 @cached_loader(maxsize=4)
 def _load_model(device: str) -> MyModelClass:
-    return MyModelClass.from_pretrained(_MODEL_ID, strict=True).eval().to(device)
+    path = download_pretrained_model(repo_id=MODEL_ID, filename="model.safetensors")
+    ...  # build the module, load_state_dict(..., strict=True), .eval().to(device)
 ```
 
 When loading weights yourself:
 
 - load with `strict=True`, so a checkpoint that doesn't match your architecture fails loudly instead of leaving layers randomly initialised
 - load pickled checkpoints (`.bin`, `.pth`) with `torch.load(..., weights_only=True)`, and never use `trust_remote_code=True` — port the architecture instead (see `Models/DFArena/`)
-- if the checkpoint is pickled and the repository isn't Jabberjay's own, pin a reviewed commit with `download_pretrained_model(..., revision=<commit hash>)`
+- for a large model, build it under `torch.device("meta")` and `load_state_dict(..., assign=True)` so its parameters aren't randomly initialised only to be overwritten (see `Models/Spectra/shared.py`)
 
-If the model uses non-standard labels, `normalize_pipeline_scores()` calls `normalize_label()` internally — check `src/Jabberjay/Utilities/label_normalizer.py` and extend `_BONAFIDE_SUBSTR` / `_SPOOF_SUBSTR` (substring matching) or `_BONAFIDE_EXACT` / `_SPOOF_EXACT` (exact matching) if needed.
+If the model uses non-standard labels, `normalize_pipeline_scores()` calls `normalize_label()` internally — check `src/Jabberjay/Utilities/label_normalizer.py` and extend `_BONAFIDE_SUBSTR` / `_SPOOF_SUBSTR` (substring matching) or `_BONAFIDE_EXACT` / `_SPOOF_EXACT` (exact matching) if needed. If the checkpoint has no `id2label` (so transformers reports `LABEL_0`/`LABEL_1`), **verify which index means bonafide** on known-genuine and known-synthetic audio and pass an explicit `label_map` to `run_pipeline()` — see `Models/WavLM/run.py`.
 
-**3. Add a handler and match case** in `src/Jabberjay/jabberjay.py`:
+**3. Register the model** in `_MODELS` in `src/Jabberjay/jabberjay.py`:
 
 ```python
-# In detect():
-case Model.MyModel:
-    return self._mymodel_handler(y=y, sr=sr)
-
-# New method:
-def _mymodel_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
-    import Jabberjay.Models.MyModel.run as MyModel
-    scores = MyModel.predict(y=y, sr=sr)
-    logger.debug(f"MyModel predictions: {scores}")
-    return self._result_from_scores(scores, Model.MyModel)
+Model.MyModel: _ModelSpec("Jabberjay.Models.MyModel.run"),
 ```
+
+Set `needs_dataset=True` / `needs_visualisation=True` if `predict()` takes those arguments.
 
 **4. Update tests:**
 
 - add the new enum value to `TestEnums.test_model_members` in `tests/test_enums.py`
 - add a `predict()` unit test in `tests/test_models.py` (mock all model loading — the suite runs offline)
-- add a handler test to `TestDetectHandlers` in `tests/test_jabberjay.py`
-- for a custom architecture, add shape and state-dict layout tests in `tests/test_architecture.py`, and an opt-in real-weights test in `tests/test_integration.py` (run with `just test-integration`)
+- add the repo to `_every_repo_jabberjay_loads()` in `tests/test_models.py` (dispatch is covered automatically by `TestDetectDispatch`)
+- add the model's bonafide scores on both reference clips to `REFERENCE_SCORES` in `tests/test_integration.py`, and the files it loads to `_required_files()`, then run `just test-integration`
+- for a custom architecture, add shape and state-dict layout tests in `tests/test_architecture.py`
 
 **5. Update `CHANGELOG.md`** under `[Unreleased]` with the model name, HuggingFace link, and dataset.
 

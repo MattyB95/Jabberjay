@@ -219,7 +219,7 @@ Every call to `detect()` returns a `DetectionResult` regardless of the model use
 | `is_bonafide` | `bool`               | `True` if the audio is classified as genuine                                                                                  |
 | `confidence`  | `float`              | Confidence score for the top prediction (0.0–1.0)                                                                             |
 | `model`       | `Model`              | The model that produced this result                                                                                           |
-| `scores`      | `list[dict] \| None` | Full label/score breakdown for VIT, AST, DFArena1B, Spectra0, SpectraAASIST, SpectraAASIST3, Wav2Vec2, HuBERT, and WavLM (sorted highest-first); `None` for Classical and RawNet2 |
+| `scores`      | `list[dict]`         | Score for both labels, sorted highest-first                                                                                   |
 
 ```python
 if result.is_bonafide:
@@ -228,14 +228,15 @@ else:
     print(f"Synthetic voice detected with {result.confidence:.1%} confidence")
 
 # Full per-label scores
-if result.scores:
-    for entry in result.scores:
-        print(f"  {entry['label']}: {entry['score']:.3f}")
+for entry in result.scores:
+    print(f"  {entry['label']}: {entry['score']:.3f}")
 ```
 
 #### Pre-loading audio
 
-Use `load()` when running multiple models on the same clip to avoid re-reading the file. Each model is also cached in memory after its first `detect()` call, so calling it again later in the process reuses the already-loaded weights instead of reloading them:
+Use `load()` when running multiple models on the same clip to avoid re-reading the file. It returns mono samples at the file's own sample rate; each model resamples to the rate it needs. You can also pass your own `(samples, sample_rate)` tuple — float or integer PCM, mono or multi-channel — and `detect()` validates and normalises it.
+
+Each model is also cached in memory after its first `detect()` call, so calling it again later in the process reuses the already-loaded weights instead of reloading them. Call `Jabberjay.clear_cache()` to free that memory:
 
 ```python
 audio = jj.load("audio.wav")  # returns (samples, sample_rate)
@@ -245,7 +246,11 @@ results = [
     jj.detect(audio, model="HuBERT"),
     jj.detect(audio, model="VIT", dataset="VoxCelebSpoof", visualisation="ConstantQ"),
 ]
+
+Jabberjay.clear_cache()  # release every loaded model
 ```
+
+Fixed-window models (RawNet2, DFArena1B and the Spectra family) score only the first ~4 s of a clip — see [How much audio each model sees](https://mattyb95.github.io/Jabberjay/models/#how-much-audio-each-model-sees).
 
 #### Discovering available options
 
@@ -326,7 +331,7 @@ If you use Jabberjay in your research, please cite it. GitHub's **"Cite this rep
   title   = {Jabberjay},
   year    = {2026},
   url     = {https://github.com/MattyB95/Jabberjay},
-  version = {0.1.3},
+  version = {0.2.0},
   doi     = {10.5281/zenodo.19056977},
 }
 ```

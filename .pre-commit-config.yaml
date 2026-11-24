@@ -21,19 +21,22 @@ repos:
       - id: check-toml
       - id: detect-private-key
 
-  - repo: https://github.com/psf/black
-    rev: 26.10.1
-    hooks:
-      - id: black
-
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.17.3
-    hooks:
-      - id: ruff-check
-        args: [ --fix ]
-
+  # Run through uv so the hooks use exactly the versions locked in uv.lock
+  # (and bumped by Dependabot) instead of a separately pinned `rev` that drifts
   - repo: local
     hooks:
+      - id: black
+        name: Format with black
+        language: system
+        entry: uv run black
+        types_or: [python, pyi]
+
+      - id: ruff-check
+        name: Lint with ruff
+        language: system
+        entry: uv run ruff check --fix
+        types_or: [python, pyi]
+
       - id: ty-check
         name: Type-check with ty
         language: system

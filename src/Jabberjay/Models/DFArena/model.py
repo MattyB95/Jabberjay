@@ -40,6 +40,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from transformers import Wav2Vec2Config, Wav2Vec2Model
 
+from Jabberjay.Utilities.hugging_face import revision_for
+
 
 class _Transpose(nn.Module):
     """Swap the channel and time axes: (B, N, C) <-> (B, C, N)."""
@@ -225,7 +227,10 @@ class DFArena1B(nn.Module):
     def __init__(self, ssl_model_name: str = "facebook/wav2vec2-xls-r-1b"):
         super().__init__()
         # Config only: the checkpoint carries its own fine-tuned encoder weights
-        self.ssl_model = Wav2Vec2Model(Wav2Vec2Config.from_pretrained(ssl_model_name))
+        config = Wav2Vec2Config.from_pretrained(
+            ssl_model_name, revision=revision_for(ssl_model_name)
+        )
+        self.ssl_model = Wav2Vec2Model(config)
         self.ssl_model.config.output_hidden_states = True
         emb_size = self.ssl_model.config.hidden_size
         self.attn_scores = nn.Linear(emb_size, 1, bias=False)

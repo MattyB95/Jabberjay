@@ -1,25 +1,31 @@
+from collections.abc import Mapping
+from typing import Literal
+
 import numpy as np
 import torch
 from loguru import logger
 from transformers import Pipeline, pipeline
 
 from Jabberjay.Utilities.device import get_device
+from Jabberjay.Utilities.hugging_face import revision_for
 from Jabberjay.Utilities.label_normalizer import normalize_pipeline_scores
 from Jabberjay.Utilities.model_cache import cached_loader
-from Jabberjay.Utilities.types import PredictionScore
+from Jabberjay.Utilities.types import Label, PredictionScore
 
 
 @cached_loader(maxsize=8)
-def _load_pipeline(model_id: str, sampling_rate: int | None) -> Pipeline:
-    """Load and cache a transformers audio-classification pipeline by model id."""
+def load_pipeline(
+    task: Literal["audio-classification", "image-classification"], model_id: str
+) -> Pipeline:
+    """Load and cache a transformers pipeline at the model's pinned revision."""
     device = get_device()
-    logger.info(f"Loading model: {model_id} on {device}")
-    kwargs: dict = {"sampling_rate": sampling_rate} if sampling_rate is not None else {}
+    revision = revision_for(model_id)
+    logger.info(f"Loading model: {model_id}@{revision[:7]} on {device}")
     return pipeline(
-        "audio-classification",
+        task,
         model=model_id,
+        revision=revision,
         device=torch.device(device),
-        **kwargs,
     )
 
 
@@ -28,14 +34,14 @@ def run_pipeline(
     y: np.ndarray,
     sr: float,
     model_name: str,
-    sampling_rate: int | None = None,
+    label_map: Mapping[str, Label] | None = None,
 ) -> list[PredictionScore]:
-    """Load a transformers audio-classification pipeline and run inference.
+    """Run a cached transformers audio-classification pipeline on ``y``.
 
-    The pipeline is cached per (model_id, sampling_rate) so repeated calls for
-    the same model reuse already-loaded weights instead of reloading them.
+    The pipeline resamples ``y`` from ``sr`` to the rate its feature
+    extractor expects, so callers can pass audio at any sample rate.
     """
-    pipe = _load_pipeline(model_id, sampling_rate)
+    pipe = load_pipeline("audio-classification", model_id)
     logger.debug(f"Running {model_name} inference on {len(y)} samples at {int(sr)}Hz")
     raw = pipe({"raw": y, "sampling_rate": int(sr)})
-    return normalize_pipeline_scores(raw)
+    return normalize_pipeline_scores(raw, label_map=label_map)

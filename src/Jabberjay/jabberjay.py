@@ -1,5 +1,6 @@
 import argparse
 import importlib
+import os
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -8,8 +9,16 @@ import librosa
 import numpy as np
 from loguru import logger
 
-from Jabberjay.Utilities.enum_handler import Dataset, EnumAction, Model, Visualisation
-from Jabberjay.Utilities.types import PredictionScore
+from Jabberjay.Utilities import model_cache
+from Jabberjay.Utilities.audio import prepare_audio
+from Jabberjay.Utilities.enum_handler import (
+    Dataset,
+    EnumAction,
+    Model,
+    Visualisation,
+    parse_enum,
+)
+from Jabberjay.Utilities.types import Label, PredictionScore
 
 # Silence loguru by default — callers and the CLI configure output
 logger.disable("Jabberjay")
@@ -21,7 +30,7 @@ Audio = tuple[np.ndarray, float]
 class DetectionResult:
     """Structured result returned by every call to Jabberjay.detect()."""
 
-    label: str
+    label: Label
     """'Bonafide' or 'Spoof'."""
 
     is_bonafide: bool
@@ -33,12 +42,44 @@ class DetectionResult:
     model: Model
     """The model used to produce this result."""
 
-    scores: list[PredictionScore] | None = field(default=None)
-    """Full label/score breakdown, sorted highest-first; None for Classical and RawNet2."""
+    scores: list[PredictionScore] = field(default_factory=list)
+    """Full label/score breakdown for both classes, sorted highest-first."""
 
     def __str__(self) -> str:
         verdict = "Bonafide ✔️" if self.is_bonafide else "Spoof ❌"
         return f"{verdict} ({self.confidence:.1%} confidence, model={self.model.value})"
+
+
+@dataclass(frozen=True)
+class _ModelSpec:
+    """Where a model's ``predict(y, sr, ...)`` lives and which options it takes.
+
+    Modules are imported on first use, so importing Jabberjay stays cheap and
+    a model's heavy dependencies only load when that model is run.
+    """
+
+    module: str
+    needs_dataset: bool = False
+    needs_visualisation: bool = False
+
+
+_MODELS: dict[Model, _ModelSpec] = {
+    Model.AST: _ModelSpec("Jabberjay.Models.Transformer.AST.run", needs_dataset=True),
+    Model.Classical: _ModelSpec("Jabberjay.Models.Classical.run"),
+    Model.DFArena1B: _ModelSpec("Jabberjay.Models.DFArena.run"),
+    Model.HuBERT: _ModelSpec("Jabberjay.Models.HuBERT.run"),
+    Model.RawNet2: _ModelSpec("Jabberjay.Models.RawNet2.run"),
+    Model.Spectra0: _ModelSpec("Jabberjay.Models.Spectra0.run"),
+    Model.SpectraAASIST: _ModelSpec("Jabberjay.Models.SpectraAASIST.run"),
+    Model.SpectraAASIST3: _ModelSpec("Jabberjay.Models.SpectraAASIST3.run"),
+    Model.VIT: _ModelSpec(
+        "Jabberjay.Models.Transformer.VIT.run",
+        needs_dataset=True,
+        needs_visualisation=True,
+    ),
+    Model.Wav2Vec2: _ModelSpec("Jabberjay.Models.Wav2Vec2.run"),
+    Model.WavLM: _ModelSpec("Jabberjay.Models.WavLM.run"),
+}
 
 
 class Jabberjay:
@@ -48,7 +89,7 @@ class Jabberjay:
     pre-loaded ``(samples, sample_rate)`` tuple. Model weights are downloaded
     from Hugging Face Hub on first use and cached in memory for the lifetime
     of the process, so repeated calls for the same model skip both the
-    download and the reload.
+    download and the reload. Call ``clear_cache()`` to release them.
 
     Example::
 
@@ -82,6 +123,20 @@ class Jabberjay:
         cls._logging_enabled = True
 
     @staticmethod
+    def clear_cache() -> None:
+        """Release every loaded model and return its memory.
+
+        Models stay loaded after their first ``detect()`` call so later calls
+        are fast. Running many different models in one process adds up —
+        several GB each for DFArena1B and the Spectra family — so call this
+        once you're done with a model (or between models in a sweep) to free
+        RAM and GPU memory. The next ``detect()`` reloads from the local
+        Hugging Face cache without re-downloading.
+        """
+        model_cache.clear_all()
+        model_cache.release_memory()
+
+    @staticmethod
     def list_models() -> list[Model]:
         """Return all available models."""
         return list(Model)
@@ -97,9 +152,13 @@ class Jabberjay:
         return list(Visualisation)
 
     @staticmethod
-    def load(path: str | Path) -> Audio:
-        """Load an audio file and return (samples, sample_rate)."""
-        path = str(path)
+    def load(path: str | os.PathLike) -> Audio:
+        """Load an audio file as mono at its native rate: (samples, sample_rate).
+
+        No resampling happens here; each model resamples to the rate it was
+        trained at, so audio is only ever resampled once.
+        """
+        path = os.fspath(path)
         logger.debug(f"Loading audio file: {path}")
         # librosa 1.0 decodes via soundfile only, which raises an opaque
         # LibsndfileError ("System error") for a missing path — catch that
@@ -109,7 +168,7 @@ class Jabberjay:
         if not Path(path).exists():
             raise FileNotFoundError(f"Audio file not found: {path}")
         try:
-            y, sr = librosa.load(path)
+            y, sr = librosa.load(path, sr=None)
         except (OSError, RuntimeError, EOFError) as exc:
             raise ValueError(f"Failed to load audio from '{path}': {exc}") from exc
         logger.info(f"Loaded {len(y) / sr:.2f}s of audio at {int(sr)}Hz")
@@ -117,7 +176,7 @@ class Jabberjay:
 
     def detect(
         self,
-        audio: str | Path | Audio,
+        audio: str | os.PathLike | Audio,
         model: Model | str = Model.VIT,
         visualisation: Visualisation | str | None = Visualisation.ConstantQ,
         dataset: Dataset | str | None = Dataset.VoxCelebSpoof,
@@ -126,17 +185,23 @@ class Jabberjay:
         Detect whether audio is bonafide or spoofed.
 
         Args:
-            audio: Path to an audio file, or a pre-loaded (samples, sample_rate) tuple.
-            model: Model to use. Accepts a Model enum value or its string name (e.g. "VIT").
-            visualisation: Visualisation for VIT models. Accepts Visualisation enum or string.
-            dataset: Dataset the model was trained on. Accepts Dataset enum or string.
+            audio: Path to an audio file, or a pre-loaded ``(samples,
+                sample_rate)`` tuple at any sample rate. Samples may be float
+                or integer PCM, mono or multi-channel (downmixed to mono).
+            model: Model to use — a Model member or its name, case-insensitive
+                (e.g. ``"VIT"`` or ``"vit"``).
+            visualisation: Spectrogram type for VIT. Member or name.
+            dataset: Training dataset for VIT and AST. Member or name.
 
         Returns:
-            DetectionResult with label, confidence, and full scores where available.
+            DetectionResult with the label, its confidence, and the scores
+            for both classes.
 
         Raises:
-            ValueError: If required arguments are missing, or audio is empty.
-            KeyError: If an unrecognised string is passed for model, dataset, or visualisation.
+            FileNotFoundError: If ``audio`` is a path that doesn't exist.
+            ValueError: If the audio is empty, non-finite, wrongly shaped or
+                unreadable, a required argument is ``None``, or a name is
+                unrecognised (``InvalidChoiceError``, also a ``KeyError``).
 
         Note:
             VIT requires both ``visualisation`` and ``dataset``; both default to
@@ -146,68 +211,48 @@ class Jabberjay:
             All other models (Classical, DFArena1B, RawNet2, Spectra0,
             SpectraAASIST, SpectraAASIST3, HuBERT, Wav2Vec2, WavLM) ignore both.
         """
-        # Coerce strings to enums
-        if isinstance(model, str):
-            model = Model[model]
-        if isinstance(visualisation, str):
-            visualisation = Visualisation[visualisation]
-        if isinstance(dataset, str):
-            dataset = Dataset[dataset]
+        model = parse_enum(Model, model)
+        if visualisation is not None:
+            visualisation = parse_enum(Visualisation, visualisation)
+        if dataset is not None:
+            dataset = parse_enum(Dataset, dataset)
 
-        # Accept a file path directly
-        if isinstance(audio, (str, Path)):
+        if isinstance(audio, (str, os.PathLike)):
             audio = self.load(audio)
+        if not isinstance(audio, tuple) or len(audio) != 2:
+            raise ValueError(
+                "audio must be a file path or a (samples, sample_rate) tuple."
+            )
+        y, sr = prepare_audio(*audio)
 
-        y, sr = audio
-        if len(y) == 0:
-            raise ValueError("Audio array is empty — nothing to classify.")
-        if sr <= 0:
-            raise ValueError(f"Invalid sample rate: {sr}. Must be a positive number.")
+        spec = _MODELS[model]
+        options: dict[str, Dataset | Visualisation] = {}
+        if spec.needs_dataset:
+            if dataset is None:
+                raise ValueError(f"Dataset is required for the {model.value} model.")
+            options["dataset"] = dataset
+        if spec.needs_visualisation:
+            if visualisation is None:
+                raise ValueError(
+                    f"Visualisation is required for the {model.value} model."
+                )
+            options["visualisation"] = visualisation
 
         logger.info(
             f"Running detection — model={model.value}, "
-            f"dataset={dataset.value if dataset else None}, "
-            f"visualisation={visualisation.value if visualisation else None}"
+            + ", ".join(f"{k}={v.value}" for k, v in options.items())
         )
-        match model:
-            case Model.AST:
-                if dataset is None:
-                    raise ValueError("Dataset is required for the AST model.")
-                return self._ast_handler(y=y, sr=sr, dataset=dataset)
-            case Model.Classical:
-                return self._classical_handler(audio=audio)
-            case Model.DFArena1B:
-                return self._df_arena_1b_handler(y=y, sr=sr)
-            case Model.HuBERT:
-                return self._hubert_handler(y=y, sr=sr)
-            case Model.RawNet2:
-                return self._rawnet2_handler(y=y, sr=sr)
-            case Model.VIT:
-                if visualisation is None:
-                    raise ValueError("Visualisation is required for the VIT model.")
-                if dataset is None:
-                    raise ValueError("Dataset is required for the VIT model.")
-                return self._vit_handler(
-                    audio=audio, visualisation=visualisation, dataset=dataset
-                )
-            case Model.Spectra0:
-                return self._spectra0_handler(y=y, sr=sr)
-            case Model.SpectraAASIST:
-                return self._spectra_aasist_handler(y=y, sr=sr)
-            case Model.SpectraAASIST3:
-                return self._spectra_aasist3_handler(y=y, sr=sr)
-            case Model.Wav2Vec2:
-                return self._wav2vec2_handler(y=y, sr=sr)
-            case Model.WavLM:
-                return self._wavlm_handler(y=y, sr=sr)
-            case _:  # pragma: no cover
-                raise ValueError(f"Unknown model: {model}")
+        scores = importlib.import_module(spec.module).predict(y=y, sr=sr, **options)
+        logger.debug(f"{model.value} predictions: {scores}")
+        return self._result_from_scores(scores, model)
 
     @staticmethod
     def _result_from_scores(
         scores: list[PredictionScore], model: Model
     ) -> DetectionResult:
-        """Build a DetectionResult from a list of PredictionScores (sorted by score desc)."""
+        """Build a DetectionResult from a list of PredictionScores."""
+        if not scores:
+            raise RuntimeError(f"{model.value} returned no predictions.")
         scores = sorted(scores, key=lambda s: s["score"], reverse=True)
         top = scores[0]
         return DetectionResult(
@@ -217,113 +262,6 @@ class Jabberjay:
             model=model,
             scores=scores,
         )
-
-    def _ast_handler(
-        self, y: np.ndarray, sr: float, dataset: Dataset
-    ) -> DetectionResult:
-        import Jabberjay.Models.Transformer.AST.run as AST
-
-        scores = AST.predict(y=y, sr=sr, dataset=dataset)
-        logger.debug(f"AST predictions: {scores}")
-        return self._result_from_scores(scores, Model.AST)
-
-    @staticmethod
-    def _classical_handler(audio: Audio) -> DetectionResult:
-        import Jabberjay.Models.Classical.run as Classical
-
-        prediction, confidence = Classical.predict(audio=audio)
-        is_bonafide = bool(prediction)
-        logger.debug(
-            f"Classical prediction: {is_bonafide} (confidence={confidence:.3f})"
-        )
-        return DetectionResult(
-            label="Bonafide" if is_bonafide else "Spoof",
-            is_bonafide=is_bonafide,
-            confidence=confidence,
-            model=Model.Classical,
-        )
-
-    @staticmethod
-    def _rawnet2_handler(y: np.ndarray, sr: float) -> DetectionResult:
-        import Jabberjay.Models.RawNet2.run as RawNet2
-
-        prediction, confidence = RawNet2.predict(y=y, sr=sr)
-        is_bonafide = bool(prediction.item())
-        logger.debug(f"RawNet2 prediction: {is_bonafide} (confidence={confidence:.3f})")
-        return DetectionResult(
-            label="Bonafide" if is_bonafide else "Spoof",
-            is_bonafide=is_bonafide,
-            confidence=confidence,
-            model=Model.RawNet2,
-        )
-
-    def _vit_handler(
-        self,
-        audio: Audio,
-        visualisation: Visualisation,
-        dataset: Dataset,
-    ) -> DetectionResult:
-        try:
-            vit_module = importlib.import_module(
-                f"Jabberjay.Models.Transformer.VIT.{visualisation.value}.run"
-            )
-        except ModuleNotFoundError as exc:
-            raise ValueError(
-                f"No VIT module found for visualisation '{visualisation.value}'. "
-                f"Expected: Jabberjay.Models.Transformer.VIT.{visualisation.value}.run"
-            ) from exc
-        scores = vit_module.predict(audio=audio, dataset=dataset)
-        logger.debug(f"VIT predictions: {scores}")
-        return self._result_from_scores(scores, Model.VIT)
-
-    def _spectra0_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
-        import Jabberjay.Models.Spectra0.run as Spectra0
-
-        scores = Spectra0.predict(y=y, sr=sr)
-        logger.debug(f"Spectra-0 predictions: {scores}")
-        return self._result_from_scores(scores, Model.Spectra0)
-
-    def _spectra_aasist_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
-        import Jabberjay.Models.SpectraAASIST.run as SpectraAASIST
-
-        scores = SpectraAASIST.predict(y=y, sr=sr)
-        logger.debug(f"Spectra-AASIST predictions: {scores}")
-        return self._result_from_scores(scores, Model.SpectraAASIST)
-
-    def _spectra_aasist3_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
-        import Jabberjay.Models.SpectraAASIST3.run as SpectraAASIST3
-
-        scores = SpectraAASIST3.predict(y=y, sr=sr)
-        logger.debug(f"Spectra-AASIST3 predictions: {scores}")
-        return self._result_from_scores(scores, Model.SpectraAASIST3)
-
-    def _df_arena_1b_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
-        import Jabberjay.Models.DFArena.run as DFArena
-
-        scores = DFArena.predict(y=y, sr=sr)
-        logger.debug(f"DF-Arena-1B predictions: {scores}")
-        return self._result_from_scores(scores, Model.DFArena1B)
-
-    def _wav2vec2_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
-        import Jabberjay.Models.Wav2Vec2.run as Wav2Vec2
-
-        scores = Wav2Vec2.predict(y=y, sr=sr)
-        logger.debug(f"Wav2Vec2 predictions: {scores}")
-        return self._result_from_scores(scores, Model.Wav2Vec2)
-
-    def _hubert_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
-        import Jabberjay.Models.HuBERT.run as HuBERT
-
-        scores = HuBERT.predict(y=y, sr=sr)
-        logger.debug(f"HuBERT predictions: {scores}")
-        return self._result_from_scores(scores, Model.HuBERT)
-
-    def _wavlm_handler(self, y: np.ndarray, sr: float) -> DetectionResult:
-        import Jabberjay.Models.WavLM.run as WavLM
-
-        scores = WavLM.predict(y=y, sr=sr)
-        logger.debug(f"WavLM predictions: {scores}")
-        return self._result_from_scores(scores, Model.WavLM)
 
 
 def main():
